@@ -1,68 +1,149 @@
 <template>
   <section class="packages">
     <h1>Количество материалов в упаковке</h1>
+    <form action="" class="add-package">
+      <label for="name">Материал</label>
+      <input
+        type="text"
+        name="name"
+        id="name"
+        placeholder="Копия из 1С"
+        v-model="name"
+        required
+      />
+      <label for="name">Краткое наименование</label>
+      <input
+        type="text"
+        name="shortName"
+        id="shortName"
+        placeholder="Уточнить у Афонина"
+        v-model="short"
+        required
+      />
+      <label for="package">Количество в упаковке</label>
+      <input
+        type="number"
+        name="package"
+        id="package"
+        placeholder="Целое число"
+        v-model="pack"
+        required
+      />
+      <button class="submit" @click.prevent="addPackage">Добавить</button>
+    </form>
     <form action="">
-      <div class="packages__item" v-for="pack in this.packages" :key="pack.id">
-        <label class="label" :for="pack.id">{{ pack.name }}</label>
-        <input
-          type="number"
-          :name="pack.id"
+      <ul class="packages__list">
+        <li
+          class="packages__item"
+          v-for="pack in packages"
+          :key="pack.id"
           :id="pack.id"
-          v-model="pack.quan"
-          @change="update"
-        />
-      </div>
+        >
+          <label class="label" :for="pack.id">{{ pack.name }}</label>
+          <input
+            type="number"
+            :name="pack.id"
+            v-model="pack.quan"
+            @change="updatePackage(pack)"
+          />
+          <button @click.prevent="deletePackage(pack.id)">Удалить</button>
+        </li>
+      </ul>
     </form>
   </section>
 </template>
 
 <script>
-import { db } from "../../main";
 export default {
   data() {
     return {
-      packages: null,
+      name: "",
+      short: "",
+      pack: "",
     };
   },
   methods: {
-    async update(event) {
-      this.packages.forEach((el) => {
-        if (el.id === event.target.id) {
-          el.quan = event.target.value;
-          db.collection("warehouse/shipment/packages")
-            .doc(el.name)
-            .update({ quan: +el.quan });
-        }
-      });
+    async addPackage() {
+      const newPackage = {
+        id: Date.now(),
+        name: this.name,
+        shortName: this.short,
+        quan: this.pack,
+      };
+      await this.$store.dispatch("addPackage", newPackage);
+      await this.$store.dispatch("updatePackagesDate");
+      await this.$store.dispatch("setActualPackages");
+    },
+    async updatePackage(pack) {
+      await this.$store.dispatch("updatePackage", pack);
+      await this.$store.dispatch("updatePackagesDate");
+      await this.$store.dispatch("setActualPackages");
+    },
+    async deletePackage(id) {
+      await this.$store.dispatch("deletePackage", id);
+      await this.$store.dispatch("updatePackagesDate");
+      await this.$store.dispatch("setActualPackages");
     },
   },
   created: async function () {
-    const rawPack = await db.collection("warehouse/shipment/packages").get();
-    this.packages = rawPack.docs.map((doc) => doc.data());
+    await this.$store.dispatch("setActualPackages");
+  },
+  computed: {
+    packages() {
+      return this.$store.getters.getActualStates.packages;
+    },
   },
 };
 </script>
 
 <style lang="scss" scoped>
-form {
+.add-package {
   display: grid;
   padding: 20px;
   grid-template-columns: repeat(2, 1fr);
   gap: 20px;
   width: max-content;
   margin: 0 auto;
-  .packages__item {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
+
+  label {
+    text-align: right;
+  }
+  input {
     width: max-content;
-    margin: 0 auto;
+    text-align: center;
+  }
+  input::-webkit-outer-spin-button,
+  input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  .submit {
+    grid-column: 1/3;
+  }
+}
+.packages__list {
+  display: grid;
+  padding: 20px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  width: max-content;
+  margin: 0 auto;
+  .packages__item {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    align-items: center;
+    padding: 15px;
+    border: 1px solid #ccc;
     label {
       text-align: right;
     }
     input {
       width: 50px;
       text-align: center;
+      align-self: flex-end;
+      margin-left: auto;
     }
     input::-webkit-outer-spin-button,
     input::-webkit-inner-spin-button {
@@ -73,24 +154,3 @@ form {
 }
 </style>
 
-
-      <!-- <label for="thickCatMsc">Каталог АРТИС 80 полос (48 часов)</label>
-      <input type="number" name="thickCatMsc" id="thickCatMsc" v-model="this.packages.thickCatMsc.quan"/>
-      <label for="thickCatReg">Каталог АРТИС 80 полос (Регионы)</label>
-      <input type="number" name="thickCatReg" id="thickCatReg" />
-      <label for="thinCatMsc">Каталог АРТИС 20 полос (48 часов) ТОНКИЙ</label>
-      <input type="number" name="thinCatMsc" id="thinCatMsc" />
-      <label for="thinCatReg">Каталог АРТИС 20 полос (Регионы) ТОНКИЙ</label>
-      <input type="number" name="thinCatReg" id="thinCatReg" />
-      <label for="notebook">Блокнот Корпоративный А5</label>
-      <input type="number" name="notebook" id="notebook" />
-      <label for="folder">Папка картонная А4 для клиентов</label>
-      <input type="number" name="folder" id="folder" />
-      <label for="pen">Ручка шариковая с логотипом</label>
-      <input type="number" name="pen" id="pen" />
-      <label for="choco5">Шоколад с логотипом 5 гр.</label>
-      <input type="number" name="choco5" id="choco5" />
-      <label for="discountCards">Дисконтные карты</label>
-      <input type="number" name="discountCards" id="discountCards" />
-      <label for="50x50">Образцы 50х50</label>
-      <input type="number" name="50x50" id="50x50" /> -->

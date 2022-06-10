@@ -1,26 +1,45 @@
 <template>
   <nav class="navbar">
-    <button
-      v-for="department in getDepartments"
-      :key="department.name"
-      class="navbar__btn menu"
-      @click="
-        toggleSidebar();
-        pickDepartment({
-          dept: department.name,
-          depts: Object.keys(getDepartments),
-          length: buttonsQuantity,
-        });
-      "
+    <div
+      class="admin-buttons"
+      v-if="currentUser && currentUser.group === 'admin'"
     >
-      {{ department.title }}
-    </button>
+      <button
+        v-for="department in getDepartments"
+        :key="department.name"
+        class="navbar__btn menu"
+        @click.stop="
+          toggleSidebar();
+          pickDepartment({
+            dept: department.name,
+            depts: Object.keys(getDepartments),
+            length: buttonsQuantity,
+          });
+        "
+      >
+        {{ department.title }}
+      </button>
+    </div>
+    <div class="user-links" v-if="currentUser && currentUser.group !== 'admin'">
+      <router-link
+        class="user-links__item"
+        v-for="service in getDepartments"
+        :key="service.title"
+        :to="service.link"
+        >{{ service.title }}</router-link
+      >
+    </div>
     <button class="navbar__btn menu" @click="signOut">Выйти</button>
   </nav>
 </template>
 
 <script>
 export default {
+  data() {
+    return {
+      isActive: false,
+    };
+  },
   methods: {
     toggleSidebar() {
       return this.$store.commit("toggleSidebar");
@@ -34,7 +53,7 @@ export default {
     },
   },
   computed: {
-    getCurrentUser() {
+    currentUser() {
       return this.$store.getters.getCurrentUser;
     },
     getDepartments() {
@@ -50,22 +69,34 @@ export default {
 <style lang="scss" scoped>
 .navbar {
   display: flex;
-  router-link {
-    text-decoration: none;
-    vertical-align: middle;
-    padding: 0px 15px;
-    border: none;
-    font-size: 22px;
-    font-weight: bold;
-    background: transparent;
-    height: 100px;
-    width: 150px;
-    &:hover {
+  align-items: center;
+  .user-links {
+    display: flex;
+    // align-items: center;
+    .user-links__item {
+      display: flex;
+      align-items: center;
+      text-decoration: none;
+      padding: 0px 15px;
+      border: none;
+      font-size: 18px;
+      font-weight: bold;
+      background: transparent;
+      height: 100px;
+      &:hover {
+        background: #f5df4d;
+        color: #97999d;
+        cursor: pointer;
+      }
+    }
+    // .active {
+    //   background: #f5df4d;
+    // }
+    .router-link-active {
       background: #f5df4d;
-      color: #97999d;
-      cursor: pointer;
     }
   }
+
   button {
     padding: 0px 15px;
     border: none;

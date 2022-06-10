@@ -1,0 +1,39 @@
+@mixin result-card {
+	.card {
+		border: 1px solid #ccc;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+		h3 {
+			margin: 0;
+			padding: 10px;
+			background-color: #ccc;
+      font-size: 20px;
+		}
+		.content {
+			padding: 10px;
+      font-size: 14px;
+			ul {
+				list-style: none;
+				li {
+					display: flex;
+					align-items: center;
+					padding: 5px;
+				}
+			}
+		}
+		button {
+      cursor: pointer;
+			width: 100%;
+      height: 42px;
+      border: none;
+      background-color: #ccc;
+      color: #000;
+      font-size: 20px;
+      &:hover {
+        // color: rgba(0, 0, 0, 0.445);
+        font-size: 18px;
+      }
+		}
+	}
+}

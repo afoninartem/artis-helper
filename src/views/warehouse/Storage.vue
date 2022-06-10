@@ -1,34 +1,41 @@
 <template>
   <section class="storage">
     <form class="add-room-item">
-      <h2>Добавить материал, хранящийся в кабинете</h2>
-      <input type="text" name="roomItem" id="roomItem" v-model="material">
+      <h2>Материалы, хранящиеся в кабинете</h2>
+      <input type="text" name="roomItem" id="roomItem" v-model="material" />
       <button @click.prevent="addMaterial">Добавить</button>
     </form>
+    <hr />
     <ul class="room-storage">
-      <li v-for="(item, i) in this.storage" :key="i"> {{item.name}}</li>
+      <li v-for="(item, i) in storage" :key="i">
+        {{ i + 1 }}. {{ item.name }}
+      </li>
     </ul>
   </section>
 </template>
 
 <script>
-// import { XlsxRead, XlsxJson } from "vue-xlsx/dist/vue-xlsx.es";
-import {db} from "../../main"
 export default {
   data() {
     return {
-      storage: null,
-      material: null
+      material: "",
     };
   },
-  created: async function() {
-    const storage = await db.collection("warehouse/storage/roomStorage").get();
-    const storageArr = storage.docs.map(doc => doc.data())
-    this.storage = storageArr
+  created: async function () {
+    await this.$store.dispatch("setActualStorage");
   },
   methods: {
-    addMaterial() {
-      this.$store.dispatch("addStorage", this.material);
+    async addMaterial() {
+      const payload = this.material;
+      this.material = "";
+      await this.$store.dispatch("addStorage", payload);
+      await this.$store.dispatch("updateStorageDate");
+      await this.$store.dispatch("setActualStorage");
+    },
+  },
+  computed: {
+    storage() {
+      return this.$store.getters.getActualStates.storage;
     },
   },
 };
@@ -37,11 +44,16 @@ export default {
 <style lang="scss" scoped>
 ul {
   list-style-type: none;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  -webkit-column-count: 3; /* Chrome, Safari, Opera */
+  -moz-column-count: 3; /* Firefox */
+  column-count: 3;
   padding: 20px;
   li {
-    padding: 3px
+    padding: 5px;
+    text-align: left;
   }
+}
+hr {
+  margin: 20px;
 }
 </style>

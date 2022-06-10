@@ -9,18 +9,19 @@ export default {
     },
   },
   actions: {
-    async addStorage( payload) {
-      db.collection("warehouse/storage/roomStorage")
+    async addStorage(context, payload) {
+     return await db
+        .collection("warehouse/storage/roomStorage")
         .doc(payload.split("/").join(" "))
         .set({ name: payload });
     },
     async setStorage(context, payload) {
-      return await context.commit("setStorage", payload)
-    }
+      return await context.commit("setStorage", payload);
+    },
   },
   getters: {
     getRoomMaterials: (state) => {
-      return state.storage
-    }
+      return state.storage;
+    },
   },
 };

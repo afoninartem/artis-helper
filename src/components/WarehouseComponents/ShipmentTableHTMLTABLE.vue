@@ -4,32 +4,44 @@
     <table>
       <TableHeader />
       <tr v-for="(shop, i) in shipment" :key="i">
-        <td>
+        <td
+          :style="{
+            background: shop.name.includes('РЕКЛАМАЦИИ') ? shop.shopBG : '#fff',
+          }"
+        >
           {{ i + 1 }}
         </td>
         <td
           @click="changeColor"
           class="car"
           :style="{
-            background: shop.carBG,
+            background: shop.name.includes('РЕКЛАМАЦИИ')
+              ? shop.shopBG
+              : shop.carBG,
             color: shop.textColor,
             'font-weight': 800,
           }"
         >
           {{ shop.car ? shop.car : "Не указана" }}
         </td>
-        <td style="font-weight: bold">{{ shop.shortName }}</td>
-        <td>
-          <span class="yellow">
-            {{
-              shop.thickCatalog
-                ? shop.thickCatalog.quan + "\n" + shop.thickCatalog.region
-                : null
-            }}
+        <td :style="{ fontWeight: 'bold', background: shop.shopBG }">
+          {{ shop.name }}
+        </td>
+        <td
+          :style="{
+            background: shop.name.includes('РЕКЛАМАЦИИ') ? shop.shopBG : '#fff',
+          }"
+        >
+          <span class="yellow tablepart">
+            {{ shop.thickCatalog ? shop.thickCatalog : null }}
           </span>
         </td>
-        <td>
-          <span class="yellow">
+        <td
+          :style="{
+            background: shop.name.includes('РЕКЛАМАЦИИ') ? shop.shopBG : '#fff',
+          }"
+        >
+          <span class="yellow tablepart">
             {{
               shop.thinCatalog
                 ? shop.thinCatalog.quan + "\n" + shop.thinCatalog.region
@@ -37,35 +49,105 @@
             }}</span
           >
         </td>
-        <td>
-          <span class="yellow">{{ shop.notebook }}</span>
+        <td
+          :style="{
+            background: shop.name.includes('РЕКЛАМАЦИИ') ? shop.shopBG : '#fff',
+          }"
+        >
+          <span class="yellow tablepart">{{ shop.notebook }}</span>
         </td>
-        <td>
-          <span class="yellow">{{ shop.cup }}</span>
+        <td
+          :style="{
+            background: shop.name.includes('РЕКЛАМАЦИИ') ? shop.shopBG : '#fff',
+          }"
+        >
+          <span class="yellow tablepart">{{ shop.cup }}</span>
         </td>
-        <td>
-          <span class="yellow">{{ shop.pack }}</span>
+        <td
+          :style="{
+            background: shop.name.includes('РЕКЛАМАЦИИ') ? shop.shopBG : '#fff',
+          }"
+        >
+          <span class="yellow tablepart">{{ shop.pack }}</span>
         </td>
-        <td>
-          <span class="yellow">{{ shop.folder }}</span>
+        <td
+          :style="{
+            background: shop.name.includes('РЕКЛАМАЦИИ') ? shop.shopBG : '#fff',
+          }"
+        >
+          <span class="yellow tablepart">{{ shop.folder }}</span>
         </td>
-        <td>
-          <span class="yellow">{{ shop.vine }}</span>
+        <td
+          v-if="towels"
+          :style="{
+            background: shop.name.includes('РЕКЛАМАЦИИ') ? shop.shopBG : '#fff',
+          }"
+        >
+          <span class="yellow tablepart">{{ shop.towel }}</span>
         </td>
-        <td v-if="towels">
-          <span class="yellow">{{ shop.towels }}</span>
+        <td
+          :style="{
+            background: shop.name.includes('РЕКЛАМАЦИИ') ? shop.shopBG : '#fff',
+          }"
+        >
+          <span class="yellow tablepart">{{ shop.vine }}</span>
         </td>
-        <td class="other-mats">
+
+        <td
+          class="other-mats"
+          :style="{
+            background: shop.name.includes('РЕКЛАМАЦИИ') ? shop.shopBG : '#fff',
+          }"
+        >
           <p
+            :style="{
+              color: mat.quan ? `#000` : `red`,
+              fontWeight: mat.quan ? `normal` : `bold`,
+            }"
             v-for="(mat, i) in shop.otherMats"
             :key="i"
             :class="{ yellow: !roomMaterials.includes(mat.name) }"
           >
-            {{ `${mat.name} - ${mat.quan}` }}
+            {{ mat.quan ? `${mat.name} - ${mat.quan}` : `${mat.name}` }}
+          </p>
+          <p
+            v-for="(sample, i) in shop.samples"
+            :key="'sample-' + i"
+            :class="{ yellow: !roomMaterials.includes(sample.name) }"
+          >
+            {{ `${sample.name} - ${sample.quan}` }}
           </p>
         </td>
-        <td>{{ "boxes" }}</td>
-        <td>
+        <td
+          @click.prevent="changeBoxes"
+          class="boxes"
+          :style="{
+            background: shop.name.includes('РЕКЛАМАЦИИ') ? shop.shopBG : '#fff',
+          }"
+        >
+          <input
+            type="number"
+            name="boxesNumber"
+            class="boxes__input"
+            :id="`boxes-${i + 1}`"
+          />
+          <p
+            @click.prevent="redirectClick"
+            class="user-boxes"
+            style="font-size: 16px; font-weight: bold"
+          >
+            {{
+              stickers[activeRegion][shop.name]
+                ? stickers[activeRegion][shop.name].stickers
+                : ""
+            }}
+          </p>
+        </td>
+        <td
+          :style="{
+            background: shop.name.includes('РЕКЛАМАЦИИ') ? shop.shopBG : '#fff',
+          }"
+        >
           <div v-for="order in shop.orders" :key="order.name">
             <p
               v-if="order.comment && order.picked"
@@ -92,6 +174,36 @@ export default {
     TableInfo,
   },
   methods: {
+    async redirectClick(event) {
+      event.target.parentElement.click();
+    },
+    async changeBoxes(event) {
+      const target = await event.target;
+      const thisInput = await target.firstChild;
+      // console.log(thisInput);
+      if (thisInput) {
+        thisInput.value = "";
+        thisInput.style.display = "block";
+        thisInput.focus();
+        thisInput.addEventListener("focusout", async () => {
+          const currentSticker = {
+            shop: thisInput.parentElement.parentElement.children[2].textContent.trim(),
+            car: thisInput.parentElement.parentElement.children[1].textContent.trim(),
+            stickers: thisInput.value,
+            region: this.activeRegion,
+          };
+          if (currentSticker.stickers !== "") {
+            thisInput.style.display = "none";
+            await this.$store.dispatch("addSticker", currentSticker);
+            await this.$forceUpdate();
+          } else {
+            thisInput.style.display = "none";
+            await this.$store.dispatch("deleteSticker", currentSticker);
+            await this.$forceUpdate();
+          }
+        });
+      }
+    },
     changeColor(event) {
       const target = event.target;
       const targetCar = target.firstChild.textContent;
@@ -103,7 +215,7 @@ export default {
       const inputColor = document.createElement(`input`);
       inputColor.type = `color`;
       inputColor.classList.add(`input-color`);
-      inputColor.value = target.dataset.backColor;
+      // inputColor.value = target.dataset.backColor; //idk why it's here xD
       inputColor.addEventListener(`input`, (event) => {
         const currentColor = event.target.value;
         colorArea.forEach((item) => {
@@ -115,13 +227,20 @@ export default {
   },
   computed: {
     shipment() {
+      const shipment = this.$store.getters.getSortedShipment;
+      return shipment[this.activeRegion];
+    },
+    activeRegion() {
       const allShipments = this.$store.getters.getTableSwitcherState;
       const activeRegion =
         allShipments.filter((el) => el.active).length === 1
           ? allShipments.filter((el) => el.active)[0].region
           : null;
-      const shipment = this.$store.getters.getSortedShipment;
-      return shipment[activeRegion];
+      return activeRegion;
+    },
+    stickers() {
+      // console.log(this.$store.getters.getStickers);
+      return this.$store.getters.getStickers;
     },
     noInvalidQuans() {
       return this.$store.getters.getInvalidQuans.length === 0;
@@ -130,12 +249,9 @@ export default {
       return this.$store.getters.getTowelsInfo;
     },
     roomMaterials() {
-      return this.$store.getters.getRoomMaterials;
-    },
-    templateColumns() {
-      return this.$store.getters.getTowelsInfo
-        ? "gridTemplateColumns: repeat(14, 1fr)"
-        : "gridTemplateColumns: repeat(13, 1fr)";
+      return this.$store.getters.getActualStates.storage.map((mat) =>
+        mat.name.split("  ").join(" ")
+      );
     },
   },
 };
@@ -145,6 +261,11 @@ export default {
 <style lang="scss" >
 .yellow {
   background: yellow;
+}
+
+.towels {
+  background: yellow;
+  border: 2px solid black;
 }
 
 .cell {
@@ -158,29 +279,42 @@ export default {
   opacity: 0;
   display: none;
 }
+
+.boxes {
+  min-width: 50px;
+  cursor: pointer;
+  &__input {
+    display: none;
+    max-width: 50px;
+  }
+}
+
+.tablepart {
+  font-size: 24px;
+  // font-weight: bold;
+}
+
 .other-mats {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   white-space: nowrap;
-
+  min-height: 35px;
   p {
     margin: 5px;
     text-align: left;
   }
 }
 
-// .table {
-//   display: grid;
-// }
-
 table {
+  position: relative;
   font-size: 14px;
   overflow: hidden;
   border: 1px solid #d3d3d3;
   background: #fefefe;
-  width: 70%;
   margin: 5% auto 0;
   margin-top: 0;
+  max-width: 100vw;
+  // transform: scale(0.88);
   -moz-border-radius: 5px; /* FF1+ */
   -webkit-border-radius: 5px; /* Saf3-4 */
   border-radius: 5px;
@@ -277,10 +411,12 @@ tr:last-child td.last {
     line-height: 1.2;
     visibility: hidden;
     font-size: 20pt;
+    background: #fff;
   }
   * {
     color-adjust: exact;
     -webkit-print-color-adjust: exact;
+    -moz-color-adjust: exact;
   }
   .other {
     font-size: 20pt;
@@ -298,15 +434,19 @@ tr:last-child td.last {
   }
   html,
   body,
-  // .wrapper,
-  // .table-block,
   .print-area {
     float: none;
     display: block;
+    // display: flex;
+    // flex-direction: column;
+    // justify-content: space-between;
+    // align-items: center;
     page-break-inside: avoid;
-    // page-break-before: always;
-    table {
-      page-break-after  : always ;
+    max-width: 3500px;
+    width: 100%;
+    padding: 20px;
+    tr {
+      page-break-inside: avoid;
     }
   }
 }

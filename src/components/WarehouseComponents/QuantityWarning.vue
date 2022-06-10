@@ -2,7 +2,7 @@
   <section class="warning" v-if="showWarning.show">
     <h1>ИСПРАВИТЬ КОЛИЧЕСТВО:</h1>
     <ul>
-      <li v-for="mat in showWarning.array" :key="mat.name">
+      <li v-for="mat, i in showWarning.array" :key="i">
         <b>{{ mat.name }}</b
         >, количество: <b style="color: red">{{ mat.quan }}</b
         >, салон: <b>{{ mat.shopName }}</b>

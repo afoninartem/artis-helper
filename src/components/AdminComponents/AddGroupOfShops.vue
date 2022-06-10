@@ -37,22 +37,8 @@ export default {
       if (data) {
         Array.from(data).forEach((shop) => {
           if (shop.email !== "null") {
-            const newShop = {
-              name: shop.name.split("  ").join(" "),
-              // shortName: shop.name.split('  ').join(' ').split("А21_").join(""),
-              status: shop.status,
-              region: shop.region,
-              shipmentTerms: shop.shipmentTerms,
-              isMall: shop.isMall,
-              isOpen: shop.isOpen,
-              adress: shop.adress,
-              workingTime: shop.workingTime,
-              innerPhone: shop.innerPhone.toString(),
-              email: shop.email,
-              outerPhone: shop.outerPhone,
-            };
-            // console.log(newShop.name);
-
+            const newShop = shop;
+            newShop.name = shop.name.split("  ").join(" ");
             try {
               this.$store.dispatch("createShop", newShop);
             } catch (error) {

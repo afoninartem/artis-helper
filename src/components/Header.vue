@@ -1,5 +1,6 @@
 <template>
   <div class="header wrapper">
+    <!-- <Logo /> -->
     <router-link to="/about" class="header__logo">ArtisHelper</router-link>
     <Navbar />
   </div>
@@ -7,9 +8,11 @@
 
 <script>
 import Navbar from "@/components/Navbar";
+// import Logo from "@/components/Logo";
 export default {
   components: {
     Navbar,
+    //  Logo
   },
 };
 </script>
@@ -20,7 +23,14 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #97999B;
+  background: #97999b;
+  box-shadow: 0px 2px 5px 0px rgba(0, 0, 0, 0.75);
+  -webkit-box-shadow: 0px 2px 5px 0px rgba(0, 0, 0, 0.75);
+  -moz-box-shadow: 0px 2px 5px 0px rgba(0, 0, 0, 0.75);
+  // position: sticky;
+  // top: 0;
+  // left: 0;
+  z-index: 10;
   .header__logo {
     text-decoration: none;
     background: transparent;
@@ -29,8 +39,8 @@ export default {
     font-weight: bold;
     letter-spacing: 0.5px;
   }
-  .header__nav {
-    border: 1px solid red;
-  }
+  // .header__nav {
+  //   border: 1px solid red;
+  // }
 }
 </style>

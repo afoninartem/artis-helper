@@ -2,6 +2,7 @@
   <section class="add-leftovers">
     <form class="add-leftovers__form">
       <h2>Загрузить остатки</h2>
+      <p>Перед загрузкой остатков необходимо провести реализации по салонам и по клиентам на {{today}}!</p>
       <input type="file" id="file" @change="onChangeLeftovers" />
       <xlsx-read :file="file">
         <xlsx-json>
@@ -28,6 +29,11 @@ export default {
     return {
       file: null,
     };
+  },
+  computed: {
+    today() {
+      return this.$store.getters.getTableInfo.todayDate;
+    }
   },
   methods: {
     onChangeLeftovers(event) {

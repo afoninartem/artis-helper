@@ -1,46 +1,61 @@
 <template>
   <section class="shipments">
-    <h1>Формирование отгрузочных листов</h1>
-    <AddLeftovers v-if="!leftoversAreValid" />
-    <AddShipments v-if="leftoversAreValid" />
+    <h1>Отгрузочная таблица</h1>
+    <AddLeftovers v-if="invalidLeftovers.length || !handledLeftovers.length" />
+    <AddShipments v-if="!invalidLeftovers.length && handledLeftovers.length" />
     <div
       class="btn-block"
       v-if="
-        (tableInfo.numberOfRegularShops > 0 ||
-          tableInfo.numberOfSpbNnShops > 0) &&
-        noInvalidQuans
+        (tableInfo.msc.numberOfShops > 0 ||
+          tableInfo.spbnn.numberOfShops > 0) &&
+        noInvalidQuans &&
+        noStoppedMaterials
       "
     >
       <button
-        v-if="tableInfo.numberOfRegularShops > 0"
-        @click="sortByTerms(`msc`)"
+        class="btn-block__item"
+        v-for="(btn, i) in buttons"
+        :key="i"
+        :class="{ active: btn.terms === activeRegion }"
+        @click="sortByTerms(btn.terms)"
       >
-        МСК + РЕГ, без СПБ и НН
+        {{ btn.terms === "msc" ? "МСК + РЕГ" : btn.title }}
       </button>
-      <button v-if="tableInfo.numberOfSpbShops > 0" @click="sortByTerms(`spb`)">
-        САНКТ-ПЕТЕРБУРГ
-      </button>
-      <button v-if="tableInfo.numberOfNnShops > 0" @click="sortByTerms(`nn`)">
-        НИЖНИЙ НОВГОРОД
-      </button>
-      <button
-        v-if="tableInfo.numberOfSpbShops > 0 && tableInfo.numberOfNnShops > 0"
-        @click="sortByTerms(`spbnn`)"
-      >
-        СПБ + НН
-      </button>
-      <button @click="print">Print</button>
     </div>
     <div class="print-area">
-      <!-- <div class="page" v-for="(page, i) in this.pages" :key="i">
-        {{ page }}
-      </div> -->
       <ShipmentTableHTMLTABLE />
+      <div class="reminder-block" v-if="shipment">
+        <p v-if="activeRegion === 'msc'">
+          Суммарная отгрузка бумаги А4 в
+          <span style="font-weight: bold">МОСКВУ И РЕГИОНЫ</span> за сегодня:
+          {{ papers.regular }}
+        </p>
+        <p v-else-if="activeRegion === 'spb' || 'nn' || 'spbnn'">
+          Суммарная отгрузка бумаги А4 в
+          <span style="font-weight: bold">ПИТЕР И НИЖНИЙ</span> за сегодня:
+          {{ papers.spbnn }}
+        </p>
+        <p class="reminder" v-if="activeRegion === 'msc'">
+          Проверить подарки клиентам в 18:00! Отчёт "Анализ рекламационных
+          наборов"
+        </p>
+        <p
+          class="reminder"
+          v-else-if="activeRegion === 'spb' || 'nn' || 'spbnn'"
+        >
+          Проверить подарки клиентам <b>СПБ и НН</b> в 12:00! Отчёт "Анализ
+          рекламационных наборов"
+        </p>
+      </div>
     </div>
-    <div class="warning-container">
+    <button class="btn-print" v-if="activeRegion" @click="print">Печать</button>
+    <div class="warning-container" style="width: 80%">
+      <LimitsWarning />
       <LeftoversWarning />
+      <StopListWarning />
       <OverrunWarning />
       <QuantityWarning />
+      <UrgentOrderWarning />
     </div>
   </section>
 </template>
@@ -51,10 +66,10 @@ import AddShipments from "@/components/WarehouseComponents/AddShipments";
 import LeftoversWarning from "@/components/WarehouseComponents/LeftoversWarning";
 import OverrunWarning from "@/components/WarehouseComponents/OverrunWarning";
 import QuantityWarning from "@/components/WarehouseComponents/QuantityWarning";
+import UrgentOrderWarning from "@/components/WarehouseComponents/UrgentOrderWarning";
+import StopListWarning from "@/components/WarehouseComponents/StopListWarning";
+import LimitsWarning from "@/components/WarehouseComponents/LimitsWarning";
 import ShipmentTableHTMLTABLE from "@/components/WarehouseComponents/ShipmentTableHTMLTABLE";
-// import ShipmentTable from "@/components/WarehouseComponents/ShipmentTable";
-
-import { db } from "../../main";
 import { mapGetters } from "vuex";
 export default {
   components: {
@@ -64,15 +79,9 @@ export default {
     OverrunWarning,
     QuantityWarning,
     ShipmentTableHTMLTABLE,
-    // ShipmentTable,
-  },
-  data() {
-    return {
-      // pages: [this.blankPage],
-      fullTableBody: ``,
-      blankPage: `<div class="page"></div>`,
-      tableHeader: ``,
-    };
+    UrgentOrderWarning,
+    StopListWarning,
+    LimitsWarning,
   },
   methods: {
     print() {
@@ -80,16 +89,6 @@ export default {
     },
     async sortByTerms(payload) {
       await this.$store.dispatch("switchTable", payload);
-      await this.$store.dispatch("createTable", payload);
-      document.querySelector(".print-area").innerHTML = "";
-      this.$nextTick(() => {
-        this.lastComputedPage.innerHTML += this.tableHeaderFromVuex;
-        console.log(this.lastComputedPage);
-        this.tableBody.forEach((row) => {
-          this.lastComputedPage.innerHTML += row;
-          //check height
-        });
-      });
     },
     async handleShipments() {
       return await this.$store.dispatch("shipmentHandler");
@@ -97,30 +96,38 @@ export default {
   },
   watch: {
     rawShipment: function (newRawShipment) {
-      //delete arg?
-      console.log(newRawShipment);
+      //delete arg (newRawShipment)?
+      console.log("log newRawShipment for watch function: " + newRawShipment);
       this.handleShipments();
     },
   },
   computed: {
-    pages() {
-      const pages = document.querySelector(".print-area");
-
-      return pages;
+    shipment() {
+      const shipment = this.$store.getters.getSortedShipment;
+      return shipment[this.activeRegion];
     },
-    lastComputedPage() {
-      const pages = document.querySelectorAll(".page");
-      const lastPage = pages[pages.length - 1];
-      return lastPage;
+    shipmentSuccessfullyLoaded() {
+      return this.$store.getters.getShipment;
+    },
+    activeRegion() {
+      const allShipments = this.$store.getters.getTableSwitcherState;
+      const activeRegion =
+        allShipments.filter((el) => el.active).length === 1
+          ? allShipments.filter((el) => el.active)[0].region
+          : null;
+      return activeRegion;
+    },
+    stickers() {
+      return this.$store.getters.getStickers;
     },
     towels() {
       return this.$store.getters.getTowelsInfo;
     },
-    gtc() {
-      return this.towels ? 14 : 13;
+    invalidLeftovers() {
+      return this.$store.getters.getInvalidLeftovers;
     },
-    leftoversAreValid() {
-      return this.$store.getters.getLeftoversValidation;
+    handledLeftovers() {
+      return this.$store.getters.getLeftovers;
     },
     ...mapGetters({
       rawShipment: "getRawShipment",
@@ -128,24 +135,30 @@ export default {
     tableInfo() {
       return this.$store.getters.getTableInfo;
     },
+    buttons() {
+      const info = this.$store.getters.getTableInfo;
+      const buttons = [];
+      for (let i in info) {
+        if (typeof info[i] === "object" && info[i] !== null) {
+          if (info[i].numberOfShops > 0) {
+            buttons.push({
+              title: info[i].title,
+              terms: i,
+            });
+          }
+        }
+      }
+      return buttons;
+    },
     noInvalidQuans() {
       return this.$store.getters.getInvalidQuans.length === 0;
     },
-    // shipment() {
-    //   const allShipments = this.$store.getters.getTableSwitcherState;
-    //   const activeRegion =
-    //     allShipments.filter((el) => el.active).length === 1
-    //       ? allShipments.filter((el) => el.active)[0].region
-    //       : null;
-    //   const shipment = this.$store.getters.getSortedShipment;
-    //   return shipment[activeRegion];
-    // },
-    // tableHeaderFromVuex() {
-    //   return this.$store.getters.getTableHeader;
-    // },
-    // tableBody() {
-    //   return this.$store.getters.getTableBody;
-    // },
+    noStoppedMaterials() {
+      return this.$store.getters.getCurrentStoppedMaterials.length === 0;
+    },
+    papers() {
+      return this.$store.getters.getPaperShipment;
+    },
   },
   created: async function () {
     const date = new Date();
@@ -164,70 +177,69 @@ export default {
 
     this.$store.commit("setTableInfoDataIntoState", { today, time });
 
-    //get shops info from DB
-    let shops = [];
-    let shopsLastUpdateDB;
-    await db
-      .collection("dbUpdates")
-      .doc("shops")
-      .get()
-      .then((querySnapshot) => {
-        shopsLastUpdateDB = querySnapshot.data().lastUpdate;
-      });
-
-    const shopsLastUpdateLS = localStorage.getItem("shopsLastUpdateLS")
-      ? JSON.parse(localStorage.getItem("shopsLastUpdateLS"))
-      : 0;
-
-    if (shopsLastUpdateDB > shopsLastUpdateLS) {
-      localStorage.setItem(
-        "shopsLastUpdateLS",
-        JSON.stringify(shopsLastUpdateDB)
-      );
-      await db
-        .collection("shops")
-        .get()
-        .then((querySnapshot) => {
-          querySnapshot.forEach((doc) => {
-            shops.push(doc.data());
-          });
-        });
-      localStorage.setItem("actualShops", JSON.stringify(shops));
-      // console.log("ДАННЫЕ ВЗЯТЫ ИЗ БД И ЗАПИСАНЫ В ХРАНИЛИЩЕ");
-    } else {
-      shops = localStorage.getItem("actualShops")
-        ? JSON.parse(localStorage.getItem("actualShops"))
-        : [];
-      // console.log("ДАННЫЕ ВЗЯТЫ ИЗ ХРАНИЛИЩА");
-    }
-    //get colors from DB
-    const colors = [];
-    await db
-      .collection("warehouse/shipment/carsColors")
-      .get()
-      .then((querySnapshot) => {
-        querySnapshot.forEach((doc) => {
-          colors.push(doc.data());
-        });
-      });
-    this.$store.commit("setShopsAndColors", { shops, colors });
-    //get packages from DB
-    const rawCurrentPackages = await db
-      .collection("warehouse/shipment/packages")
-      .get();
-    const currenPackages = rawCurrentPackages.docs.map((doc) => doc.data());
-    await this.$store.dispatch("setPackages", currenPackages);
-    //get room storage
-    const room = await db.collection("warehouse/storage/roomStorage").get();
-    const roomArr = room.docs.map((doc) => doc.data().name);
-    this.$store.dispatch("setStorage", roomArr);
+    await this.$store.dispatch("setActualShops");
+    await this.$store.dispatch("setActualColors");
+    await this.$store.dispatch("setActualStorage");
+    await this.$store.dispatch("setActualLimits");
+    await this.$store.dispatch("setActualPackages");
+    await this.$store.dispatch("setActualStopList");
+    await this.$store.dispatch("setActualLeftovers");
   },
 };
 </script>
 
 <style lang="scss" scoped>
-.page {
-  border: 1px solid black;
-  display: grid;
+.shipments {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  .btn-block {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 30px;
+    gap: 30px;
+    .btn-block__item {
+      width: 200px;
+      border: none;
+      font-size: 14px;
+      padding: 5px 10px;
+      background: -webkit-gradient(
+        linear,
+        0% 0%,
+        0% 20%,
+        from(#ededed),
+        to(#e8eaeb)
+      );
+      font-weight: bold;
+      &:hover {
+        cursor: pointer;
+        background: #f5df4d;
+        transform: scale(1.1);
+      }
+    }
+    .active {
+      background: #f5df4d;
+      transform: scale(1.1);
+      border: 2px solid black;
+    }
+  }
+  .btn-print {
+    border: 1px solid #f5df4d;
+    background: #f5df4d;
+    padding: 16px 32px;
+    font-size: 20px;
+
+    &:hover {
+      transform: scale(1.05);
+      cursor: pointer;
+    }
+    &:active {
+      transform: scale(1);
+    }
+  }
+}
+
+.reminder {
+  font-size: 24px;
 }
 </style>

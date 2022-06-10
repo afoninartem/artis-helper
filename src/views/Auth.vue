@@ -117,8 +117,10 @@ export default {
       outline: none;
       padding: 5px 5px;
       text-align: center;
+      background: #fbf9fc;
       &::placeholder {
         color: #ccc;
+        background: #fbf9fc;
       }
     }
     .invalid {
