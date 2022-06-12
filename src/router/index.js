@@ -62,6 +62,18 @@ const routes = [
       import("../components/AdminComponents/AddGroupOfShops.vue"),
   },
   {
+    path: "/admin-shops",
+    name: "AdminShops",
+    meta: {
+      layout: "MainLayout",
+      auth: true,
+      admin: true,
+      permissions: ["admin"],
+    },
+    component: () =>
+      import("../views/admin/Shops.vue"),
+  },
+  {
     path: "/sudoku",
     name: "Sudoku",
     meta: {
