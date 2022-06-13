@@ -22,6 +22,11 @@
         {{ btn.terms === "msc" ? "МСК + РЕГ" : btn.title }}
       </button>
     </div>
+    <!-- <ul>
+      <li v-for="left, l in handledLeftovers" :key="l">
+        {{left.name}}
+      </li>
+    </ul> -->
     <div class="print-area">
       <ShipmentTableHTMLTABLE />
       <div class="reminder-block" v-if="shipment">
@@ -189,6 +194,12 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+// ul li {
+//   padding: 5px;
+//   font-size: 20px;
+//   text-align: left;
+// }
+
 .shipments {
   display: flex;
   flex-direction: column;

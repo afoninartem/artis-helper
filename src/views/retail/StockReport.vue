@@ -12,12 +12,12 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="(material, m) in reportData" :key="`material-${m}`">
+        <tr v-for="(material, m) in materials" :key="`material-${m}`">
           <td>{{ m + 1 }}</td>
-          <td>{{ material.title }}</td>
-          <td><input type="text" name="" id="" /></td>
-          <td><input type="text" name="" id="" /></td>
-          <td><input type="text" name="" id="" /></td>
+          <td>{{ reportData[material].title }}</td>
+          <td><input type="text" name="" id="" v-model="reportData[material].consumption"></td>
+          <td><input type="text" name="" id="" v-model="reportData[material].leftover"></td>
+          <td><input type="text" name="" id="" v-model="reportData[material].forecast"></td>
         </tr>
       </tbody>
     </table>
@@ -28,19 +28,19 @@
 export default {
   data() {
     return {
-      reportData: {}
-    }
+      reportData: { },
+    };
   },
-  mounted: async function() {
-    this.reportData = Array.from(this.materials).forEach(mat => {
-      this.reportData[]
-      // return {
-      //   title: mat.charAt(0).toUpperCase() + mat.slice(1),
-      //   consumption: null,
-      //   leftover: null,
-      //   forecast: null
-      // }
-    })
+  beforeMount: async function () {
+    Array.from(this.materials).forEach((mat) => {
+      const capitalizedName = mat.charAt(0).toUpperCase() + mat.slice(1);
+      this.reportData[mat] = {
+        title: capitalizedName,
+        consumption: "",
+        leftover: "",
+        forecast: "",
+      };
+    });
   },
   computed: {
     materials() {
@@ -54,10 +54,10 @@ export default {
 @import "@/scss/personalTable.scss";
 @include personal-table;
 td {
-  padding: 0
+  padding: 0;
 }
 input {
   width: 100%;
-  border: none
+  border: none;
 }
 </style>
