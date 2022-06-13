@@ -2,14 +2,18 @@
   <div class="shop-popup" v-if="show">
     <div class="shop-popup__background">
       <div class="shop-popup__content">
-        <ul>
+        <ul v-if="currentShopData">
           <li v-for="(param, p) in params" :key="`param-${p}`">
             <label :for="param">{{ param }}</label>
-            <input type="text" :placeholder="shop[param]"  />
+            <input
+              type="text"
+              :placeholder="shop[param]"
+              v-model="currentShopData[param]"
+            />
           </li>
         </ul>
         <div class="btn-block">
-          <button>Save</button>
+          <button @click.prevent="save">Save</button>
           <button @click.prevent="closeShopPopup">Exit</button>
         </div>
       </div>
@@ -21,11 +25,20 @@
 export default {
   data() {
     return {
-      currentShopData: null
-    }
+      currentShopData: {},
+    };
   },
   methods: {
     async closeShopPopup() {
+      return await this.$store.dispatch("closeShopPopup");
+    },
+    setCurrentShopData(shop) {
+      this.currentShopData = shop;
+    },
+    async save() {
+      await this.$store.dispatch("changeShopData", this.currentShopData);
+      await this.$store.dispatch("updateShopsDate");
+      await this.$store.dispatch("setActualShops");
       return await this.$store.dispatch("closeShopPopup");
     },
   },
@@ -39,12 +52,16 @@ export default {
     shop() {
       const shop = this.$store.getters.getCurrentShop;
       const shops = this.$store.getters.getActualStates.shops;
-      return shop && shops ? shops.filter((s) => s.name === shop)[0] : null;
+      const currShop =
+        shop && shops ? shops.filter((s) => s.name === shop)[0] : null;
+      this.setCurrentShopData(currShop);
+      return currShop;
     },
   },
-  mounted: async function() {
-    this.currentShopData = this.shop
-  }
+  mounted: async function () {
+    // this.currentShopData = this.shop;
+    Object.assign(this.currentShopData, this.shop);
+  },
 };
 </script>
 
@@ -76,7 +93,7 @@ export default {
           // grid-template-columns: 1fr 1.5fr;
           align-items: center;
           gap: 2px;
-          border: 1px solid #ccc;
+          border: 1px solid #000;
           border-radius: 5px;
 
           label {

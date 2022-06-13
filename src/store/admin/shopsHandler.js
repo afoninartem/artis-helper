@@ -1,3 +1,4 @@
+import {db} from "../../main"
 export default {
   state: {
     tableOrder: [
@@ -34,6 +35,9 @@ export default {
     async closeShopPopup(context) {
       return await context.commit("closeShopPopup");
     },
+    async changeShopData(context, payload) {
+      await db.collection("shops").doc(payload.name.split("/").join(" ")).set(payload)
+    }
   },
   getters: {
     getTableOrder: (state) => {
