@@ -391,6 +391,16 @@ const routes = [
     },
     component: () => import("../views/service/ServiceCalendar.vue"),
   },
+  {
+    path: "/stock-report",
+    name: "StockReport",
+    meta: {
+      layout: "MainLayout",
+      auth: true,
+      permissions: ["admin", "retail"],
+    },
+    component: () => import("../views/retail/StockReport.vue"),
+  },
   // {path: "*", redirect: }
 ];
 

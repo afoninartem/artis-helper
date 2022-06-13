@@ -41,6 +41,7 @@ import needsHandler from "./marketing/warehouse-needs/needsHandler";
 import vacanciesHandler from "./personal/vacanciesHandler";
 import catalogPersonalHandler from "./personal/catalogPersonalHandler";
 import driversTimeSheetHandler from "./personal/driversTimeSheetHandler";
+import stockReportHandler from "./retail/stockReportHandler";
 import firebase from "firebase/app";
 import { db } from "../main";
 Vue.use(Vuex);
@@ -55,6 +56,19 @@ export default new Vuex.Store({
       ? JSON.parse(localStorage.getItem("currentIndent"))
       : 1,
     departments: [
+      {
+        name: "retail",
+        state: false,
+        title: "Розница",
+        services: [
+          {
+            name: "stock-report",
+            link: "/stock-report",
+            title: "Отчет по акции",
+            permissions: ["retail"],
+          },
+        ],
+      },
       {
         name: "service",
         state: false,
@@ -465,5 +479,6 @@ export default new Vuex.Store({
     catalogPersonalHandler,
     driversTimeSheetHandler,
     shopsHandler,
+    stockReportHandler,
   },
 });
