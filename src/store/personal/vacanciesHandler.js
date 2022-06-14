@@ -139,62 +139,9 @@ export default {
 			payload.title = currentVacancy.title;
 			payload.supervisor = currentVacancy.supervisor;
 			payload.department = currentVacancy.department;
-			payload.statuslist = [
-				{
-					status: "Самоотказ до собеседования",
-					bgColor: "pink",
-					updateDate: 0,
-					datetime: null,
-				},
-				{
-					status: "Самоотказ после собеседования",
-					bgColor: "pink",
-					updateDate: 0,
-					datetime: null,
-				},
-				{
-					status: "Отказ до собеседования",
-					bgColor: "pink",
-					updateDate: 0,
-					datetime: null,
-				},
-				{
-					status: "Отказ после собеседования",
-					bgColor: "pink",
-					updateDate: 0,
-					datetime: null,
-				},
-				{
-					status: "Собеседование",
-					bgColor: "rgb(154, 106, 187)",
-					updateDate: Date.now(),
-					datetime: null,
-				},
-				{
-					status: "2-й этап собеседования",
-					bgColor: "rgba(76, 20, 114)",
-					updateDate: 0,
-					datetime: null,
-				},
-				{
-					status: "Пробный день",
-					bgColor: "rgb(84, 143, 219)",
-					updateDate: 0,
-					datetime: null,
-				},
-				{
-					status: "Внесён в 1С",
-					bgColor: "rgb(122, 212, 122)",
-					updateDate: 0,
-					datetime: null,
-				},
-				{
-					status: "Оформление",
-					bgColor: "rgb(209, 211, 113)",
-					updateDate: 0,
-					datetime: null,
-				},
-			];
+      payload.statuslist = Array.from(getters.getCandidateStatusList);
+      payload.statuslist.filter(s => s.status === "Собеседование")[0].datetime = payload.datetime
+
 			await db
 				.collection("personal/hiring/candidates")
 				.doc(payload.candidateID)

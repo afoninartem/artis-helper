@@ -73,7 +73,7 @@ export default {
         maxDate: new Date(1970),
       },
       xlsx: [{}],
-      exceptStatus: ["Пробный день", "Внесён в 1С", "Оформление"],
+      // exceptStatus: ["Пробный день", "Внесён в 1С", "Оформление"],
       interviewStatus: ["Собеседование", "2-й этап собеседования"],
     };
   },
@@ -168,13 +168,15 @@ export default {
             vacancy.id
           );
         });
-        vacancyData["Назначено собеседований"] = this.datesFilter()
-          .filter((f) => f.vacancyID === vacancy.id)
-          // .filter((f) => !this.exceptStatus.includes(f.status)).length;
-        vacancyData["Проведено собеседований"] = this.datesFilter()
-          .filter((f) => f.vacancyID === vacancy.id)
-          .filter((f) => !this.exceptStatus.includes(f.status))
-          .filter((f) => !f.status.includes("до собеседования")).length;
+        vacancyData["Назначено собеседований"] = this.datesFilter().filter(
+          (f) => f.vacancyID === vacancy.id
+        );
+        // .filter((f) => !this.exceptStatus.includes(f.status)).length;
+        vacancyData["Проведено собеседований"] = this.datesFilter().filter(
+          (f) => f.vacancyID === vacancy.id
+        );
+        // .filter((f) => !this.exceptStatus.includes(f.status))
+        // .filter((f) => !f.status.includes("до собеседования")).length;
         return vacancyData;
       });
       const lastRow = {
@@ -229,20 +231,36 @@ export default {
         .toISOString()
         .substring(0, 10);
       const end = new Date(this.dates.maxDate).toISOString().substring(0, 10);
+      const appointedInterviews = Array.from(this.candidates)
+        .map((c) =>
+          c.statuslist
+            .filter((s) => s.datetime)
+            .filter((s) => this.interviewStatus.some((st) => st === s.status))
+            .filter(
+              (s) =>
+                new Date(s.datetime).toISOString().substring(0, 10) >= start &&
+                new Date(s.datetime).toISOString().substring(0, 10) <= end
+            )
+        )
+        .flat().length;
+      const conductedInterviews = Array.from(this.candidates)
+        .map((c) => c.statuslist.filter((s) => s.datetime))
+        .filter((sl) =>
+          sl.some(
+            (s) =>
+              this.interviewStatus.some((st) => st === s.status) &&
+              new Date(s.datetime).toISOString().substring(0, 10) >= start &&
+              new Date(s.datetime).toISOString().substring(0, 10) <= end
+          )
+        )
+        .filter((sl) => sl.some((s) => s.status.includes(" до собес")))
+        .flat().length;
+      // .filter(c => c.some(s => !s.status.includes("до собес")))
+      console.log(conductedInterviews);
+      // .flat().length;
       return {
-        // appointedInterviews: this.datesFilter().filter(
-        //   (f) => !this.exceptStatus.includes(f.status)
-        // ).length,
-        appointedInterviews: this.candidates
-          .map((c) => c.statuslist)
-          .flat()
-          .filter((s) => s.updateDate > 0)
-          .filter(s => this.interviewStatus.some(e => e.toLowerCase().trim() === s.status.toLowerCase().trim()))
-          .map((s) => new Date(s.datetime).toISOString().substring(0, 10))
-          .filter((s) => s >= start && s <= end).length,
-        conductedInterviews: this.datesFilter()
-          .filter((f) => !f.status.includes(`до собеседования`))
-          .filter((f) => !this.exceptStatus.includes(f.status)).length,
+        appointedInterviews,
+        conductedInterviews,
       };
     },
   },
