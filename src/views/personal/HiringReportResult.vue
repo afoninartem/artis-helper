@@ -243,7 +243,7 @@ export default {
             )
         )
         .flat().length;
-      const conductedInterviews = Array.from(this.candidates)
+      const conductedInterviews = this.candidates
         .map((c) => c.statuslist.filter((s) => s.datetime))
         .filter((sl) =>
           sl.some(
@@ -253,8 +253,9 @@ export default {
               new Date(s.datetime).toISOString().substring(0, 10) <= end
           )
         )
-        .filter((sl) => sl.some((s) => s.status.includes(" до собес")))
-        .flat().length;
+
+        .filter((sl) => !sl.some((s) => s.status.includes(" до собес")))
+        .length;
       // .filter(c => c.some(s => !s.status.includes("до собес")))
       console.log(conductedInterviews);
       // .flat().length;
