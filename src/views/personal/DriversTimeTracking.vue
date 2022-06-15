@@ -4,9 +4,7 @@
     <AddDriversTimeSheet />
     <hr />
     <div class="car" v-for="(car, c) in cars" :key="c">
-      <div class="car-crew-info" v-if="car.crew.length">
-        {{ crew(car) }} {{ crew(car).length }}
-      </div>
+      <div class="car-crew-info" v-if="car.crew.length">some summary</div>
 
       <table v-if="car.crew.length">
         <thead>
@@ -58,14 +56,11 @@
             </th>
           </tr>
         </thead>
-        <tbody>
-          <tr v-for="(driver, d) in crew(car)" :key="`d-${d}`">
-            <td rowspan="2">{{ d + 1 }}</td>
-            <td>
-              {{ driver.name }} <br />
-              {{ driver.position }}
-            </td>
-            <td rowspan="2">data sources</td>
+        <tbody v-for="(driver, d) in car.crewDetails" :key="`driver-info-${d}`">
+          <tr>
+            <td :rowspan="driver.rowspan">{{ d + 1 }}</td>
+            <td :rowspan="driver.rowspan">{{ driver.name }}</td>
+            <td>Отдел сервиса</td>
             <td
               v-for="(day, d) in daySpec(date.month, date.year)"
               :key="`curr-date-${d}`"
@@ -80,12 +75,68 @@
               }}
             </td>
           </tr>
-          <tr v-if="info1C7">
-            <td v-for="driver1C7, d in crew(car)" :key="`1C7-${d}`">
-              {{driver1C7.workDays}}
+          <tr v-if="driver.info1C7">
+            <td>1C7</td>
+            <td
+              v-for="(day, d) in daySpec(date.month, date.year)"
+              :key="`curr-date-${d}`"
+            >
+              {{
+                (new Date(driver.info1C7[0]).toString() === new Date(date.year, date.month, day.dayOfMonth).toString() ? "X" : null)
+              }}
+            </td>
+          </tr>
+          <tr v-if="driver.info1C8">
+            <td>1C8</td>
+            <td
+              v-for="(day, d) in daySpec(date.month, date.year)"
+              :key="`curr-date-${d}`"
+            >
+              {{}}
             </td>
           </tr>
         </tbody>
+        <!-- <tbody>
+          <tr v-for="(driver, d) in car.crewDetails" :key="`d-${d}`">
+            <td rowspan="3">{{ d + 1 }}</td>
+            <td rowspan="3">
+              {{ driver.name }} <br />
+              {{ driver.position.toLowerCase() }}
+            </td>
+            <td>Отдел сервиса</td>
+            <td
+              v-for="(day, d) in daySpec(date.month, date.year)"
+              :key="`curr-date-${d}`"
+            >
+              {{
+                count(
+                  driver.sheduleStart,
+                  driver.sheduleType,
+                  driver.sheduleShift,
+                  new Date(date.year, date.month, day.dayOfMonth)
+                )
+              }}
+            </td>
+          </tr>
+          <tr>
+            <td>1C7 s</td>
+            <td
+              v-for="(day, d) in daySpec(date.month, date.year)"
+              :key="`curr-date-1C7-${d}`"
+            >
+              1C7
+            </td>
+          </tr>
+          <tr>
+            <td>1C7 s</td>
+            <td
+              v-for="(day, d) in daySpec(date.month, date.year)"
+              :key="`curr-date-1C7-${d}`"
+            >
+              1C7
+            </td>
+          </tr>
+        </tbody> -->
       </table>
     </div>
     <p v-if="!drivers">Загружаем список сотрудников</p>
@@ -145,34 +196,39 @@ export default {
             return cl;
           });
         if (this.info1C7) {
-          result[0].info1C7 = Array.from(this.info1C7).filter(i => i.driverID === id)[0].workDays;
-  
+          result[0].info1C7 = Array.from(this.info1C7)
+            .filter((i) => i.driverID === id)[0]
+            .workDays.map((date) => {
+              const d = date.split(".");
+              return `${d[1]}.${d[0]}.${d[2]}`;
+            });
         }
-
-        
+        if (this.info1C8) {
+          result[0].info1C8 = Array.from(this.info1C7).filter(
+            (i) => i.driverID === id
+          )[0].workDays;
+        }
+        result[0].rowspan =
+          1 + Boolean(result[0].info1C7 + Boolean(result[0].info1C8));
         crew.push(result);
-        console.log(result)
       });
       return crew.flat();
     },
   },
   computed: {
-
-    // header() {
-    //   // if (!this.numberOfDays) return null;
-    //   const header = Array.from(this.headerTemplate);
-    //   const lastDayOfMonth = this.numberOfDays(this.date.month, this.date.year);
-    //   for (let i = 1; i <= lastDayOfMonth; i += 1) {
-    //     const date = new Date(this.date.year, this.date.month, i.toString());
-    //     header.push(date.toLocaleDateString().substring(0, 2));
-    //   }
-    //   return header;
-    // },
     cars() {
       return this.$store.getters.getActualStates.catalogCars
-        ? Array.from(this.$store.getters.getActualStates.catalogCars)?.sort(
-            (a, b) => a.number - b.number
-          )
+        ? Array.from(this.$store.getters.getActualStates.catalogCars)
+            ?.sort((a, b) => a.number - b.number)
+            .map((car) =>
+              Object.assign(car, {
+                crewDetails: this.crew(car),
+                // info1C7: this.info1C7?.filter((item) =>
+                //   car.crew.includes(item.driverID)
+                // ),
+                // info1C8: this.info1C8,
+              })
+            )
         : null;
     },
     drivers() {
@@ -181,23 +237,15 @@ export default {
             .filter((driver) => {
               return driver.carslist && driver.carslist.length;
             })
-            // .map((driver) => {
-            //   return Array.from(
-            //     driver.carslist.map((c) =>
-            //       Object.assign(c, {
-            //         name: driver.name,
-            //         position: driver.position,
-            //         driverID: driver.driverID,
-            //       })
-            //     )
-            //   );
-            // })
-            // .flat()
             .sort((a, b) => (a.name > b.name ? 1 : b.name > a.name ? -1 : 0))
         : null;
     },
     info1C7() {
       return this.$store.getters.get1C7info;
+    },
+    info1C8() {
+      //add code later
+      return null;
     },
   },
   mounted: async function () {
