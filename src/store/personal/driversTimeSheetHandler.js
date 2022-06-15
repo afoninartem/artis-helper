@@ -3,6 +3,7 @@ export default {
 	state: {
 		carPopup: false,
 		carCrewPopup: false,
+		addPositionPopup: false,
 		carIDForCrewPopup: null,
 		driverNameForShedulePopup: null,
 		shedulePopup: false,
@@ -15,6 +16,12 @@ export default {
 		},
 		closeCarPopup(state) {
 			state.carPopup = false;
+		},
+		openAddPositionPopup(state) {
+			state.addPositionPopup = true;
+		},
+		closeAddPositionPopup(state) {
+			state.addPositionPopup = false;
 		},
 		openCarCrewPopup(state, payload) {
 			state.carIDForCrewPopup = payload;
@@ -35,18 +42,22 @@ export default {
 		},
 	},
 	actions: {
+		async openAddPositionPopup(context) {
+			return await context.commit("openAddPositionPopup");
+		},
+		async closeAddPositionPopup(context) {
+			return await context.commit("closeAddPositionPopup");
+		},
 		async addDriversCatalog(context, payload) {
 			let initID = Date.now();
 			payload.forEach((el) => {
 				initID += 1;
-				db.collection("service/catalog/drivers")
-					.doc(initID.toString())
-					.set({
-						driverID: initID.toString(),
-						name: el.__EMPTY_1,
-						position: el["Должность"],
-						carslist: [],
-					});
+				db.collection("service/catalog/drivers").doc(initID.toString()).set({
+					driverID: initID.toString(),
+					name: el.__EMPTY_1,
+					position: el["Должность"],
+					carslist: [],
+				});
 			});
 		},
 		async migrate(context, payload) {
@@ -111,7 +122,7 @@ export default {
 		async removeDriverFromCar({ getters }, payload) {
 			console.log(payload);
 			const drivers = getters.getActualStates.catalogDrivers;
-			const driver = drivers.filter(d => d.driverID === payload.driverID)[0];
+			const driver = drivers.filter((d) => d.driverID === payload.driverID)[0];
 			const carslist = driver.carslist;
 			const newCarslist = carslist.filter((car) => car.carID !== payload.carID);
 			await db
@@ -148,11 +159,23 @@ export default {
 				.doc(payload.driverID.id)
 				.update({ carslist: carslist });
 		},
-		async add1C7info({getters, commit}, payload) {
-      const drivers = getters.getActualStates.catalogDrivers;
+		async add1C7info({ getters, commit }, payload) {
+			const drivers = getters.getActualStates.catalogDrivers;
+			// console.log(payload);
+      const newPositions = [];
 			const info1C7 = payload.map((item) => {
-        // console.log(drivers.filter(d => d.name === item.__EMPTY_1 && d.position === item["Должность"])[0].name, item)
-        const driverID = drivers.filter(d => d.name === item.__EMPTY_1 && d.position === item["Должность"])[0].driverID
+				// console.log(drivers.filter(d => d.name === item.__EMPTY_1 && d.position === item["Должность"])[0].name, item)
+				if (
+					!drivers.filter(
+						(d) => d.name === item.__EMPTY_1 && d.position === item["Должность"]
+					).length
+				) {
+					newPositions.push({name: item.__EMPTY_1, position: item["Должность"]})
+					return;
+				}
+				const driverID = drivers.filter(
+					(d) => d.name === item.__EMPTY_1 && d.position === item["Должность"]
+				)[0].driverID;
 				const workDays = Object.keys(item)
 					.filter((i) => i !== "Должность" && !i.includes("__EMPTY"))
 					.filter((i) => !item[i].trim());
@@ -160,10 +183,10 @@ export default {
 					name: item.__EMPTY_1,
 					position: item["Должность"],
 					workDays: workDays,
-          driverID: driverID,
+					driverID: driverID,
 				};
 			});
-			// console.log(info1C7);
+			console.log(newPositions);
 
 			return await commit("add1C7info", info1C7);
 		},
@@ -178,6 +201,9 @@ export default {
 	getters: {
 		getCarPopupVisibility: (state) => {
 			return state.carPopup;
+		},
+		getAddPositionPopupVisibility: (state) => {
+			return state.addPositionPopup;
 		},
 		getCarCrewPopupVisibility: (state) => {
 			return { show: state.carCrewPopup, id: state.carIDForCrewPopup };

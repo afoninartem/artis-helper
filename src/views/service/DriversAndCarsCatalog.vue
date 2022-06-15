@@ -18,8 +18,21 @@
             <td @click.prevent="openCarCrewPopup(car.carID)" class="crew">
               <div v-if="car.crew.length">
                 <p v-for="(member, m) in car.crew" :key="m">
-                  <span v-if="drivers.filter(d => d.driverID === member).length">{{ drivers.filter(d => d.driverID === member)[0].name }}</span> -
-                  <span v-if="drivers.filter(d => d.driverID === member).length">{{ drivers.filter(d => d.driverID === member)[0].position.toLowerCase() }}</span>
+                  <span
+                    v-if="drivers.filter((d) => d.driverID === member).length"
+                    >{{
+                      drivers.filter((d) => d.driverID === member)[0].name
+                    }}</span
+                  >
+                  -
+                  <span
+                    v-if="drivers.filter((d) => d.driverID === member).length"
+                    >{{
+                      drivers
+                        .filter((d) => d.driverID === member)[0]
+                        .position.toLowerCase()
+                    }}</span
+                  >
                 </p>
               </div>
               <div v-if="!car.crew.length">
@@ -32,9 +45,12 @@
     </div>
     <div class="catalog__drivers" v-if="drivers">
       <h1>Справочник сотрудников доставки</h1>
-      <AddDriversCatalog />
+      <!-- <AddDriversCatalog /> -->
       <!-- <button @click.prevent="addDriver">Добавить сотрудника</button> -->
-      <button @click.prevent="updateCarsLists">UPDATE DRIVERS CARSLISTS</button>
+      <!-- <button @click.prevent="updateCarsLists">UPDATE DRIVERS CARSLISTS</button> -->
+      <button @click.prevent="openAddPositionPopup">
+        Добавить должность сотруднику
+      </button>
       <table>
         <thead>
           <tr>
@@ -76,20 +92,23 @@
     <AddCarPopUp />
     <CarCrewPopUp />
     <ShedulePopUp />
+    <AddPositionPopup />
   </div>
 </template>
 
 <script>
 import AddCarPopUp from "@/components/ServiceComponents/AddCarPopUp";
 import CarCrewPopUp from "@/components/ServiceComponents/CarCrewPopUp";
+import AddPositionPopup from "@/components/ServiceComponents/AddPositionPopup";
 import ShedulePopUp from "@/components/ServiceComponents/ShedulePopUp";
-import AddDriversCatalog from "@/components/PersonalComponents/AddDriversCatalog";
+// import AddDriversCatalog from "@/components/PersonalComponents/AddDriversCatalog";
 export default {
   components: {
     AddCarPopUp,
     CarCrewPopUp,
     ShedulePopUp,
-    AddDriversCatalog,
+    AddPositionPopup,
+    // AddDriversCatalog,
   },
   methods: {
     async addCar() {
@@ -101,9 +120,9 @@ export default {
     async openShedulePopup(name) {
       return await this.$store.dispatch("openShedulePopup", name);
     },
-    // async updateCarsLists() {
-
-    // }
+    async openAddPositionPopup() {
+      return await this.$store.dispatch("openAddPositionPopup");
+    },
   },
   computed: {
     drivers() {
