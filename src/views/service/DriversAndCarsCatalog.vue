@@ -47,10 +47,6 @@
       <h1>Справочник сотрудников доставки</h1>
       <!-- <AddDriversCatalog /> -->
       <!-- <button @click.prevent="addDriver">Добавить сотрудника</button> -->
-      <!-- <button @click.prevent="updateCarsLists">UPDATE DRIVERS CARSLISTS</button> -->
-      <button @click.prevent="openAddPositionPopup">
-        Добавить должность сотруднику
-      </button>
       <table>
         <thead>
           <tr>

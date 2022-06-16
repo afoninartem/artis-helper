@@ -75,4 +75,5 @@ module.exports = {
 	convertOnlineDate,
 	excelDateToJSDate,
 	dateTime,
+  getFullDate
 };

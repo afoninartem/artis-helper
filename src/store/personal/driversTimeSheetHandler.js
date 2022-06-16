@@ -9,6 +9,17 @@ export default {
 		shedulePopup: false,
 		driverPopup: false,
 		info1C7: null,
+		info1C8_A21: null,
+		info1C8_AP: null,
+		info1C8_DP: null,
+		positions: [
+			"Водитель",
+			"экспедитор",
+			"Водитель на своем  авто",
+			"ночной экспедитор",
+			"д. экспедитор",
+			"Рекламатор",
+		],
 	},
 	mutations: {
 		openCarPopup(state) {
@@ -40,6 +51,15 @@ export default {
 		add1C7info(state, payload) {
 			state.info1C7 = payload;
 		},
+		add1C8info_A21(state, payload) {
+			state.info1C8_A21 = payload;
+		},
+		add1C8info_AP(state, payload) {
+			state.info1C8_AP = payload;
+		},
+		add1C8info_DP(state, payload) {
+			state.info1C8_DP = payload;
+		},
 	},
 	actions: {
 		async openAddPositionPopup(context) {
@@ -48,15 +68,19 @@ export default {
 		async closeAddPositionPopup(context) {
 			return await context.commit("closeAddPositionPopup");
 		},
-		async addDriversCatalog(context, payload) {
+		async addDriversCatalog({ getters }, payload) {
 			let initID = Date.now();
+			const positions = getters.getDriversPositions;
 			payload.forEach((el) => {
-				initID += 1;
-				db.collection("service/catalog/drivers").doc(initID.toString()).set({
-					driverID: initID.toString(),
-					name: el.__EMPTY_1,
-					position: el["Должность"],
-					carslist: [],
+				positions.forEach((position) => {
+					initID += 1;
+					db.collection("service/catalog/drivers").doc(initID.toString()).set({
+						driverID: initID.toString(),
+						name: el["ФИО сотрудника"],
+						mainPosition: el["Должность"].toLowerCase(),
+						position: position.toLowerCase(),
+						carslist: [],
+					});
 				});
 			});
 		},
@@ -161,21 +185,17 @@ export default {
 		},
 		async add1C7info({ getters, commit }, payload) {
 			const drivers = getters.getActualStates.catalogDrivers;
-			// console.log(payload);
-      const newPositions = [];
 			const info1C7 = payload.map((item) => {
-				// console.log(drivers.filter(d => d.name === item.__EMPTY_1 && d.position === item["Должность"])[0].name, item)
-				if (
-					!drivers.filter(
-						(d) => d.name === item.__EMPTY_1 && d.position === item["Должность"]
-					).length
-				) {
-					newPositions.push({name: item.__EMPTY_1, position: item["Должность"]})
-					return;
+				let driverID;
+				try {
+					driverID = drivers.filter(
+						(d) =>
+							d.name === item.__EMPTY_1 &&
+							d.position === item["Должность"].toLowerCase()
+					)[0].driverID;
+				} catch (error) {
+					console.log(item);
 				}
-				const driverID = drivers.filter(
-					(d) => d.name === item.__EMPTY_1 && d.position === item["Должность"]
-				)[0].driverID;
 				const workDays = Object.keys(item)
 					.filter((i) => i !== "Должность" && !i.includes("__EMPTY"))
 					.filter((i) => !item[i].trim());
@@ -186,17 +206,17 @@ export default {
 					driverID: driverID,
 				};
 			});
-			console.log(newPositions);
-
 			return await commit("add1C7info", info1C7);
 		},
-		// async updateCarsLists(context, payload) {
-		//   console.log(payload)
-		//   await db.collection("service/collections/drivers").doc(payload.id).update({
-		//     id: payload.id,
-		//     carslist: payload.carslist
-		//   })
-		// }
+		async add1C8info_A21(context, payload) {
+      return await context.commit("add1C8info_A21", payload.filter(o => Object.keys(o).length !== 3))
+    },
+		async add1C8info_AP(context, payload) {
+      return await context.commit("add1C8info_AP", payload.filter(o => Object.keys(o).length !== 3))
+    },
+		async add1C8info_DP(context, payload) {
+      return await context.commit("add1C8info_DP", payload.filter(o => Object.keys(o).length !== 3))
+    },
 	},
 	getters: {
 		getCarPopupVisibility: (state) => {
@@ -214,8 +234,20 @@ export default {
 				name: state.driverNameForShedulePopup,
 			};
 		},
+		getDriversPositions: (state) => {
+			return state.positions;
+		},
 		get1C7info: (state) => {
 			return state.info1C7;
+		},
+		get1C8info_A21: (state) => {
+			return state.info1C8_A21;
+		},
+		get1C8info_AP: (state) => {
+			return state.info1C8_AP;
+		},
+		get1C8info_DP: (state) => {
+			return state.info1C8_DP;
 		},
 	},
 };

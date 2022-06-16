@@ -79,7 +79,16 @@
                     )
                   }}
                 </td>
-                <td class="delete-btn" colspan="2" @click.prevent="removeDriverFromCar({driverID: driver.driverID, carID: car.carID})"></td>
+                <td
+                  class="delete-btn"
+                  colspan="2"
+                  @click.prevent="
+                    removeDriverFromCar({
+                      driverID: driver.driverID,
+                      carID: car.carID,
+                    })
+                  "
+                ></td>
               </tr>
             </tbody>
           </table>
@@ -168,7 +177,7 @@ export default {
       if (str.length > 2) {
         this.tips =
           this.drivers
-            .filter((driver) => driver.name.toLowerCase().includes(str))
+            .filter((driver) => driver.name.toLowerCase().substring(0, str.length).includes(str))
             .slice(0, 4) || null;
       } else {
         this.tips = null;
@@ -185,19 +194,22 @@ export default {
   computed: {
     crew() {
       const driverlist = this.car.crew;
+      console.log()
       const crew = [];
-      Array.from(driverlist).forEach(id => {
-        const driver = this.drivers.filter(d => d.driverID === id)[0];
-        const result = driver.carslist.filter(cl => cl.carID === this.car.carID).map(cl => {
-          cl.name = driver.name;
-          cl.position = driver.position;
-          cl.driverID = driver.driverID;
-          return cl
-        })
-        crew.push(result)
-      })
-        console.log("crew:", crew.flat())
-      return crew.flat()
+      Array.from(driverlist).forEach((id) => {
+        const driver = this.drivers.filter((d) => d.driverID === id)[0];
+        const result = driver.carslist
+          .filter((cl) => cl.carID === this.car.carID)
+          .map((cl) => {
+            cl.name = driver.name;
+            cl.position = driver.position;
+            cl.driverID = driver.driverID;
+            return cl;
+          });
+        crew.push(result);
+      });
+      // console.log("crew:", crew.flat());
+      return crew.flat();
     },
     show() {
       return this.$store.getters.getCarCrewPopupVisibility?.show;

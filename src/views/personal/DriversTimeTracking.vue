@@ -1,7 +1,13 @@
 <template>
   <div class="drivers">
     <h1>Водители</h1>
-    <AddDriversTimeSheet />
+    <div class="add-block">
+      <AddDriversTimeSheet1C7 v-if="!info1C7" />
+      <AddDriversTimeSheet1C8A21 v-if="!info1C8_A21" />
+      <AddDriversTimeSheet1C8AP v-if="!info1C8_AP" />
+      <AddDriversTimeSheet1C8DP v-if="!info1C8_DP" />
+    </div>
+
     <hr />
     <div class="car" v-for="(car, c) in cars" :key="c">
       <div class="car-crew-info" v-if="car.crew.length">some summary</div>
@@ -82,7 +88,12 @@
               :key="`curr-date-${d}`"
             >
               {{
-                (new Date(driver.info1C7[0]).toString() === new Date(date.year, date.month, day.dayOfMonth).toString() ? "X" : null)
+                compareDates(
+                  driver.info1C7,
+                  new Date(date.year, date.month, day.dayOfMonth)
+                )
+                  ? "X"
+                  : null
               }}
             </td>
           </tr>
@@ -92,51 +103,18 @@
               v-for="(day, d) in daySpec(date.month, date.year)"
               :key="`curr-date-${d}`"
             >
-              {{}}
-            </td>
-          </tr>
-        </tbody>
-        <!-- <tbody>
-          <tr v-for="(driver, d) in car.crewDetails" :key="`d-${d}`">
-            <td rowspan="3">{{ d + 1 }}</td>
-            <td rowspan="3">
-              {{ driver.name }} <br />
-              {{ driver.position.toLowerCase() }}
-            </td>
-            <td>Отдел сервиса</td>
-            <td
-              v-for="(day, d) in daySpec(date.month, date.year)"
-              :key="`curr-date-${d}`"
-            >
               {{
-                count(
-                  driver.sheduleStart,
-                  driver.sheduleType,
-                  driver.sheduleShift,
-                  new Date(date.year, date.month, day.dayOfMonth)
+                driver.info1C8.some(
+                  (k) =>
+                    k[0].split(" ")[0] === day.dayOfMonth.toString() &&
+                    k[0].split(" ")[1].toLowerCase() === day.weekday
                 )
+                  ? "X"
+                  : null
               }}
             </td>
           </tr>
-          <tr>
-            <td>1C7 s</td>
-            <td
-              v-for="(day, d) in daySpec(date.month, date.year)"
-              :key="`curr-date-1C7-${d}`"
-            >
-              1C7
-            </td>
-          </tr>
-          <tr>
-            <td>1C7 s</td>
-            <td
-              v-for="(day, d) in daySpec(date.month, date.year)"
-              :key="`curr-date-1C7-${d}`"
-            >
-              1C7
-            </td>
-          </tr>
-        </tbody> -->
+        </tbody>
       </table>
     </div>
     <p v-if="!drivers">Загружаем список сотрудников</p>
@@ -145,10 +123,16 @@
 
 <script>
 // import AddDriversCatalog from "@/components/PersonalComponents/AddDriversCatalog";
-import AddDriversTimeSheet from "@/components/PersonalComponents/AddDriversTimeSheet";
+import AddDriversTimeSheet1C7 from "@/components/PersonalComponents/AddDriversTimeSheet1C7";
+import AddDriversTimeSheet1C8A21 from "@/components/PersonalComponents/AddDriversTimeSheet1C8_A21";
+import AddDriversTimeSheet1C8AP from "@/components/PersonalComponents/AddDriversTimeSheet1C8_AP";
+import AddDriversTimeSheet1C8DP from "@/components/PersonalComponents/AddDriversTimeSheet1C8_DP";
 export default {
   components: {
-    AddDriversTimeSheet,
+    AddDriversTimeSheet1C7,
+    AddDriversTimeSheet1C8A21,
+    AddDriversTimeSheet1C8AP,
+    AddDriversTimeSheet1C8DP,
     // AddDriversCatalog,
   },
   data() {
@@ -182,6 +166,14 @@ export default {
       const count = require("../../store/service/sheduleCounter");
       return count.default(sheduleStart, sheduleType, sheduleShift, currDate);
     },
+    compareDates(arrayOfDates, date) {
+      const dateHandler = require("../../store/dateHandler");
+      const handledArrayOfDates = arrayOfDates.map((date) =>
+        dateHandler.getFullDate(date)
+      );
+      const handledDate = dateHandler.getFullDate(date);
+      return handledArrayOfDates.includes(handledDate);
+    },
     crew(car) {
       const driverlist = car.crew;
       const crew = [];
@@ -195,21 +187,26 @@ export default {
             cl.driverID = driver.driverID;
             return cl;
           });
+        result[0].rowspan = 1;
         if (this.info1C7) {
+          result[0].rowspan += 1;
           result[0].info1C7 = Array.from(this.info1C7)
             .filter((i) => i.driverID === id)[0]
             .workDays.map((date) => {
               const d = date.split(".");
-              return `${d[1]}.${d[0]}.${d[2]}`;
+              return new Date(`${d[1]}.${d[0]}.${d[2]}`);
             });
         }
-        if (this.info1C8) {
-          result[0].info1C8 = Array.from(this.info1C7).filter(
-            (i) => i.driverID === id
-          )[0].workDays;
+        if (this.info1C8.length) {
+          result[0].rowspan += 1;
+          result[0].info1C8 = Array.from(this.info1C8)
+            .filter((i) => Object.entries(i)[1][1] === result[0].name)
+            .map((o) => Object.entries(o))
+            .flat()
+            .filter((k) => parseInt(k[0]))
+            .filter((k) => k[1].trim().length > 1);
         }
-        result[0].rowspan =
-          1 + Boolean(result[0].info1C7 + Boolean(result[0].info1C8));
+
         crew.push(result);
       });
       return crew.flat();
@@ -223,10 +220,6 @@ export default {
             .map((car) =>
               Object.assign(car, {
                 crewDetails: this.crew(car),
-                // info1C7: this.info1C7?.filter((item) =>
-                //   car.crew.includes(item.driverID)
-                // ),
-                // info1C8: this.info1C8,
               })
             )
         : null;
@@ -244,8 +237,18 @@ export default {
       return this.$store.getters.get1C7info;
     },
     info1C8() {
-      //add code later
-      return null;
+      return []
+        .concat(this.info1C8_A21, this.info1C8_AP, this.info1C8_DP)
+        .filter((d) => d !== null);
+    },
+    info1C8_A21() {
+      return this.$store.getters.get1C8info_A21;
+    },
+    info1C8_AP() {
+      return this.$store.getters.get1C8info_AP;
+    },
+    info1C8_DP() {
+      return this.$store.getters.get1C8info_DP;
     },
   },
   mounted: async function () {
@@ -262,5 +265,9 @@ export default {
 @include personal-table;
 .car:not(:last-child) {
   margin-bottom: 15px;
+}
+.add-block {
+  display: flex;
+  justify-content: space-around;
 }
 </style>
