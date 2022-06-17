@@ -28,6 +28,9 @@
         <tr>
           <th v-for="(head, h) in header" :key="h">{{ head }}</th>
         </tr>
+        <tr>
+          <th v-for="summary, s in tableSummary" :key="s">{{summary}}</th>
+        </tr>
       </thead>
       <tbody>
         <tr v-for="(vacancy, v) in vacancies" :key="v">
@@ -38,11 +41,6 @@
           <td>{{ vacancy.department }}</td>
           <td>{{ vacancy.status }}</td>
           <td v-for="(status, s) in statuses" :key="s">
-            <!-- {{
-              datesFilter().filter(
-                (f) => f.vacancyID === vacancy.id && f.status === status.status
-              ).length
-            }} -->
             {{ detailedDatesAndStatusFilter(status.status, vacancy.id) }}
           </td>
         </tr>
@@ -145,8 +143,28 @@ export default {
       }
       return null;
     },
+    getAmountOfInterviews(array) {
+      const start = new Date(new Date(this.dates.minDate).getTime())
+        .toISOString()
+        .substring(0, 10);
+      const end = new Date(this.dates.maxDate).toISOString().substring(0, 10);
+      const appointedInterviews = array
+        .filter(
+          (o) => new Date(o.datetime).toISOString().substring(0, 10) >= start
+        )
+        .filter(
+          (o) => new Date(o.datetime).toISOString().substring(0, 10) <= end
+        );
+      return appointedInterviews;
+    },
   },
   computed: {
+    tableSummary() {
+      const res = this.downloadXLSX[this.downloadXLSX.length - 1];
+      delete res["Назначено собеседований"]
+      delete res["Проведено собеседований"]
+      return res
+    },
     downloadXLSX() {
       let vacanciesQuan = 0;
       const vacancies = this.vacancies.map((vacancy, v) => {
@@ -160,9 +178,6 @@ export default {
           Статус: vacancy.status,
         };
         this.statuses.forEach((status) => {
-          // vacancyData[status.status] = this.datesFilter().filter(
-          //   (f) => f.vacancyID === vacancy.id && f.status === status.status
-          // ).length;
           vacancyData[status.status] = this.detailedDatesAndStatusFilter(
             status.status,
             vacancy.id
@@ -171,12 +186,9 @@ export default {
         vacancyData["Назначено собеседований"] = this.datesFilter().filter(
           (f) => f.vacancyID === vacancy.id
         );
-        // .filter((f) => !this.exceptStatus.includes(f.status)).length;
         vacancyData["Проведено собеседований"] = this.datesFilter().filter(
           (f) => f.vacancyID === vacancy.id
         );
-        // .filter((f) => !this.exceptStatus.includes(f.status))
-        // .filter((f) => !f.status.includes("до собеседования")).length;
         return vacancyData;
       });
       const lastRow = {
@@ -231,34 +243,21 @@ export default {
         .toISOString()
         .substring(0, 10);
       const end = new Date(this.dates.maxDate).toISOString().substring(0, 10);
-      const appointedInterviews = Array.from(this.candidates)
-        .map((c) =>
-          c.statuslist
-            .filter((s) => s.datetime)
-            .filter((s) => this.interviewStatus.some((st) => st === s.status))
-            .filter(
-              (s) =>
-                new Date(s.datetime).toISOString().substring(0, 10) >= start &&
-                new Date(s.datetime).toISOString().substring(0, 10) <= end
-            )
-        )
-        .flat().length;
-      const conductedInterviews = this.candidates
-        .map((c) => c.statuslist.filter((s) => s.datetime))
-        .filter((sl) =>
-          sl.some(
-            (s) =>
-              this.interviewStatus.some((st) => st === s.status) &&
-              new Date(s.datetime).toISOString().substring(0, 10) >= start &&
-              new Date(s.datetime).toISOString().substring(0, 10) <= end
+      
+      const appointedInterviews = Array.from(this.candidates).filter(
+        (candidate) =>
+          candidate.statuslist.some((status) =>
+            this.interviewStatus.includes(status.status) && new Date(status.datetime).toISOString().substring(0, 10) >= start && new Date(status.datetime).toISOString().substring(0, 10) <= end
           )
-        )
+      ).length;
 
-        .filter((sl) => !sl.some((s) => s.status.includes(" до собес")))
-        .length;
-      // .filter(c => c.some(s => !s.status.includes("до собес")))
-      console.log(conductedInterviews);
-      // .flat().length;
+      const conductedInterviews = Array.from(this.candidates).filter(
+        (candidate) =>
+          candidate.statuslist.some((status) =>
+          this.interviewStatus.includes(status.status) && new Date(status.datetime).toISOString().substring(0, 10) >= start && new Date(status.datetime).toISOString().substring(0, 10) <= end
+          ) && !candidate.statuslist.some(status => status.status.includes("до собеседования") && status.updateDate > 0)
+      ).length;
+
       return {
         appointedInterviews,
         conductedInterviews,
@@ -281,4 +280,7 @@ export default {
 <style lang="scss" scoped>
 @import "@/scss/personalTable.scss";
 @include personal-table;
+table {
+  font-size: 14px
+}
 </style>

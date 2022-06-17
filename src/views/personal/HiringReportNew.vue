@@ -249,16 +249,22 @@ export default {
     candidates() {
       return this.$store.getters.getActualStates.candidates
         ? Array.from(this.$store.getters.getActualStates.candidates)
-
-            // .map((candidate) => {
-            //   const lastStatus = candidate.statuslist.sort(
-            //     (a, b) => b.updateDate - a.updateDate
-            //   )[0];
-            //   // console.log(candidate.name, lastStatus);
-            //   candidate.datetime = lastStatus.datetime;
-            //   candidate.status = lastStatus.status;
-            //   return candidate;
-            // })
+            .map(candidate => {
+              if (candidate.status === "2-й этап собеседования" && candidate.statuslist.some(s => s.status === "Собеседование" && s.updateDate > 0) && candidate.statuslist.some(s => s.status === "2-й этап собеседования" && s.updateDate > 0)) {
+                const candidate1 = Object.assign({}, candidate);
+                const candidate2 = Object.assign({}, candidate);
+                candidate1.statuslist = Array.from(candidate.statuslist).filter(s => s.status !== "2-й этап собеседования")
+                candidate2.statuslist = Array.from(candidate.statuslist).filter(s => s.status !== "Собеседование")
+                candidate1.name = candidate.name + " (1)";
+                candidate2.name = candidate.name + " (2)";
+                candidate1.datetime = Array.from(candidate.statuslist).filter(s => s.status === "Собеседование")[0].datetime
+                candidate1.status = Array.from(candidate.statuslist).filter(s => s.status === "Собеседование")[0].status
+                // console.log(candidate1, candidate2)
+                return [candidate1, candidate2]
+              }
+              return candidate
+            })
+            .flat()
             .sort(
               (a, b) =>
                 new Date(a.datetime).getTime() - new Date(b.datetime).getTime()
