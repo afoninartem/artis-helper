@@ -118,7 +118,7 @@ export default {
 			return await context.commit("closeCarCrewPopup");
 		},
 		async updateCarCrew(context, payload) {
-			console.log(payload);
+			// console.log(payload);
 			const newCrew = payload.car.crew;
 			// console.log(newCrew, typeof newCrew)
 			// newCrew.push(payload.driver.driverID);
@@ -185,7 +185,10 @@ export default {
 		},
 		async add1C7info({ getters, commit }, payload) {
 			const drivers = getters.getActualStates.catalogDrivers;
-			const info1C7 = payload.map((item) => {
+      const positions = getters.getDriversPositions;
+			const info1C7 = payload
+      .filter(f => positions.includes(f["Должность"]))
+      .map((item) => {
 				let driverID;
 				try {
 					driverID = drivers.filter(
@@ -209,14 +212,23 @@ export default {
 			return await commit("add1C7info", info1C7);
 		},
 		async add1C8info_A21(context, payload) {
-      return await context.commit("add1C8info_A21", payload.filter(o => Object.keys(o).length !== 3))
-    },
+			return await context.commit(
+				"add1C8info_A21",
+				payload.filter((o) => Object.keys(o).length !== 3)
+			);
+		},
 		async add1C8info_AP(context, payload) {
-      return await context.commit("add1C8info_AP", payload.filter(o => Object.keys(o).length !== 3))
-    },
+			return await context.commit(
+				"add1C8info_AP",
+				payload.filter((o) => Object.keys(o).length !== 3)
+			);
+		},
 		async add1C8info_DP(context, payload) {
-      return await context.commit("add1C8info_DP", payload.filter(o => Object.keys(o).length !== 3))
-    },
+			return await context.commit(
+				"add1C8info_DP",
+				payload.filter((o) => Object.keys(o).length !== 3)
+			);
+		},
 	},
 	getters: {
 		getCarPopupVisibility: (state) => {

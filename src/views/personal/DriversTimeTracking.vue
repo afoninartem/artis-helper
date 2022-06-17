@@ -9,6 +9,7 @@
     </div>
 
     <hr />
+
     <div class="car" v-for="(car, c) in cars" :key="c">
       <div class="car-crew-info" v-if="car.crew.length">some summary</div>
 
@@ -70,6 +71,13 @@
             <td
               v-for="(day, d) in daySpec(date.month, date.year)"
               :key="`curr-date-${d}`"
+              :style="
+                setStyle(
+                  new Date(date.year, date.month, day.dayOfMonth),
+                  driver,
+                  day
+                )
+              "
             >
               {{
                 count(
@@ -81,33 +89,47 @@
               }}
             </td>
           </tr>
-          <tr v-if="driver.info1C7">
-            <td>1C7</td>
-            <td
-              v-for="(day, d) in daySpec(date.month, date.year)"
-              :key="`curr-date-${d}`"
-            >
-              {{
-                compareDates(
-                  driver.info1C7,
-                  new Date(date.year, date.month, day.dayOfMonth)
-                )
-                  ? "X"
-                  : null
-              }}
-            </td>
-          </tr>
           <tr v-if="driver.info1C8">
             <td>1C8</td>
             <td
               v-for="(day, d) in daySpec(date.month, date.year)"
               :key="`curr-date-${d}`"
+              :style="
+                setStyle(
+                  new Date(date.year, date.month, day.dayOfMonth),
+                  driver,
+                  day
+                )
+              "
             >
               {{
                 driver.info1C8.some(
                   (k) =>
                     k[0].split(" ")[0] === day.dayOfMonth.toString() &&
                     k[0].split(" ")[1].toLowerCase() === day.weekday
+                )
+                  ? "X"
+                  : null
+              }}
+            </td>
+          </tr>
+          <tr v-if="driver.info1C7">
+            <td>1C7 (факт)</td>
+            <td
+              v-for="(day, d) in daySpec(date.month, date.year)"
+              :key="`curr-date-${d}`"
+              :style="
+                setStyle(
+                  new Date(date.year, date.month, day.dayOfMonth),
+                  driver,
+                  day
+                )
+              "
+            >
+              {{
+                compareDates(
+                  driver.info1C7,
+                  new Date(date.year, date.month, day.dayOfMonth)
                 )
                   ? "X"
                   : null
@@ -145,6 +167,33 @@ export default {
     };
   },
   methods: {
+    setStyle(date, driver, day) {
+      // console.log(date, driver)
+      if (!driver.info1C7 || !driver.info1C8) return;
+      const redBG = "background: rgba(225, 100, 100, 0.7)";
+      const greenBG = "background: rgba(99, 223, 126, 0.7)"
+      // const result = { service: null, info1C7: null, info1C8: null };
+      const service = this.count(
+        driver.sheduleStart,
+        driver.sheduleType,
+        driver.sheduleShift,
+        date
+      );
+      const info1C7 = driver.info1C7
+        ? this.compareDates(driver.info1C7, date)
+        : null;
+      const info1C8 = driver.info1C8
+        ? driver.info1C8.some(
+            (k) =>
+              k[0].split(" ")[0] === day.dayOfMonth.toString() &&
+              k[0].split(" ")[1].toLowerCase() === day.weekday
+          )
+        : null;
+      const allGood = service && info1C7 && info1C8;
+      const noData = !service && !info1C7 && !info1C8
+      if (noData) return;
+      return allGood ? greenBG : redBG;
+    },
     daySpec(month, year) {
       const lastDay = this.numberOfDays(month, year);
       const result = [];
@@ -162,7 +211,6 @@ export default {
       return new Date(year, month + 1, 0).getDate();
     },
     count(sheduleStart, sheduleType, sheduleShift, currDate) {
-      // console.log(sheduleStart, sheduleType, sheduleShift, currDate)
       const count = require("../../store/service/sheduleCounter");
       return count.default(sheduleStart, sheduleType, sheduleShift, currDate);
     },
@@ -186,27 +234,31 @@ export default {
             cl.position = driver.position;
             cl.driverID = driver.driverID;
             return cl;
-          });
-        result[0].rowspan = 1;
+          })[0];
+        result.rowspan = 1;
         if (this.info1C7) {
-          result[0].rowspan += 1;
-          result[0].info1C7 = Array.from(this.info1C7)
-            .filter((i) => i.driverID === id)[0]
-            .workDays.map((date) => {
-              const d = date.split(".");
-              return new Date(`${d[1]}.${d[0]}.${d[2]}`);
-            });
+          result.rowspan += 1;
+          result.info1C7 = Array.from(this.info1C7).filter(
+            (i) => i.driverID === id
+          ).length
+            ? Array.from(this.info1C7)
+                .filter((i) => i.driverID === id)[0]
+                .workDays.map((date) => {
+                  const d = date.split(".");
+                  return new Date(`${d[1]}.${d[0]}.${d[2]}`);
+                })
+            : null;
         }
         if (this.info1C8.length) {
-          result[0].rowspan += 1;
-          result[0].info1C8 = Array.from(this.info1C8)
-            .filter((i) => Object.entries(i)[1][1] === result[0].name)
+          result.rowspan += 1;
+          result.info1C8 = Array.from(this.info1C8)
+            .filter((i) => Object.entries(i)[1][1] === result.name)
+            .flat()
             .map((o) => Object.entries(o))
             .flat()
             .filter((k) => parseInt(k[0]))
             .filter((k) => k[1].trim().length > 1);
         }
-
         crew.push(result);
       });
       return crew.flat();
@@ -263,11 +315,17 @@ export default {
 <style lang="scss" scoped>
 @import "@/scss/personalTable.scss";
 @include personal-table;
+// table {
+//   border-collapse: collapse;
+// }
 .car:not(:last-child) {
   margin-bottom: 15px;
 }
 .add-block {
   display: flex;
   justify-content: space-around;
+}
+.test {
+  color: rgba(99, 223, 126, 0.705);
 }
 </style>
