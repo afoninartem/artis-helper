@@ -199,10 +199,12 @@ export default {
         Отдел: null,
         Статус: "ВСЕГО:",
       };
+
       this.statuses.forEach((status) => {
-        lastRow[status.status] = this.datesFilter().filter(
-          (f) => f.status === status.status
-        ).length;
+        // lastRow[status.status] = this.datesFilter().filter(
+        //   (f) => f.status === status.status
+        // ).length;
+        lastRow[status.status] = vacancies.reduce((a, b) => a + b[status.status], 0)
       });
       lastRow["Назначено собеседований"] =
         this.resultSummary.appointedInterviews;

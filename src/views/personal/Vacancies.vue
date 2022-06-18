@@ -3,6 +3,7 @@
     <h1>Вакансии</h1>
     <div class="vacancies__menu">
       <button @click.prevent="addNewVacancy">Новая вакансия</button>
+      <!-- <button @click.prevent="upgrade">upgrade</button> -->
     </div>
     <hr />
     <div
@@ -31,27 +32,72 @@
             <p>
               Руководитель: <span>{{ vacancy.supervisor }}</span>
             </p>
-            <p>
+            <div class="status">
               Статус:
-              <span
-                >{{ vacancy.status }} c
-                {{ new Date(+vacancy.id).toLocaleString("ru-Ru").substring(0, 17) }}</span
-              >
-            </p>
+              <select name="status" @change="setStatus(vacancy.id)">
+                <option>
+                  {{ vacancy.status }}
+                  {{
+                    vacancy.status === "Открыта"
+                      ? new Date(+vacancy.openDate)
+                          .toISOString()
+                          .substring(0, 10)
+                      : vacancy.status === "Пауза" && vacancy.pauseDate
+                      ? new Date(+vacancy.pauseDate)
+                          .toISOString()
+                          .substring(0, 10)
+                      : vacancy.closeDate
+                      ? new Date(+vacancy.closeDate)
+                          .toISOString()
+                          .substring(0, 10)
+                      : null
+                  }}
+                </option>
+                <option
+                  v-for="(status, s) in statuses.filter(
+                    (st) => st !== vacancy.status
+                  )"
+                  :key="s"
+                >
+                  {{ status }}
+                  {{
+                    status === "Открыта"
+                      ? new Date(+vacancy.openDate)
+                          .toISOString()
+                          .substring(0, 10)
+                      : status === "Пауза" && vacancy.pauseDate
+                      ? new Date(+vacancy.pauseDate)
+                          .toISOString()
+                          .substring(0, 10)
+                      : vacancy.closeDate
+                      ? new Date(+vacancy.closeDate)
+                          .toISOString()
+                          .substring(0, 10)
+                      : null
+                  }}
+                </option>
+              </select>
+            </div>
             <p>
               Осталось нанять: <span>{{ leftToHire(vacancy.id) }}</span>
             </p>
-          </div>
-          <div class="menu-block">
-            <p>
-              <a :href="vacancy.link" target="_blank"
-                ><img
-                  src="../../assets/personal/hh_logo.png"
-                  height="35"
-                  alt="hh.ru"
-              /></a>
-            </p>
-            <p @click.prevent="addNewCandidate(vacancy.id)"><AddCandidate /></p>
+            <div class="comment">
+              <p>Комментарий:</p>
+              <textarea name="" id="" cols="10" rows="2"></textarea>
+            </div>
+            <div class="menu-block">
+              <p>
+                <a :href="vacancy.link" target="_blank"
+                  ><img
+                    src="../../assets/personal/hh_logo.png"
+                    height="35"
+                    alt="hh.ru"
+                /></a>
+              </p>
+              <p @click.prevent="addNewCandidate(vacancy.id)">
+                <AddCandidate />
+              </p>
+            </div>
           </div>
         </li>
       </ul>
@@ -72,9 +118,25 @@ export default {
     AddCandidate,
   },
   data() {
-    return {};
+    return {
+      statuses: ["Открыта", "Пауза", "Закрыта"],
+    };
   },
   methods: {
+    // async upgrade() {
+    //   await this.$store.dispatch("moderateVacancies");
+    //   await this.$store.dispatch("updateVacanciesDate");
+    //   await this.$store.dispatch("setActualVacancies");
+    // },
+    async setStatus(id) {
+      const status = event.target.value;
+      await this.$store.dispatch("updateVacancyStatus", {
+        status: status.split(" ")[0],
+        vacancyID: id,
+      });
+      await this.$store.dispatch("updateVacanciesDate");
+      await this.$store.dispatch("setActualVacancies");
+    },
     async addNewVacancy() {
       await this.$store.dispatch("openAddVacancyPopup");
     },
@@ -143,9 +205,15 @@ export default {
         .info-block {
           display: flex;
           justify-content: space-between;
+          border: 1px solid red;
+          .status {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+          }
           p {
             width: 300px;
-            text-align: left;
+            text-align: center;
             display: flex;
             flex-direction: column;
             align-items: center;

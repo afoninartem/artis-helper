@@ -73,6 +73,9 @@
             required
           />
 
+          <label for="comment">Комментарий</label>
+          <textarea name="comment" id="comment" cols="20" rows="2"></textarea>
+
           <label for="link">Ссылка на hh.ru:</label>
           <input
             type="text"
