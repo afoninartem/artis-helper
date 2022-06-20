@@ -109,16 +109,5 @@
     // -webkit-border-bottom-right-radius:5px; /* Saf3-4 */
   }
 
-  tbody {
-    border: 2px solid black;
-    box-shadow: 0 0 0 2px black;
-  }
-
-
-
-  tbody:nth-child(2n+1) > tr > td {
-    background: #ccc;
-  }
-
 
 }

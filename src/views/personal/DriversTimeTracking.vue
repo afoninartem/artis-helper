@@ -171,7 +171,7 @@ export default {
       // console.log(date, driver)
       if (!driver.info1C7 || !driver.info1C8) return;
       const redBG = "background: rgba(225, 100, 100, 0.7)";
-      const greenBG = "background: rgba(99, 223, 126, 0.7)"
+      const greenBG = "background: rgba(99, 223, 126, 0.7)";
       // const result = { service: null, info1C7: null, info1C8: null };
       const service = this.count(
         driver.sheduleStart,
@@ -190,7 +190,7 @@ export default {
           )
         : null;
       const allGood = service && info1C7 && info1C8;
-      const noData = !service && !info1C7 && !info1C8
+      const noData = !service && !info1C7 && !info1C8;
       if (noData) return;
       return allGood ? greenBG : redBG;
     },
@@ -315,9 +315,14 @@ export default {
 <style lang="scss" scoped>
 @import "@/scss/personalTable.scss";
 @include personal-table;
-// table {
-//   border-collapse: collapse;
-// }
+tbody {
+  border: 2px solid black;
+  box-shadow: 0 0 0 2px black;
+}
+
+tbody:nth-child(2n + 1) > tr > td {
+  background: #ccc;
+}
 .car:not(:last-child) {
   margin-bottom: 15px;
 }
