@@ -81,22 +81,23 @@
             <p>
               Осталось нанять: <span>{{ leftToHire(vacancy.id) }}</span>
             </p>
-            <div class="comment">
-              <p>Комментарий:</p>
-              <textarea name="" id="" cols="10" rows="2"></textarea>
+            <div class="comment" @click.prevent="openVacancyCommentPopup(vacancy.id)">
+              <p v-if="vacancy.comment">Комментарий:</p>
+              <p v-if="vacancy.comment">{{ vacancy.comment }}</p>
+              <p v-if="!vacancy.comment">Комметария нет</p>
             </div>
             <div class="menu-block">
-              <p>
+              <div>
                 <a :href="vacancy.link" target="_blank"
                   ><img
                     src="../../assets/personal/hh_logo.png"
                     height="35"
                     alt="hh.ru"
                 /></a>
-              </p>
-              <p @click.prevent="addNewCandidate(vacancy.id)">
+              </div>
+              <div @click.prevent="addNewCandidate(vacancy.id)">
                 <AddCandidate />
-              </p>
+              </div>
             </div>
           </div>
         </li>
@@ -128,6 +129,9 @@ export default {
     //   await this.$store.dispatch("updateVacanciesDate");
     //   await this.$store.dispatch("setActualVacancies");
     // },
+    async openVacancyCommentPopup(id) {
+      await this.$store.dispatch("openChangeCommentPopupVisibility", id)
+    },
     async setStatus(id) {
       const status = event.target.value;
       await this.$store.dispatch("updateVacancyStatus", {
@@ -196,16 +200,17 @@ export default {
       gap: 10px;
       margin: 0 auto;
       li {
-        width: 100%;
-        padding: 0.5rem 1rem;
-        border: 1px solid #ccc;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
+        // width: 100%;
+        // padding: 0.5rem 1rem;
+        // border: 1px solid #ccc;
+        // display: flex;
+        // justify-content: space-between;
+        // align-items: center;
         .info-block {
           display: flex;
           justify-content: space-between;
-          border: 1px solid red;
+          border: 1px solid #ccc;
+          padding: 0.5rem 1rem;
           .status {
             display: flex;
             flex-direction: column;
@@ -222,17 +227,23 @@ export default {
               font-weight: bold;
             }
           }
-        }
-        .menu-block {
-          p {
-            cursor: pointer;
-          }
-          p a {
-            &:hover {
-              background: none;
+          .menu-block {
+            // margin-left: auto;
+            // display: flex;
+            // flex-direction: column;
+            // align-items: flex-end;
+            div {
+              cursor: pointer;
+              padding: 5px 0
+            }
+            div a {
+              &:hover {
+                background: none;
+              }
             }
           }
         }
+
         // p {
         //   width: 300px;
         //   text-align: left;

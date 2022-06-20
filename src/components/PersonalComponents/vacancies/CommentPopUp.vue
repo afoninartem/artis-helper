@@ -30,6 +30,8 @@ export default {
   data() {
     return {
       newComment: null,
+      candidateID: false,
+      vacancyID: false
     };
   },
   computed: {
