@@ -316,7 +316,6 @@ export default {
 @import "@/scss/personalTable.scss";
 @include personal-table;
 tbody {
-  border: 2px solid black;
   box-shadow: 0 0 0 2px black;
 }
 

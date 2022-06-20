@@ -5,14 +5,14 @@
       <AddTimeTrackSenesysData v-if="!senesys" />
       <div class="btn-block">
         <button
-          v-for="btn, i in this.buttons"
+          v-for="(btn, i) in this.buttons"
           :key="`btn-${i}`"
           @click.prevent="showHide"
         >
           {{ btn.txt }}
         </button>
       </div>
-       <xlsx-workbook v-if="senesys">
+      <xlsx-workbook v-if="senesys">
         <xlsx-sheet
           :collection="sheet.data"
           v-for="sheet in sheets"
@@ -31,7 +31,7 @@
           <th v-for="(head, i) in header" :key="`title-${i}`">{{ head }}</th>
         </tr>
       </thead>
-      <tbody 
+      <tbody
         v-for="(department, i) in finalData"
         :key="`department-${i}`"
         class="department"
@@ -40,7 +40,8 @@
           v-for="(employee, i) in department.employees"
           :key="`employee-${i}`"
         >
-          <td @dblclick.prevent="deptFilter"
+          <td
+            @dblclick.prevent="deptFilter"
             v-for="(data, i) in employee"
             :key="`data-${i}`"
             :style="{ color: data < 0 ? `red` : `black` }"
@@ -86,28 +87,36 @@ export default {
   },
   computed: {
     dataToSave() {
-      return this.finalData.map(department => {
-        return department.employees
-      }).flat();
+      return this.finalData
+        .map((department) => {
+          return department.employees;
+        })
+        .flat();
     },
     finalData() {
       const btnFilter = this.buttons.map((btn) => btn.txt);
       const colFilter = Object.entries(this.columns)
         .filter((el) => !el[1])
         .map((arr) => arr[0]);
-      const final = this.senesys.filter(d => this.departmentToFilter ? d.department === this.departmentToFilter : d.department).map((d) => {
-        return {
-          department: d.department,
-          employees: d.employees
-            .map((e) =>
-              Object.entries(e).filter(
-                (key) =>
-                  !colFilter.includes(key[0]) && !btnFilter.includes(key[0])
+      const final = this.senesys
+        .filter((d) =>
+          this.departmentToFilter
+            ? d.department === this.departmentToFilter
+            : d.department
+        )
+        .map((d) => {
+          return {
+            department: d.department,
+            employees: d.employees
+              .map((e) =>
+                Object.entries(e).filter(
+                  (key) =>
+                    !colFilter.includes(key[0]) && !btnFilter.includes(key[0])
+                )
               )
-            )
-            .map((employee) => Object.fromEntries(employee)),
-        };
-      });
+              .map((employee) => Object.fromEntries(employee)),
+          };
+        });
       return final;
     },
     columns() {
@@ -145,9 +154,10 @@ export default {
   },
   methods: {
     deptFilter(event) {
-      console.log(event.target.parentElement.childNodes[3].innerText)
-      this.departmentToFilter =  this.departmentToFilter ? null : event.target.parentElement.childNodes[3].innerText 
-
+      console.log(event.target.parentElement.childNodes[3].innerText);
+      this.departmentToFilter = this.departmentToFilter
+        ? null
+        : event.target.parentElement.childNodes[3].innerText;
     },
     showHide(event) {
       const txt = event.target.innerText;
