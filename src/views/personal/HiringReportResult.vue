@@ -29,7 +29,7 @@
           <th v-for="(head, h) in header" :key="h">{{ head }}</th>
         </tr>
         <tr>
-          <th v-for="summary, s in tableSummary" :key="s">{{summary}}</th>
+          <th v-for="(summary, s) in tableSummary" :key="s">{{ summary }}</th>
         </tr>
       </thead>
       <tbody>
@@ -161,9 +161,9 @@ export default {
   computed: {
     tableSummary() {
       const res = this.downloadXLSX[this.downloadXLSX.length - 1];
-      delete res["Назначено собеседований"]
-      delete res["Проведено собеседований"]
-      return res
+      delete res["Назначено собеседований"];
+      delete res["Проведено собеседований"];
+      return res;
     },
     downloadXLSX() {
       let vacanciesQuan = 0;
@@ -204,7 +204,10 @@ export default {
         // lastRow[status.status] = this.datesFilter().filter(
         //   (f) => f.status === status.status
         // ).length;
-        lastRow[status.status] = vacancies.reduce((a, b) => a + b[status.status], 0)
+        lastRow[status.status] = vacancies.reduce(
+          (a, b) => a + b[status.status],
+          0
+        );
       });
       lastRow["Назначено собеседований"] =
         this.resultSummary.appointedInterviews;
@@ -244,20 +247,35 @@ export default {
       const start = new Date(new Date(this.dates.minDate).getTime())
         .toISOString()
         .substring(0, 10);
-      const end = new Date(this.dates.maxDate).toISOString().substring(0, 10);
-      
+      const end = new Date(new Date(this.dates.maxDate).getTime())
+        .toISOString()
+        .substring(0, 10);
+
       const appointedInterviews = Array.from(this.candidates).filter(
         (candidate) =>
-          candidate.statuslist.some((status) =>
-            this.interviewStatus.includes(status.status) && new Date(status.datetime).toISOString().substring(0, 10) >= start && new Date(status.datetime).toISOString().substring(0, 10) <= end
+          candidate.statuslist.some(
+            (status) =>
+              this.interviewStatus.includes(status.status) &&
+              new Date(status.datetime).toISOString().substring(0, 10) >=
+                start &&
+              new Date(status.datetime).toISOString().substring(0, 10) <= end
           )
       ).length;
 
       const conductedInterviews = Array.from(this.candidates).filter(
         (candidate) =>
-          candidate.statuslist.some((status) =>
-          this.interviewStatus.includes(status.status) && new Date(status.datetime).toISOString().substring(0, 10) >= start && new Date(status.datetime).toISOString().substring(0, 10) <= end
-          ) && !candidate.statuslist.some(status => status.status.includes("до собеседования") && status.updateDate > 0)
+          candidate.statuslist.some(
+            (status) =>
+              this.interviewStatus.includes(status.status) &&
+              new Date(status.datetime).toISOString().substring(0, 10) >=
+                start &&
+              new Date(status.datetime).toISOString().substring(0, 10) <= end
+          ) &&
+          !candidate.statuslist.some(
+            (status) =>
+              status.status.includes("до собеседования") &&
+              status.updateDate > 0
+          )
       ).length;
 
       return {
@@ -283,6 +301,6 @@ export default {
 @import "@/scss/personalTable.scss";
 @include personal-table;
 table {
-  font-size: 14px
+  font-size: 14px;
 }
 </style>

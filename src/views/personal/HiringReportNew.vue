@@ -6,9 +6,6 @@
         <input type="date" name="start" id="start" v-model="dates.minDate" />
         <input type="date" name="end" id="end" v-model="dates.maxDate" />
         <button @click.prevent="defaultDates">Сбросить</button>
-        <!-- <button @click.prevent="addStatusList">
-          Добавить список статусов всем кандидатам
-        </button> -->
       </form>
     </div>
     <table>
@@ -183,35 +180,13 @@ export default {
         bgColor: bg,
       });
     },
-    async addStatusList() {
-      // const candidates = this.candidates;
-      // if (candidates) {
-      //   const result = candidates.map(candidate => {
-      //      candidate.statuslist = this.candidateStatusList.map(status => {
-      //        return {
-      //          status: status.status,
-      //          datetime: status.status === candidate.status ? candidate.datetime : null,
-      //        }
-      //      })
-      //      return candidate
-      //   })
-      return await this.$store.dispatch("addStatusList");
-      // }
-      // return null
-    },
     async changeComment(id) {
-      // console.log(id)
-      return await this.$store.dispatch("openChangeCommentPopupVisibility", id);
+      return await this.$store.dispatch("openChangeCommentPopupVisibility", {
+        id,
+        type: "candidate",
+      });
     },
-    async changeStatus(payload) {
-      payload.newStatus = this.$refs.status[payload.index].value;
-      await this.$store.dispatch("changeCandidateStatus", payload);
-      this.$forceUpdate();
-      // await this.$store.dispatch("updateVacanciesDate");
-      // await this.$store.dispatch("setActualVacancies");
-      // await this.$store.dispatch("updateCandidatesDate");
-      // await this.$store.dispatch("setActualCandidates");
-    },
+
     defaultDates() {
       this.dates.minDate = this.dates.defaultMinDate;
       this.dates.maxDate = this.dates.defaultMaxDate;
@@ -249,20 +224,37 @@ export default {
     candidates() {
       return this.$store.getters.getActualStates.candidates
         ? Array.from(this.$store.getters.getActualStates.candidates)
-            .map(candidate => {
-              if (candidate.status === "2-й этап собеседования" && candidate.statuslist.some(s => s.status === "Собеседование" && s.updateDate > 0) && candidate.statuslist.some(s => s.status === "2-й этап собеседования" && s.updateDate > 0)) {
+            .map((candidate) => {
+              if (
+                candidate.status === "2-й этап собеседования" &&
+                candidate.statuslist.some(
+                  (s) => s.status === "Собеседование" && s.updateDate > 0
+                ) &&
+                candidate.statuslist.some(
+                  (s) =>
+                    s.status === "2-й этап собеседования" && s.updateDate > 0
+                )
+              ) {
                 const candidate1 = Object.assign({}, candidate);
                 const candidate2 = Object.assign({}, candidate);
-                candidate1.statuslist = Array.from(candidate.statuslist).filter(s => s.status !== "2-й этап собеседования")
-                candidate2.statuslist = Array.from(candidate.statuslist).filter(s => s.status !== "Собеседование")
+                candidate1.statuslist = Array.from(candidate.statuslist).filter(
+                  (s) => s.status !== "2-й этап собеседования"
+                );
+                candidate2.statuslist = Array.from(candidate.statuslist).filter(
+                  (s) => s.status !== "Собеседование"
+                );
                 candidate1.name = candidate.name + " (1)";
                 candidate2.name = candidate.name + " (2)";
-                candidate1.datetime = Array.from(candidate.statuslist).filter(s => s.status === "Собеседование")[0].datetime
-                candidate1.status = Array.from(candidate.statuslist).filter(s => s.status === "Собеседование")[0].status
+                candidate1.datetime = Array.from(candidate.statuslist).filter(
+                  (s) => s.status === "Собеседование"
+                )[0].datetime;
+                candidate1.status = Array.from(candidate.statuslist).filter(
+                  (s) => s.status === "Собеседование"
+                )[0].status;
                 // console.log(candidate1, candidate2)
-                return [candidate1, candidate2]
+                return [candidate1, candidate2];
               }
-              return candidate
+              return candidate;
             })
             .flat()
             .sort(

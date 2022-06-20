@@ -105,6 +105,7 @@
     </div>
     <VacanciesPopUp />
     <CandidatePopUp />
+    <CommentPopUp />
   </div>
 </template>
 
@@ -112,11 +113,13 @@
 import VacanciesPopUp from "@/components/PersonalComponents/vacancies/VacanciesPopUp.vue";
 import CandidatePopUp from "@/components/PersonalComponents/vacancies/CandidatePopUp.vue";
 import AddCandidate from "@/components/PersonalComponents/vacancies/AddCandidate.vue";
+import CommentPopUp from "@/components/PersonalComponents/vacancies/CommentPopUp.vue";
 export default {
   components: {
     VacanciesPopUp,
     CandidatePopUp,
     AddCandidate,
+    CommentPopUp
   },
   data() {
     return {
@@ -124,13 +127,8 @@ export default {
     };
   },
   methods: {
-    // async upgrade() {
-    //   await this.$store.dispatch("moderateVacancies");
-    //   await this.$store.dispatch("updateVacanciesDate");
-    //   await this.$store.dispatch("setActualVacancies");
-    // },
     async openVacancyCommentPopup(id) {
-      await this.$store.dispatch("openChangeCommentPopupVisibility", id)
+      await this.$store.dispatch("openChangeCommentPopupVisibility", {id, type: "vacancy"})
     },
     async setStatus(id) {
       const status = event.target.value;
@@ -242,6 +240,10 @@ export default {
               }
             }
           }
+        }
+
+        .comment {
+          cursor: pointer;
         }
 
         // p {

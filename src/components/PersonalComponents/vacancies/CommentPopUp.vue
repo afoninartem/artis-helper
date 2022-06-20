@@ -1,10 +1,10 @@
 <template>
   <div class="comment-popup" v-if="show">
     <div class="comment-popup__background">
-      <div class="comment-popup__content">
-        <h2 v-if="candidate.comment">Старый комментарий:</h2>
-        <h2 v-if="!candidate.comment">Комментарий отсутствует</h2>
-        <p v-if="candidate.comment">{{ candidate.comment }}</p>
+      <div class="comment-popup__content" v-if="object">
+        <h2 v-if="object.comment">Старый комментарий:</h2>
+        <h2 v-if="!object.comment">Комментарий отсутствует</h2>
+        <p v-if="object.comment">{{ object.comment }}</p>
         <h2>Новый комментарий:</h2>
         <textarea
           name="new"
@@ -16,7 +16,7 @@
         <div class="btn-block">
           <button @click.prevent="updateComment">Сохранить комментарий</button>
           <button @click.prevent="close">Отмена</button>
-          <button @click.prevent="deleteCandidate" v-if="showDeleteBtn">
+          <button @click.prevent="deleteObject" v-if="showDeleteBtn">
             Удалить кандидата
           </button>
         </div>
@@ -30,8 +30,11 @@ export default {
   data() {
     return {
       newComment: null,
-      candidateID: false,
-      vacancyID: false
+      commentType: null,
+      // object: null,
+
+      // candidateID: false,
+      // vacancyID: false
     };
   },
   computed: {
@@ -46,8 +49,25 @@ export default {
       const candidates = this.$store.getters.getActualStates.candidates;
       return candidates.filter((candidate) => candidate.candidateID === id)[0];
     },
+    vacancy() {
+      const id = this.$store.getters.getCurrentVacancyID;
+      const vacancies = this.$store.getters.getActualStates.vacancies;
+      return vacancies.filter((vacancy) => vacancy.id === id)[0];
+    },
+    object() {
+      const commentType = this.$store.getters.getCommentType;
+      this.setCommentType(commentType);
+      return commentType === `candidate`
+        ? this.candidate
+        : commentType === `vacancy`
+        ? this.vacancy
+        : null;
+    },
   },
   methods: {
+    setCommentType(str) {
+      this.commentType = str;
+    },
     async close() {
       this.newComment = null;
       return await this.$store.dispatch("closeChangeCommentPopupVisibility");
@@ -64,7 +84,7 @@ export default {
       await this.$store.dispatch("setActualCandidates");
       return await this.$store.dispatch("closeChangeCommentPopupVisibility");
     },
-    async deleteCandidate() {
+    async deleteObject() {
       const id = this.$store.getters.getCurrentCandidateID;
       await this.$store.dispatch("closeChangeCommentPopupVisibility");
       await this.$store.dispatch("deleteCandidate", id);
