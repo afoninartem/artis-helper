@@ -1,5 +1,5 @@
 <template>
-  <div class="vacancies" v-if="vacancies">
+  <div class="vacancies" v-if="vacancies" :key="componentKey">
     <h1>Вакансии</h1>
     <div class="vacancies__menu">
       <button @click.prevent="addNewVacancy">Новая вакансия</button>
@@ -34,7 +34,7 @@
             </p>
             <div class="status">
               Статус:
-              <select name="status" @change="setStatus(vacancy.id)">
+              <select name="status" @change="setStatus(vacancy.id, i)">
                 <option>
                   {{ vacancy.status }}
                   {{
@@ -81,7 +81,10 @@
             <p>
               Осталось нанять: <span>{{ leftToHire(vacancy.id) }}</span>
             </p>
-            <div class="comment" @click.prevent="openVacancyCommentPopup(vacancy.id)">
+            <div
+              class="comment"
+              @click.prevent="openVacancyCommentPopup(vacancy.id)"
+            >
               <p v-if="vacancy.comment">Комментарий:</p>
               <p v-if="vacancy.comment">{{ vacancy.comment }}</p>
               <p v-if="!vacancy.comment">Комметария нет</p>
@@ -119,16 +122,20 @@ export default {
     VacanciesPopUp,
     CandidatePopUp,
     AddCandidate,
-    CommentPopUp
+    CommentPopUp,
   },
   data() {
     return {
       statuses: ["Открыта", "Пауза", "Закрыта"],
+      componentKey: 0,
     };
   },
   methods: {
     async openVacancyCommentPopup(id) {
-      await this.$store.dispatch("openChangeCommentPopupVisibility", {id, type: "vacancy"})
+      await this.$store.dispatch("openChangeCommentPopupVisibility", {
+        id,
+        type: "vacancy",
+      });
     },
     async setStatus(id) {
       const status = event.target.value;
@@ -138,6 +145,7 @@ export default {
       });
       await this.$store.dispatch("updateVacanciesDate");
       await this.$store.dispatch("setActualVacancies");
+      this.componentKey += 1;
     },
     async addNewVacancy() {
       await this.$store.dispatch("openAddVacancyPopup");
@@ -232,7 +240,7 @@ export default {
             // align-items: flex-end;
             div {
               cursor: pointer;
-              padding: 5px 0
+              padding: 5px 0;
             }
             div a {
               &:hover {

@@ -84,7 +84,7 @@ export default {
 		},
 		//COMMENT
 		openChangeCommentPopupVisibility(state, payload) {
-      console.log(payload)
+      // console.log(payload)
 			state.changeCommentPopupVisibility = true;
 			state.commentType = payload.type;
 			payload.type === "candidate"
@@ -93,7 +93,7 @@ export default {
 				? (state.currentVacancyID = payload.id)
 				: null;
         
-        console.log(state)
+        // console.log(state)
 		},
 		closeChangeCommentPopupVisibility(state) {
 			state.changeCommentPopupVisibility = false;
@@ -130,17 +130,17 @@ export default {
 			// await db.collection(`personal/hiring/vacancies/${payload.id}/candidates`)
 		},
 		async updateVacancyStatus(context, payload) {
-			console.log(payload);
-			const test = {};
-			test.status = payload.status;
+			// console.log(payload);
+			// const test = {};
+			// test.status = payload.status;
 			const statusDate =
 				payload.status === "Пауза"
 					? "pauseDate"
 					: payload.status === "Закрыта"
 					? "closeDate"
-					: null;
-			test[statusDate] = Date.now().toString();
-			console.log(test);
+					: "openDate";
+			// test[statusDate] = Date.now().toString();
+			// console.log(test);
 			return await db
 				.collection("personal/hiring/vacancies")
 				.doc(payload.vacancyID)
@@ -218,6 +218,12 @@ export default {
 				.doc(payload.id)
 				.update({ comment: payload.comment });
 		},
+		async changeVacancyComment(context, payload) {
+			await db
+				.collection("personal/hiring/vacancies")
+				.doc(payload.id)
+				.update({ comment: payload.comment });
+		},
 		async openStatusPopup(context, payload) {
 			return await context.commit("openStatusPopup", payload);
 		},
@@ -227,6 +233,13 @@ export default {
 		async deleteCandidate(context, payload) {
 			await db
 				.collection("personal/hiring/candidates")
+				.doc(payload.toString())
+				.delete();
+		},
+		async deleteVacancy(context, payload) {
+      console.log(payload)
+			await db
+				.collection("personal/hiring/vacancies")
 				.doc(payload.toString())
 				.delete();
 		},

@@ -171,7 +171,9 @@ export default {
       // console.log(date, driver)
       if (!driver.info1C7 || !driver.info1C8) return;
       const redBG = "background: rgba(225, 100, 100, 0.7)";
+      const redBGredColor = "background: rgba(225, 100, 100, 0.7); color: red"
       const greenBG = "background: rgba(99, 223, 126, 0.7)";
+      const orangeBG = "background: rgba(245, 215, 83, 0.7)"
       // const result = { service: null, info1C7: null, info1C8: null };
       const service = this.count(
         driver.sheduleStart,
@@ -190,9 +192,11 @@ export default {
           )
         : null;
       const allGood = service && info1C7 && info1C8;
+      const sheduleButNoFact = service && info1C8 && !info1C7;
+      const factButNoShedule = !service && !info1C8 && info1C7;
       const noData = !service && !info1C7 && !info1C8;
       if (noData) return;
-      return allGood ? greenBG : redBG;
+      return allGood ? greenBG : sheduleButNoFact ? orangeBG : factButNoShedule ? redBGredColor : redBG
     },
     daySpec(month, year) {
       const lastDay = this.numberOfDays(month, year);
@@ -330,6 +334,6 @@ tbody:nth-child(2n + 1) > tr > td {
   justify-content: space-around;
 }
 .test {
-  color: rgba(99, 223, 126, 0.705);
+  color: rgba(245, 215, 83, 0.705);
 }
 </style>

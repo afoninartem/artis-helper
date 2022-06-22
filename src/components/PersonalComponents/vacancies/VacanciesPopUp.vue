@@ -14,14 +14,6 @@
           />
 
           <label for="department">Подразделение (отдел):</label>
-          <!-- <input
-            type="text"
-            name="department"
-            id="department"
-            placeholder="Подразделение (отдел)"
-            v-model.trim="newVacancy.department"
-            required
-          /> -->
           <select
             name="department"
             id="department"
@@ -33,14 +25,6 @@
           </select>
 
           <label for="supervisor">Руководитель:</label>
-          <!-- <input
-            type="text"
-            name="supervisor"
-            id="supervisor"
-            placeholder="Руководитель"
-            v-model.trim="newVacancy.supervisor"
-            required
-          /> -->
           <select
             name="supervisor"
             id="supervisor"
@@ -74,7 +58,13 @@
           />
 
           <label for="comment">Комментарий</label>
-          <textarea name="comment" id="comment" cols="20" rows="2"></textarea>
+          <textarea
+            name="comment"
+            id="comment"
+            cols="20"
+            rows="2"
+            v-model="newVacancy.comment"
+          ></textarea>
 
           <label for="link">Ссылка на hh.ru:</label>
           <input
@@ -105,6 +95,7 @@ export default {
         quantity: 1,
         supervisor: "",
         link: "",
+        comment: "",
       },
     };
   },
@@ -113,6 +104,14 @@ export default {
       await this.$store.dispatch("addVacancy", this.newVacancy);
       await this.$store.dispatch("updateVacanciesDate");
       await this.$store.dispatch("setActualVacancies");
+      this.newVacancy = {
+        title: "",
+        status: "Открыта",
+        quantity: 1,
+        supervisor: "",
+        link: "",
+        comment: "",
+      };
       return await this.$store.dispatch("closeAddVacancyPopup");
     },
     async closePopup() {

@@ -69,7 +69,7 @@
                 >
                   {{ driver.position }}
                 </td>
-                <td v-for="(day, d) in header" :key="`date-${d}`">
+                <td v-for="(day, d) in header" :key="`date-${d}`" >
                   {{
                     count(
                       driver.sheduleStart,

@@ -80,12 +80,12 @@ export default new Vuex.Store({
             title: "Справочник ОС",
             permissions: ["service", "personal"],
           },
-          {
-            name: "service-calendar",
-            link: "/service-calendar",
-            title: "Календарь",
-            permissions: ["service", "personal"],
-          },
+          // {
+          //   name: "service-calendar",
+          //   link: "/service-calendar",
+          //   title: "Календарь",
+          //   permissions: ["service", "personal"],
+          // },
         ],
       },
       {

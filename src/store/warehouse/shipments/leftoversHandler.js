@@ -74,7 +74,7 @@ export default {
 							invalidLeftovers.push(material);
 						//check for minimal leftovers
 						if (
-							(material.name.includes("Образец фас") && material.left < 11) ||
+							(material.name.includes("Образец фас") && material.left < 5) ||
 							(minimalLeftovers.some((m) => m.name === material.name) &&
 								minimalLeftovers.filter((m) => m.name === material.name)[0]
 									.minimalLeftover >= material.left)

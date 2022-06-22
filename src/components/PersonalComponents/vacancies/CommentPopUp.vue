@@ -16,8 +16,17 @@
         <div class="btn-block">
           <button @click.prevent="updateComment">Сохранить комментарий</button>
           <button @click.prevent="close">Отмена</button>
-          <button @click.prevent="deleteObject" v-if="showDeleteBtn">
-            Удалить кандидата
+          <button
+            @click.prevent="deleteCandidate"
+            v-if="showDeleteBtn && commentType === `candidate`"
+          >
+            {{ deleteButtonText }}
+          </button>
+          <button
+            @click.prevent="deleteVacancy"
+            v-if="showDeleteBtn && commentType === `vacancy`"
+          >
+            {{ deleteButtonText }}
           </button>
         </div>
       </div>
@@ -32,12 +41,16 @@ export default {
       newComment: null,
       commentType: null,
       // object: null,
-
-      // candidateID: false,
-      // vacancyID: false
     };
   },
   computed: {
+    deleteButtonText() {
+      return this.commentType === `candidate`
+        ? `Удалить кандидата`
+        : this.commentType === `vacancy`
+        ? `Удалить вакансию`
+        : null;
+    },
     show() {
       return this.$store.getters.getChangeCommentPopupVisibility;
     },
@@ -73,23 +86,45 @@ export default {
       return await this.$store.dispatch("closeChangeCommentPopupVisibility");
     },
     async updateComment() {
+      this.commentType === `candidate`
+        ? await this.updateCandidateComment()
+        : this.commentType === `vacancy`
+        ? await this.updateVacancyComment()
+        : null;
+      return await this.close();
+    },
+    async updateCandidateComment() {
       const id = this.$store.getters.getCurrentCandidateID;
       await this.$store.dispatch("changeCandidateComment", {
         id,
         comment: this.newComment,
       });
-      // await this.$store.dispatch("updateVacanciesDate");
-      // await this.$store.dispatch("setActualVacancies");
       await this.$store.dispatch("updateCandidatesDate");
       await this.$store.dispatch("setActualCandidates");
-      return await this.$store.dispatch("closeChangeCommentPopupVisibility");
     },
-    async deleteObject() {
+    async updateVacancyComment() {
+      const id = this.$store.getters.getCurrentVacancyID;
+      await this.$store.dispatch("changeVacancyComment", {
+        id,
+        comment: this.newComment,
+      });
+      await this.$store.dispatch("updateVacanciesDate");
+      await this.$store.dispatch("setActualVacancies");
+    },
+    async deleteCandidate() {
       const id = this.$store.getters.getCurrentCandidateID;
-      await this.$store.dispatch("closeChangeCommentPopupVisibility");
       await this.$store.dispatch("deleteCandidate", id);
+     await this.close();
       await this.$store.dispatch("updateCandidatesDate");
       await this.$store.dispatch("setActualCandidates");
+    },
+    async deleteVacancy() {
+      console.log("this is vacancy");
+      const id = this.$store.getters.getCurrentVacancyID;
+      await this.$store.dispatch("deleteVacancy", id);
+      await this.close()
+      await this.$store.dispatch("updateVacanciesDate");
+      await this.$store.dispatch("setActualVacancies");
     },
   },
 };
