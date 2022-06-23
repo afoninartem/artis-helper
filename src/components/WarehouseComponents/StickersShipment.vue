@@ -1,8 +1,8 @@
 <template>
   <section class="stickers">
-    <!-- <h1 v-if="Object.keys(stickers).length">Распечатать стикеры</h1> -->
-    <!-- <h1 v-else>Нет заполненных стикеров, вернитесь к отгрузочной таблице</h1> -->
-    <h1>Распечатать стикеры</h1>
+    <h1 v-if="Object.keys(stickers).length">Распечатать стикеры</h1>
+    <h1 v-else>Нет заполненных стикеров, вернитесь к отгрузочной таблице</h1>
+    <!-- <h1>Распечатать стикеры</h1> -->
     <div class="btn-block">
       <button
         class="btn-block__item"

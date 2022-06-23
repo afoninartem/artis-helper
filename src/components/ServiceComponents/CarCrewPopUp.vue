@@ -44,6 +44,7 @@
                 <th
                   v-for="(dayInfo, wd) in daySpec(date.month, date.year)"
                   :key="`weekday-${wd}`"
+                  :style="weekendColor(dayInfo)"
                 >
                   {{ dayInfo.weekday }}
                 </th>
@@ -52,6 +53,7 @@
                 <th
                   v-for="(dayInfo, md) in daySpec(date.month, date.year)"
                   :key="`day-of-month-${md}`"
+                  :style="weekendColor(dayInfo)"
                 >
                   {{ dayInfo.dayOfMonth }}
                 </th>
@@ -69,7 +71,11 @@
                 >
                   {{ driver.position }}
                 </td>
-                <td v-for="(day, d) in header" :key="`date-${d}`" >
+                <td
+                  v-for="(day, d) in header"
+                  :key="`date-${d}`"
+                  :style="weekendColor(day)"
+                >
                   {{
                     count(
                       driver.sheduleStart,
@@ -81,8 +87,9 @@
                 </td>
                 <td
                   class="delete-btn"
+                  title="Удалять двойным кликом"
                   colspan="2"
-                  @click.prevent="
+                  @dblclick.prevent="
                     removeDriverFromCar({
                       driverID: driver.driverID,
                       carID: car.carID,
@@ -135,6 +142,25 @@ export default {
     };
   },
   methods: {
+    weekendColor(day) {
+      // console.log(+day, typeof day)
+      // console.log(day.hasOwnProperty("weekday"))
+      // if (typeof day === "object" && day.hasOwnProperty("weekday"))
+      return typeof day === "object" &&
+        day.weekday &&
+        (day.weekday === "сб" || day.weekday === "вс")
+        ? "background: rgba(225, 100, 100, 0.3)"
+        : new Date(this.date.year, this.date.month, day).toLocaleString(
+            "default",
+            { weekday: "short" }
+          ) === "сб" ||
+          new Date(this.date.year, this.date.month, day).toLocaleString(
+            "default",
+            { weekday: "short" }
+          ) === "вс"
+        ? "background: rgba(225, 100, 100, 0.3)"
+        : null;
+    },
     async close() {
       this.tips = null;
       return await this.$store.dispatch("closeCarCrewPopup");
@@ -177,7 +203,9 @@ export default {
       if (str.length > 2) {
         this.tips =
           this.drivers
-            .filter((driver) => driver.name.toLowerCase().substring(0, str.length).includes(str))
+            .filter((driver) =>
+              driver.name.toLowerCase().substring(0, str.length).includes(str)
+            )
             .slice(0, 4) || null;
       } else {
         this.tips = null;
@@ -194,7 +222,7 @@ export default {
   computed: {
     crew() {
       const driverlist = this.car.crew;
-      console.log()
+      console.log();
       const crew = [];
       Array.from(driverlist).forEach((id) => {
         const driver = this.drivers.filter((d) => d.driverID === id)[0];
@@ -227,9 +255,10 @@ export default {
     },
     drivers() {
       return this.$store.getters.getActualStates.catalogDrivers
-        ? Array.from(this.$store.getters.getActualStates.catalogDrivers).sort(
-            (a, b) => (a.name > b.name ? 1 : b.name > a.name ? -1 : 0)
-          )
+        ? Array.from(this.$store.getters.getActualStates.catalogDrivers)
+        // .sort(
+        //     (a, b) => (a.name > b.name ? 1 : b.name > a.name ? -1 : 0)
+        //   )
         : null;
     },
     car() {

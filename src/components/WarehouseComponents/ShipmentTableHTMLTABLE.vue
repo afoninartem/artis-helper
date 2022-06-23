@@ -117,10 +117,10 @@
           >
             {{ `${sample.name} - ${sample.quan}` }}
           </p>
-          <p v-if="shop.otherMats || shop.samples" style="font-weight: bold">
+          <!-- <p v-if="shop.otherMats || shop.samples" style="font-weight: bold">
             Всего материалов в разделе Другое:
             {{ shop.otherMats ? shop.otherMats.length : 0 + shop.samples ? shop.samples.length : 0 }}
-          </p>
+          </p> -->
         </td>
         <td
           @click.prevent="changeBoxes"

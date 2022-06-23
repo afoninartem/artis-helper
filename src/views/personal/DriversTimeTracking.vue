@@ -324,7 +324,7 @@ tbody {
 }
 
 tbody:nth-child(2n + 1) > tr > td {
-  background: #ccc;
+  background: rgba(204, 204, 204, 0.5);
 }
 .car:not(:last-child) {
   margin-bottom: 15px;
