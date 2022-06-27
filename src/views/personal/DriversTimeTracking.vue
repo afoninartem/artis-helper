@@ -11,7 +11,7 @@
     <hr />
 
     <div class="car" v-for="(car, c) in cars" :key="c">
-      <div class="car-crew-info" v-if="car.crew.length">some summary</div>
+      <!-- <div class="car-crew-info" v-if="car.crew.length">some summary</div> -->
 
       <table v-if="car.crew.length">
         <thead>
@@ -108,7 +108,21 @@
                     k[0].split(" ")[0] === day.dayOfMonth.toString() &&
                     k[0].split(" ")[1].toLowerCase() === day.weekday
                 )
-                  ? "X"
+                  ? driver.info1C8
+                      .filter(
+                        (k) =>
+                          k[0].split(" ")[0] === day.dayOfMonth.toString() &&
+                          k[0].split(" ")[1].toLowerCase() === day.weekday
+                      )[0][1]
+                      .split(" ")[0] === "Я"
+                    ? "X"
+                    : driver.info1C8
+                        .filter(
+                          (k) =>
+                            k[0].split(" ")[0] === day.dayOfMonth.toString() &&
+                            k[0].split(" ")[1].toLowerCase() === day.weekday
+                        )[0][1]
+                        .split(" ")[0]
                   : null
               }}
             </td>
@@ -170,11 +184,11 @@ export default {
     setStyle(date, driver, day) {
       // console.log(date, driver)
       if (!driver.info1C7 || !driver.info1C8) return;
-      const redBG = "background: rgba(225, 100, 100, 0.7)";
-      const redBGredColor = "background: rgba(225, 100, 100, 0.7); color: red"
-      const greenBG = "background: rgba(99, 223, 126, 0.7)";
-      const orangeBG = "background: rgba(245, 215, 83, 0.7)"
-      // const result = { service: null, info1C7: null, info1C8: null };
+      // const redBG = "background: rgba(225, 100, 100, 0.7)";
+      const redBGredColor = "background: rgba(225, 100, 100, 0.7); color: red";
+      // const greenBG = "background: rgba(99, 223, 126, 0.7)";
+      const greenBG = "background: green"
+      const orangeBG = "background: rgba(238, 140, 49, 0.7)";
       const service = this.count(
         driver.sheduleStart,
         driver.sheduleType,
@@ -184,19 +198,40 @@ export default {
       const info1C7 = driver.info1C7
         ? this.compareDates(driver.info1C7, date)
         : null;
-      const info1C8 = driver.info1C8
-        ? driver.info1C8.some(
-            (k) =>
-              k[0].split(" ")[0] === day.dayOfMonth.toString() &&
-              k[0].split(" ")[1].toLowerCase() === day.weekday
-          )
-        : null;
-      const allGood = service && info1C7 && info1C8;
-      const sheduleButNoFact = service && info1C8 && !info1C7;
-      const factButNoShedule = !service && !info1C8 && info1C7;
+      const info1C8 =
+        driver.info1C8 &&
+        driver.info1C8.some(
+          (k) =>
+            k[0].split(" ")[0] === day.dayOfMonth.toString() &&
+            k[0].split(" ")[1].toLowerCase() === day.weekday
+        )
+          ? driver.info1C8
+              .filter(
+                (k) =>
+                  k[0].split(" ")[0] === day.dayOfMonth.toString() &&
+                  k[0].split(" ")[1].toLowerCase() === day.weekday
+              )[0][1]
+              .split(" ")[0]
+          : null;
+
+      //white BG
       const noData = !service && !info1C7 && !info1C8;
-      if (noData) return;
-      return allGood ? greenBG : sheduleButNoFact ? orangeBG : factButNoShedule ? redBGredColor : redBG
+      const allGood = service && info1C7 && info1C8;
+      const vacation = !info1C7 && (info1C8 === "ОТ" || info1C8 === "ДО");
+      const illness = !info1C7 && info1C8 === "Б";
+      const absence = !info1C7 && info1C8 === "Н";
+
+      //red BG and red Text
+      const factButNoShedule = !service && info1C7 && !info1C8;
+
+      //orange BG
+      const sheduleButNoFact = service && info1C8 === "Я" && !info1C7;
+
+      //green BG
+      const vacationWork = (info1C8 === "ОТ" || info1C8 === "ДО") && info1C7
+
+      if (noData || allGood || vacation || illness || absence) return;
+      return factButNoShedule ? redBGredColor : sheduleButNoFact ? orangeBG : vacationWork ? greenBG : null;
     },
     daySpec(month, year) {
       const lastDay = this.numberOfDays(month, year);
@@ -260,8 +295,10 @@ export default {
             .flat()
             .map((o) => Object.entries(o))
             .flat()
-            .filter((k) => parseInt(k[0]))
-            .filter((k) => k[1].trim().length > 1);
+            .filter((k) => k[1][0] !== "В");
+          // console.log(result.info1C8)
+          // .filter((k) => parseInt(k[0]))
+          // .filter((k) => k[1].length > 1);
         }
         crew.push(result);
       });
@@ -334,6 +371,6 @@ tbody:nth-child(2n + 1) > tr > td {
   justify-content: space-around;
 }
 .test {
-  color: rgba(245, 215, 83, 0.705);
+  color: rgba(238, 140, 49, 0.705);
 }
 </style>

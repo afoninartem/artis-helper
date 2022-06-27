@@ -2,7 +2,10 @@
   <div class="catalog" v-if="cars">
     <div class="catalog__cars">
       <h1>Справочник машин</h1>
-      <button @click.prevent="addCar">Добавить машину</button>
+      <div class="menu">
+        <button @click.prevent="addCar">Добавить машину</button>
+        <PrintShedule />
+      </div>
       <table>
         <thead>
           <tr>
@@ -97,6 +100,7 @@ import AddCarPopUp from "@/components/ServiceComponents/AddCarPopUp";
 import CarCrewPopUp from "@/components/ServiceComponents/CarCrewPopUp";
 import AddPositionPopup from "@/components/ServiceComponents/AddPositionPopup";
 import ShedulePopUp from "@/components/ServiceComponents/ShedulePopUp";
+import PrintShedule from "@/components/ServiceComponents/PrintShedule";
 // import AddDriversCatalog from "@/components/PersonalComponents/AddDriversCatalog";
 export default {
   components: {
@@ -104,6 +108,7 @@ export default {
     CarCrewPopUp,
     ShedulePopUp,
     AddPositionPopup,
+    PrintShedule,
     // AddDriversCatalog,
   },
   methods: {
