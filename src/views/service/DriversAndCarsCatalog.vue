@@ -4,8 +4,8 @@
       <h1>Справочник машин</h1>
       <div class="menu">
         <button @click.prevent="addCar">Добавить машину</button>
-        <PrintShedule />
       </div>
+      <PrintShedule />
       <table>
         <thead>
           <tr>

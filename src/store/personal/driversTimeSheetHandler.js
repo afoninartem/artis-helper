@@ -197,11 +197,11 @@ export default {
 							d.position === item["Должность"].toLowerCase()
 					)[0].driverID;
 				} catch (error) {
-					console.log(item);
+					console.log("no driverID: ", item.__EMPTY_1, " - ", item["Должность"]);
 				}
 				const workDays = Object.keys(item)
 					.filter((i) => i !== "Должность" && !i.includes("__EMPTY"))
-					.filter((i) => !item[i].trim());
+					.filter((i) => item[i].trim());
 				return {
 					name: item.__EMPTY_1,
 					position: item["Должность"],
@@ -209,6 +209,7 @@ export default {
 					driverID: driverID,
 				};
 			});
+      // console.log(info1C7)
 			return await commit("add1C7info", info1C7);
 		},
 		async add1C8info_A21(context, payload) {

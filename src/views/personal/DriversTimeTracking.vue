@@ -183,12 +183,12 @@ export default {
   methods: {
     setStyle(date, driver, day) {
       // console.log(date, driver)
-      if (!driver.info1C7 || !driver.info1C8) return;
-      // const redBG = "background: rgba(225, 100, 100, 0.7)";
-      const redBGredColor = "background: rgba(225, 100, 100, 0.7); color: red";
-      // const greenBG = "background: rgba(99, 223, 126, 0.7)";
-      const greenBG = "background: green"
-      const orangeBG = "background: rgba(238, 140, 49, 0.7)";
+      if (!driver.info1C7 || !driver.info1C8 || !this.info1C8_A21 || !this.info1C8_AP || !this.info1C8_DP) return;
+      const redBGredColor =
+        "background: rgba(225, 100, 100, 0.7); color: red; font-weight: bold";
+      const greenBG = "background: rgb(0, 128, 0)";
+      const orangeBG = "background: rgba(255, 69, 0, 1)";
+      const undefinedDataCombination = "background: fuchsia";
       const service = this.count(
         driver.sheduleStart,
         driver.sheduleType,
@@ -216,22 +216,35 @@ export default {
 
       //white BG
       const noData = !service && !info1C7 && !info1C8;
-      const allGood = service && info1C7 && info1C8;
+      const allGood = service && info1C7 && info1C8 === "Я";
       const vacation = !info1C7 && (info1C8 === "ОТ" || info1C8 === "ДО");
       const illness = !info1C7 && info1C8 === "Б";
-      const absence = !info1C7 && info1C8 === "Н";
+      const absence = !info1C7 && info1C8 === "НН" && !service;
 
       //red BG and red Text
       const factButNoShedule = !service && info1C7 && !info1C8;
 
       //orange BG
       const sheduleButNoFact = service && info1C8 === "Я" && !info1C7;
+      const mistake1C8 = service && info1C7 && info1C8 !== "Я"
 
       //green BG
-      const vacationWork = (info1C8 === "ОТ" || info1C8 === "ДО") && info1C7
+      const vacationWork = service && info1C7 && info1C8 === "ОТ";
 
+      // console.log("noData: ", noData, "allGood: ", allGood, "vacation: ", vacation, "illness: ", illness, "absence: ", absence)
+      // console.log("factButNoShedule: ", factButNoShedule, "sheduleButNoFact: ", sheduleButNoFact, "vacationWork: ", vacationWork)
+
+      // console.log((noData || allGood || vacation || illness || absence) && vacationWork)
+      if ((noData || allGood || vacation || illness || absence) && vacationWork) console.log(driver.name, day)
+      if (vacationWork && noData) console.log(driver.name, day)
       if (noData || allGood || vacation || illness || absence) return;
-      return factButNoShedule ? redBGredColor : sheduleButNoFact ? orangeBG : vacationWork ? greenBG : null;
+      return factButNoShedule
+        ? redBGredColor
+        : (sheduleButNoFact || mistake1C8)
+        ? orangeBG
+        : vacationWork
+        ? greenBG
+        : undefinedDataCombination;
     },
     daySpec(month, year) {
       const lastDay = this.numberOfDays(month, year);
@@ -291,7 +304,7 @@ export default {
         if (this.info1C8.length) {
           result.rowspan += 1;
           result.info1C8 = Array.from(this.info1C8)
-            .filter((i) => Object.entries(i)[1][1] === result.name)
+            .filter((i) => Object.entries(i)[1][1].split("  ").join(" ") === result.name)
             .flat()
             .map((o) => Object.entries(o))
             .flat()
@@ -371,6 +384,6 @@ tbody:nth-child(2n + 1) > tr > td {
   justify-content: space-around;
 }
 .test {
-  color: rgba(238, 140, 49, 0.705);
+  color: rgb(255, 69, 0);
 }
 </style>

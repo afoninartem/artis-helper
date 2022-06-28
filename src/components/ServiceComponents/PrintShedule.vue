@@ -1,24 +1,7 @@
 <template>
   <div class="print-shedule">
-    <table>
-      <thead>
-        <tr>
-          <th
-            :colspan="
-              numberOfDays(date.year, date.month) + headerTemplate.length
-            "
-          >
-            {{
-              new Date(date.year, date.month)
-                .toLocaleString("default", {
-                  month: "long",
-                })
-                .toUpperCase()
-            }}
-          </th>
-        </tr>
-      </thead>
-      <tbody class="tbody" v-for="(car, c) in cars" :key="`car-${c}`">
+    <!-- <table>
+      <tbody v-for="(car, c) in cars" :key="`car-${c}`">
         <thead>
           <tr>
             <th
@@ -62,8 +45,88 @@
             <td>
               {{d + 1}}
             </td>
-            <td class="driver-name">{{driver.name}}</td>
-            <!-- <td>{{driver.position}}</td> -->
+            <td ref="driverName">{{driver.name}}</td>
+            <td>{{driver.position}}</td>
+            <td
+              v-for="(day, d) in daySpec(date.month, date.year)"
+              :key="`date-${d}`"
+              :style="weekendColor(day)"
+            >
+              {{
+                count(
+                  driver.sheduleStart,
+                  driver.sheduleType,
+                  driver.sheduleShift,
+                  new Date(date.year, date.month, day.dayOfMonth)
+                )
+              }}
+            </td>
+          </tr>
+        </tbody>
+      </tbody>
+    </table> -->
+    <vue-html2pdf
+      :show-layout="false"
+      :float-layout="true"
+      :enable-download="true"
+      :preview-modal="false"
+      :paginate-elements-by-height="1400"
+      filename="Расписание"
+      :pdf-quality="2"
+      :manual-pagination="false"
+      pdf-format="a4"
+      pdf-orientation="portrait"
+      pdf-content-width="800px"
+      ref="html2Pdf"
+    >
+      <section slot="pdf-content">
+           <table>
+      <tbody v-for="(car, c) in cars" :key="`car-${c}`">
+        <thead>
+          <tr>
+            <th
+            class="car"
+              :colspan="
+                numberOfDays(date.year, date.month) + headerTemplate.length
+              "
+            >
+              {{ car.mark.toUpperCase() }}
+              {{ car.number.toUpperCase() }}
+            </th>
+          </tr>
+          <tr>
+            <th
+              v-for="(ht, t) in headerTemplate"
+              :key="`template-${t}`"
+              rowspan="2"
+            >
+              {{ ht }}
+            </th>
+            <th
+              v-for="(dayInfo, wd) in daySpec(date.month, date.year)"
+              :key="`weekday-${wd}`"
+              :style="weekendColor(dayInfo)"
+            >
+              {{ dayInfo.weekday }}
+            </th>
+          </tr>
+          <tr>
+            <th
+              v-for="(dayInfo, md) in daySpec(date.month, date.year)"
+              :key="`day-of-month-${md}`"
+              :style="weekendColor(dayInfo)"
+            >
+              {{ dayInfo.dayOfMonth }}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="driver, d in crew(car)" :key="`${car.id}-${d}`">
+            <td>
+              {{d + 1}}
+            </td>
+            <td ref="driverName">{{driver.name}}</td>
+            <td>{{driver.position}}</td>
             <td
               v-for="(day, d) in daySpec(date.month, date.year)"
               :key="`date-${d}`"
@@ -82,25 +145,9 @@
         </tbody>
       </tbody>
     </table>
-    <vue-html2pdf
-      :show-layout="false"
-      :float-layout="true"
-      :enable-download="true"
-      :preview-modal="false"
-      :paginate-elements-by-height="1400"
-      filename="Расписание"
-      :pdf-quality="2"
-      :manual-pagination="false"
-      pdf-format="a4"
-      pdf-orientation="portrait"
-      pdf-content-width="800px"
-      ref="html2Pdf"
-    >
-      <section slot="pdf-content">
-        <table></table>
       </section>
     </vue-html2pdf>
-    <button>Печать</button>
+    <button @click.prevent="print">Печать</button>
   </div>
 </template>
 
@@ -112,18 +159,18 @@ export default {
   },
   data() {
     return {
-      headerTemplate: [
-        "#",
-        "ФИО",
-        // "Должность"
-      ],
+      headerTemplate: ["#", "ФИО", "Должность"],
       date: {
         month: null,
         year: null,
       },
+      driverCellWidth: null,
     };
   },
   methods: {
+    print() {
+      this.$refs.html2Pdf.generatePdf()
+    },
     count(sheduleStart, sheduleType, sheduleShift, currDate) {
       const count = require("../../store/service/sheduleCounter");
       return count.default(sheduleStart, sheduleType, sheduleShift, currDate);
@@ -202,19 +249,26 @@ export default {
     await this.$store.dispatch("setActualCatalogCars");
     this.date.year = new Date().getFullYear();
     this.date.month = new Date().getMonth();
+    //driver cells width ↓
+    const cells = this.$refs.driverName;
+    const maxWidth = Math.max(...cells.map((c) => c.clientWidth));
+    cells.forEach((cell) => (cell.style.width = `${maxWidth}px`));
+    //set month instead of name in headerTemplate ↓
+    this.headerTemplate[1] = new Date(this.date.year, this.date.month)
+      .toLocaleString("default", {
+        month: "long",
+      })
+      .toUpperCase();
   },
 };
 </script>
 
 <style lang="scss" scoped>
-// @import "@/scss/personalTable.scss";
-// @include personal-table;
+@import "@/scss/personalTable.scss";
+@include personal-table;
+
 .car {
   height: 50px;
-  font-size: 36px
+  font-size: 36px;
 }
-.driver-name {
-  width: 330px;
-}
-
 </style>
