@@ -87,6 +87,16 @@ const routes = [
   },
   // MAINTENANCE ↓
   {
+    path: "/komus-report",
+    name: "KomusReport",
+    meta: {
+      layout: "MainLayout",
+      auth: true,
+      permissions: ["admin", "maintenance"],
+    },
+    component: () => import("../views/maintenance/KomusReport.vue"),
+  },
+  {
     path: "/dinners",
     name: "Dinners",
     meta: {

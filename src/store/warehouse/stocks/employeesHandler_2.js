@@ -7,6 +7,7 @@ export default {
   },
 	actions: {
 		async giftsHandler_2(context, payload) {
+      console.log(payload)
 			const extra = {};
 			Array.from(payload)
 				.filter((el) => el["ТЦ"]).filter(el => el["ТЦ"] !== " ")

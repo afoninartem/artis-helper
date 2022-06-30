@@ -67,9 +67,9 @@
     </table> -->
     <vue-html2pdf
       :show-layout="false"
-      :float-layout="true"
+      :float-layout="false"
       :enable-download="true"
-      :preview-modal="false"
+      :preview-modal="true"
       :paginate-elements-by-height="1400"
       filename="Расписание"
       :pdf-quality="2"

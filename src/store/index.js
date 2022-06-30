@@ -32,6 +32,7 @@ import timetrackingHandler from "./personal/timetrackingHandler";
 import employeesForDinnersHandler from "./maintenance/employeesForDinnersHandler";
 import senesysHandler from "./maintenance/senesysHandler";
 import freeEaters from "./maintenance/freeEaters";
+import komusCompareReportHandler from "./maintenance/komusCompareReportHandler";
 import AddPriceItemsDetailsByName from "./marketing/price/AddPriceItemsDetailsByName";
 import taxcomHandler from "./accounting/taxcomHandler";
 import fiscalHandler from "./accounting/fiscalHandler";
@@ -106,6 +107,12 @@ export default new Vuex.Store({
         state: false,
         title: "АХО",
         services: [
+          {
+            name: "komus-report",
+            link: "/komus-report",
+            title: "Комус",
+            permissions: ["maintenance"],
+          },
           {
             name: "dinners",
             link: "/dinners",
@@ -480,5 +487,6 @@ export default new Vuex.Store({
     driversTimeSheetHandler,
     shopsHandler,
     stockReportHandler,
+    komusCompareReportHandler
   },
 });

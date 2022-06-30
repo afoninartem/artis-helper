@@ -8,7 +8,20 @@
       <AddDriversTimeSheet1C8DP v-if="!info1C8_DP" />
     </div>
 
-    <hr />
+    <!-- <hr /> -->
+    <div class="menu">
+      <div class="conventions" v-if="showConventions">
+        <div
+          class="conventions__item"
+          v-for="(item, i) in conventions"
+          :key="`convention-${i}`"
+        >
+          <div class="color-plate" :style="item.color"></div>
+          <p>{{ item.desctiption }}</p>
+        </div>
+      </div>
+      <button @click.prevent="save">Сохранить</button>
+    </div>
 
     <div class="car" v-for="(car, c) in cars" :key="c">
       <!-- <div class="car-crew-info" v-if="car.crew.length">some summary</div> -->
@@ -178,17 +191,48 @@ export default {
         month: null,
         year: null,
       },
+      conventions: [
+        {
+          desctiption: "Вышел на работу в свой выходной",
+          color:
+            "background: rgba(225, 50, 50, 0.9); color: red; font-weight: bold",
+        },
+        {
+          desctiption: "Не вышел на работу",
+          color: "background: rgba(251, 255, 0, 0.452)",
+        },
+        {
+          desctiption: "Работал в отпуске",
+          color: "background: rgb(0, 128, 0)",
+        },
+        {
+          desctiption: "Несоответсвие ОС и 1С8",
+          color: "background: rgba(153, 0, 255, 0.288)",
+        },
+      ],
+      showConventions: false,
     };
   },
   methods: {
+    save() {
+      alert("Дописать функционал сохранения");
+    },
     setStyle(date, driver, day) {
       // console.log(date, driver)
-      if (!driver.info1C7 || !driver.info1C8 || !this.info1C8_A21 || !this.info1C8_AP || !this.info1C8_DP) return;
+      if (
+        !driver.info1C7 ||
+        !driver.info1C8 
+        // ||
+        // !this.info1C8_A21 ||
+        // !this.info1C8_AP ||
+        // !this.info1C8_DP
+      )
+        return;
       const redBGredColor =
-        "background: rgba(225, 100, 100, 0.7); color: red; font-weight: bold";
+        "background: rgba(225, 50, 50, 0.9); color: red; font-weight: bold";
       const greenBG = "background: rgb(0, 128, 0)";
-      const orangeBG = "background: rgba(255, 69, 0, 1)";
-      const undefinedDataCombination = "background: fuchsia";
+      const orangeBG = "background: rgba(251, 255, 0, 0.452)";
+      const undefinedDataCombination = "background: rgba(153, 0, 255, 0.288)";
       const service = this.count(
         driver.sheduleStart,
         driver.sheduleType,
@@ -226,21 +270,23 @@ export default {
 
       //orange BG
       const sheduleButNoFact = service && info1C8 === "Я" && !info1C7;
-      const mistake1C8 = service && info1C7 && info1C8 !== "Я"
+      // const mistake1C8 = service && info1C7 && info1C8 !== "Я";
 
       //green BG
-      const vacationWork = service && info1C7 && info1C8 === "ОТ";
+      const vacationWork = (service || !service) && info1C7 && info1C8 === "ОТ";
 
       // console.log("noData: ", noData, "allGood: ", allGood, "vacation: ", vacation, "illness: ", illness, "absence: ", absence)
       // console.log("factButNoShedule: ", factButNoShedule, "sheduleButNoFact: ", sheduleButNoFact, "vacationWork: ", vacationWork)
-
+      this.showConventions = true;
+      if (vacationWork) return greenBG;
       // console.log((noData || allGood || vacation || illness || absence) && vacationWork)
-      if ((noData || allGood || vacation || illness || absence) && vacationWork) console.log(driver.name, day)
-      if (vacationWork && noData) console.log(driver.name, day)
+      if ((noData || allGood || vacation || illness || absence) && vacationWork)
+        console.log(driver.name, day);
+      // if (vacationWork && noData) console.log(driver.name, day)
       if (noData || allGood || vacation || illness || absence) return;
       return factButNoShedule
         ? redBGredColor
-        : (sheduleButNoFact || mistake1C8)
+        : sheduleButNoFact
         ? orangeBG
         : vacationWork
         ? greenBG
@@ -304,7 +350,10 @@ export default {
         if (this.info1C8.length) {
           result.rowspan += 1;
           result.info1C8 = Array.from(this.info1C8)
-            .filter((i) => Object.entries(i)[1][1].split("  ").join(" ") === result.name)
+            .filter(
+              (i) =>
+                Object.entries(i)[1][1].split("  ").join(" ") === result.name
+            )
             .flat()
             .map((o) => Object.entries(o))
             .flat()
@@ -382,8 +431,32 @@ tbody:nth-child(2n + 1) > tr > td {
 .add-block {
   display: flex;
   justify-content: space-around;
+  padding: 10px;
 }
 .test {
-  color: rgb(255, 69, 0);
+  color: rgba(153, 0, 255, 0.288);
+}
+//conventions legend
+.menu {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: #fbf9fc;
+  // border-bottom: 1px solid black;
+  padding: 10px;
+  .conventions {
+    display: flex;
+    justify-content: space-evenly;
+    .conventions__item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      .color-plate {
+        width: 25px;
+        height: 25px;
+        border: 1px solid black;
+      }
+    }
+  }
 }
 </style>

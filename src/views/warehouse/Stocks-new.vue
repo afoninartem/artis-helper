@@ -34,7 +34,9 @@
       </thead>
       <tbody v-for="(region, i) in shipment.data" :key="`region-${i}`">
         <tr v-for="(ship, j) in region" :key="`shop-${j}`">
-          <td><span v-if="!ship.shop.includes(`ИТОГО`) ">{{ j + 1 }}</span></td>
+          <td>
+            <span v-if="!ship.shop.includes(`ИТОГО`)">{{ j + 1 }}</span>
+          </td>
           <td>{{ ship.shop }}</td>
           <td>{{ ship.shipment.poster }}</td>
           <td>{{ ship.shipment.vip }}</td>
@@ -160,4 +162,11 @@ export default {
 <style lang="scss" scoped>
 @import "@/scss/personalTable.scss";
 @include personal-table;
+.stocks {
+  overflow: auto;
+  thead th {
+    position: sticky;
+    top: 0;
+  }
+}
 </style>
