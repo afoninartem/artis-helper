@@ -1,6 +1,21 @@
 const switchCases = (num, word) => {
   let result = "";
   const thisCase = num % 10;
+  if (word === "раз") {
+    if (num >= 11 && num <= 15) return "раз"
+    switch (thisCase) {
+      case 1:
+        result = word;
+        break;
+      case 2:
+      case 3:
+      case 4:
+        result = "раза";
+        break;
+      default:
+        result = "раз";
+    }
+  }
   if (word === "продажа") {
     if (num >= 11 && num <= 15) return "продаж"
     switch (thisCase) {
