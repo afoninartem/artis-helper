@@ -13,7 +13,7 @@
           {{ Number(komusReport.canseledSum).toLocaleString("ru-Ru") }} руб.
         </h1>
       </div>
-      <div v-if="komusCompareAct">{{ result }}</div>
+      <!-- <div v-if="komusCompareAct">{{ result }}</div> -->
       <table v-if="result">
         <thead>
           <tr>

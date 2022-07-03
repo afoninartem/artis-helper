@@ -61,7 +61,7 @@
             </thead>
             <tbody>
               <tr v-for="(driver, d) in crew" :key="`driver-${d}`">
-                <td>{{ d + 1 }}</td>
+                <td @click.prevent="sort(d)">{{ d + 1 }}</td>
                 <td @click.prevent="openShedulePopup(driver.name)" class="car">
                   {{ driver.name }}
                 </td>
@@ -142,6 +142,15 @@ export default {
     };
   },
   methods: {
+    sort(rowNum) {
+      // console.log(rowNum)
+      const length = this.crew.length
+      const curr = rowNum;
+      const prev = rowNum > 0 ? rowNum - 1 : length - 1;
+      const next = rowNum < length - 1 ? rowNum + 1 : 0
+      // console.log({curr, prev, next})
+      return {curr, prev, next}
+    },
     weekendColor(day) {
       // console.log(+day, typeof day)
       // console.log(day.hasOwnProperty("weekday"))
@@ -236,7 +245,8 @@ export default {
           });
         crew.push(result);
       });
-      // console.log("crew:", crew.flat());
+      const sorted = this.sort()
+      console.log(sorted)
       return crew.flat();
     },
     show() {
