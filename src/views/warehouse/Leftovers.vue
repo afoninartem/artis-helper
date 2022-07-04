@@ -57,7 +57,7 @@ export default {
       };
       this.name = "";
       this.left = "";
-      console.log(payload);
+      // console.log(payload);
       await this.$store.dispatch("addMinimalLeftover", payload);
       await this.$store.dispatch("updateLeftoversDate");
       await this.$store.dispatch("setActualLeftovers");

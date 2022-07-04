@@ -17,6 +17,9 @@ export default {
     }
   },
 	actions: {
+    async addMinimalLeftover(context, payload) {
+      return await db.collection("warehouse/shipment/leftovers").doc(payload.id).set(payload)
+    },
 		async addLimit(context, payload) {
 			return await db
 				.collection("warehouse/shipment/limits")

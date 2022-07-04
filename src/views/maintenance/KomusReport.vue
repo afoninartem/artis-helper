@@ -13,18 +13,30 @@
           {{ Number(komusReport.canseledSum).toLocaleString("ru-Ru") }} руб.
         </h1>
       </div>
-      <!-- <div v-if="komusCompareAct">{{ result }}</div> -->
+      <xlsx-workbook v-if="result">
+        <xlsx-sheet
+          :collection="sheet.data"
+          v-for="sheet in sheets"
+          :key="sheet.name"
+          :sheet-name="sheet.name"
+        />
+        <xlsx-download filename="Проверить счета Комус.xlsx">
+          <button>Скачать таблицу в XLSX</button>
+        </xlsx-download>
+      </xlsx-workbook>
       <table v-if="result">
         <thead>
           <tr>
+            <th>#</th>
             <th>№ заказа</th>
             <th>Сумма</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="order, o in result" :key="`order-${o}`">
-            <td>{{order[0]}}</td>
-            <td>{{Number(order[1]).toLocaleString("ru-Ru")}} руб.</td>
+          <tr v-for="(order, o) in result" :key="`order-${o}`">
+            <td>{{o + 1}}</td>
+            <td>{{ order[0] }}</td>
+            <td>{{ Number(order[1]).toLocaleString("ru-Ru") }} руб.</td>
           </tr>
         </tbody>
       </table>
@@ -33,12 +45,20 @@
 </template>
 
 <script>
+import {
+  XlsxDownload,
+  XlsxSheet,
+  XlsxWorkbook,
+} from "vue-xlsx/dist/vue-xlsx.es";
 import AddKomusReport from "@/components/MaintenanceComponents/AddKomusReport.vue";
 import AddKomusCompareAct from "@/components/MaintenanceComponents/AddKomusCompareAct.vue";
 export default {
   components: {
     AddKomusReport,
     AddKomusCompareAct,
+    XlsxDownload,
+    XlsxSheet,
+    XlsxWorkbook,
   },
   methods: {
     casesHandler(num, word) {
@@ -47,6 +67,16 @@ export default {
     },
   },
   computed: {
+    sheets() {
+      return {
+        sheets: {
+          name: "Проверить счета",
+          data: this.result ? this.result.map((el) => {
+            return { Счёт: el[0], Сумма: el[1] };
+          }) : null,
+        },
+      };
+    },
     komusReport() {
       return this.$store.getters.getKomusReportData;
     },
@@ -62,11 +92,16 @@ export default {
             el[0]
           )
       );
-      return dataToCheck.map((arr) =>
-        Array.from(arr[1]).map((el) => {
-          return { [el]: arr[0] };
-        })
-      ).flat().map(el => Object.entries(el)).flat();
+      return dataToCheck
+        .map((arr) =>
+          Array.from(arr[1]).map((el) => {
+            return { [el]: arr[0] };
+          })
+        )
+        .flat()
+        .map((el) => Object.entries(el))
+        .flat()
+        .sort((a, b) => a[1] - b[1])
     },
   },
 };

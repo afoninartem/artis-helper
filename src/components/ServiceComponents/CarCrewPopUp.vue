@@ -61,7 +61,11 @@
             </thead>
             <tbody>
               <tr v-for="(driver, d) in crew" :key="`driver-${d}`">
-                <td @click.prevent="sort(d)">{{ d + 1 }}</td>
+                <td @click.prevent="sort(d)" class="number-and-arrows">
+                  <span class="arrow-up"></span>
+                  <span class="number">{{ d + 1 }}</span>
+                  <span class="arrow-down"></span>
+                </td>
                 <td @click.prevent="openShedulePopup(driver.name)" class="car">
                   {{ driver.name }}
                 </td>
@@ -139,18 +143,14 @@ export default {
         month: null,
         year: null,
       },
+      crewData: null,
     };
   },
   methods: {
-    sort(rowNum) {
-      // console.log(rowNum)
-      const length = this.crew.length
-      const curr = rowNum;
-      const prev = rowNum > 0 ? rowNum - 1 : length - 1;
-      const next = rowNum < length - 1 ? rowNum + 1 : 0
-      // console.log({curr, prev, next})
-      return {curr, prev, next}
+    setCrewData(array) {
+      this.crewData = array;
     },
+    move() {},
     weekendColor(day) {
       // console.log(+day, typeof day)
       // console.log(day.hasOwnProperty("weekday"))
@@ -245,8 +245,7 @@ export default {
           });
         crew.push(result);
       });
-      const sorted = this.sort()
-      console.log(sorted)
+      this.setCrewData(crew.flat());
       return crew.flat();
     },
     show() {
@@ -266,10 +265,10 @@ export default {
     drivers() {
       return this.$store.getters.getActualStates.catalogDrivers
         ? Array.from(this.$store.getters.getActualStates.catalogDrivers)
-        // .sort(
-        //     (a, b) => (a.name > b.name ? 1 : b.name > a.name ? -1 : 0)
-        //   )
-        : null;
+        : // .sort(
+          //     (a, b) => (a.name > b.name ? 1 : b.name > a.name ? -1 : 0)
+          //   )
+          null;
     },
     car() {
       const id = this.$store.getters.getCarCrewPopupVisibility
@@ -297,6 +296,54 @@ export default {
 
 
 <style lang="scss" scoped>
+.number-and-arrows {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  width: 32px;
+  height: 32px;
+  .arrow-up {
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+
+    border-bottom: 10px solid black;
+    display: none;
+    cursor: pointer;
+    &:hover {
+      // display: block;
+      border-bottom: 10px solid green;
+    }
+  }
+  .arrow-down {
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+
+    border-top: 10px solid black;
+    display: none;
+    cursor: pointer;
+    &:hover {
+      // display: block;
+      border-bottom: 10px solid red;
+    }
+  }
+
+  &:hover {
+    .arrow-up {
+      display: block;
+    }
+    .arrow-down {
+      display: block;
+    }
+    .number {
+      display: none;
+    }
+  }
+}
 .delete {
   writing-mode: vertical-rl;
   text-orientation: mixed;
