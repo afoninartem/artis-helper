@@ -85,15 +85,6 @@ export default {
 					// console.log(urgentToOrder)
 					document.querySelector("#file").value = "";
           commit("setLeftovers", {handledLeftovers, invalidLeftovers, urgentToOrder})
-					// if (invalidLeftovers.length > 0) {
-					// 	await dispatch("leftoversAreInvalid", invalidLeftovers);
-					// } else {
-					// 	await dispatch("leftoversAreValid");
-					// 	await localStorage.setItem(
-					// 		"leftovers",
-					// 		JSON.stringify(handledLeftovers)
-					// 	);
-					// }
 				}
 				if (
 					!data.some((el) =>

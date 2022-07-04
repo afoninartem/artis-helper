@@ -60,11 +60,15 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(driver, d) in crew" :key="`driver-${d}`">
-                <td @click.prevent="sort(d)" class="number-and-arrows">
-                  <span class="arrow-up"></span>
+              <tr v-for="(driver, d) in crewData" :key="`driver-${d}`">
+                <td class="number-and-arrows">
+                  <span class="arrow-up" @click.prevent="move(d, `up`)" v-if="d > 0"></span>
+                  <span
+                  v-if="d < crewData.length - 1"
+                    class="arrow-down"
+                    @click.prevent="move(d, `down`)"
+                  ></span>
                   <span class="number">{{ d + 1 }}</span>
-                  <span class="arrow-down"></span>
                 </td>
                 <td @click.prevent="openShedulePopup(driver.name)" class="car">
                   {{ driver.name }}
@@ -150,7 +154,20 @@ export default {
     setCrewData(array) {
       this.crewData = array;
     },
-    move() {},
+    move(index, arrow) {
+      let curr = this.crewData[index];
+      let target =
+        arrow === `up`
+          ? index === 0
+            ? this.crewData[this.crewData.length - 1]
+            : this.crewData[index - 1]
+          : index === this.crewData.length - 1
+          ? this.crewData[0]
+          : this.crewData[index + 1];
+      console.log(curr, target);
+      [curr, target] = [target, curr]
+      console.log(curr, target)
+    },
     weekendColor(day) {
       // console.log(+day, typeof day)
       // console.log(day.hasOwnProperty("weekday"))
@@ -303,6 +320,7 @@ export default {
   gap: 2px;
   width: 32px;
   height: 32px;
+  position: relative;
   .arrow-up {
     width: 0;
     height: 0;
@@ -313,7 +331,6 @@ export default {
     display: none;
     cursor: pointer;
     &:hover {
-      // display: block;
       border-bottom: 10px solid green;
     }
   }
@@ -325,11 +342,14 @@ export default {
 
     border-top: 10px solid black;
     display: none;
+
+    position: absolute;
+    bottom: 5px;
     cursor: pointer;
     &:hover {
-      // display: block;
-      border-bottom: 10px solid red;
+      border-top: 10px solid red;
     }
+
   }
 
   &:hover {
