@@ -1,5 +1,5 @@
 <template>
-  <div class="car-crew-popup" v-if="show">
+  <div class="car-crew-popup" v-if="show" :key="componentKey">
     <div class="car-crew-popup__background">
       <div class="car-crew-popup__content">
         <h1>{{ car.mark }} {{ car.number }}</h1>
@@ -60,11 +60,15 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(driver, d) in crewData" :key="`driver-${d}`">
+              <tr v-for="(driver, d) in crew" :key="`driver-${d}`">
                 <td class="number-and-arrows">
-                  <span class="arrow-up" @click.prevent="move(d, `up`)" v-if="d > 0"></span>
                   <span
-                  v-if="d < crewData.length - 1"
+                    class="arrow-up"
+                    @click.prevent="move(d, `up`)"
+                    v-if="d > 0"
+                  ></span>
+                  <span
+                    v-if="d < crewData.length - 1"
                     class="arrow-down"
                     @click.prevent="move(d, `down`)"
                   ></span>
@@ -148,6 +152,7 @@ export default {
         year: null,
       },
       crewData: null,
+      componentKey: 0,
     };
   },
   methods: {
@@ -155,18 +160,19 @@ export default {
       this.crewData = array;
     },
     move(index, arrow) {
-      let curr = this.crewData[index];
-      let target =
-        arrow === `up`
-          ? index === 0
-            ? this.crewData[this.crewData.length - 1]
-            : this.crewData[index - 1]
-          : index === this.crewData.length - 1
-          ? this.crewData[0]
-          : this.crewData[index + 1];
-      console.log(curr, target);
-      [curr, target] = [target, curr]
-      console.log(curr, target)
+      const swapIndex = arrow === "up" ? index - 1 : index + 1;
+      const array = this.crewData;
+      [array[index], array[swapIndex]] = [array[swapIndex], array[index]];
+      console.log(
+        array.map((c) => {
+          return [c.name, c.driverID];
+        }),
+        swapIndex
+      );
+      console.log(this.car.crew);
+      this.crewData = array;
+      this.componentKey += 1;
+      return array;
     },
     weekendColor(day) {
       // console.log(+day, typeof day)
@@ -189,6 +195,17 @@ export default {
     },
     async close() {
       this.tips = null;
+      for (let i = 0; i < this.car.crew.length; i += 1) {
+        if (this.car.crew[i] !== this.crewData[i].driverID) {
+          await this.$store.dispatch("updateCrewOrder", {
+            carID: this.car.carID,
+            crewNewOrder: this.crewData.map((c) => c.driverID),
+          });
+          await this.$store.dispatch("updateCatalogCarsDate");
+          await this.$store.dispatch("setActualCatalogCars");
+          break;
+        }
+      }
       return await this.$store.dispatch("closeCarCrewPopup");
     },
     async openShedulePopup(car_id) {
@@ -219,9 +236,9 @@ export default {
       this.tips = null;
       await this.$store.dispatch("updateCarCrew", payload);
       await this.$store.dispatch("updateCatalogCarsDate");
+      await this.$store.dispatch("setActualCatalogCars");
       await this.$store.dispatch("updateCatalogDriversDate");
       await this.$store.dispatch("setActualCatalogDrivers");
-      await this.$store.dispatch("setActualCatalogCars");
     },
     findDriver() {
       // const str = this.$refs.findDriver.value.toLowerCase();
@@ -247,8 +264,7 @@ export default {
   },
   computed: {
     crew() {
-      const driverlist = this.car.crew;
-      console.log();
+      const driverlist = this.car ? this.car.crew : null;
       const crew = [];
       Array.from(driverlist).forEach((id) => {
         const driver = this.drivers.filter((d) => d.driverID === id)[0];
@@ -263,7 +279,7 @@ export default {
         crew.push(result);
       });
       this.setCrewData(crew.flat());
-      return crew.flat();
+      return this.crewData;
     },
     show() {
       return this.$store.getters.getCarCrewPopupVisibility?.show;
@@ -294,12 +310,12 @@ export default {
       const cars = this.$store.getters.getActualStates.catalogCars
         ? this.$store.getters.getActualStates.catalogCars
         : null;
-
-      if (id && cars) {
-        const car = cars.filter((car) => car.carID === id)[0];
-        return car;
-      }
-      return null;
+      return id && cars ? cars.filter((car) => car.carID === id)[0] : null;
+      // if (id && cars) {
+      //   const car = cars.filter((car) => car.carID === id)[0];
+      //   return car;
+      // }
+      // return null;
     },
   },
   mounted: async function () {
@@ -349,7 +365,6 @@ export default {
     &:hover {
       border-top: 10px solid red;
     }
-
   }
 
   &:hover {
