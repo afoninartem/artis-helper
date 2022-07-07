@@ -382,6 +382,16 @@ const routes = [
   },
   // SERVICE ↓
   {
+    path: "/today-working-service",
+    name: "TodayWorkingService",
+    meta: {
+      layout: "MainLayout",
+      auth: true,
+      permissions: ["admin", "service"],
+    },
+    component: () => import("../views/service/TodayWorkingService.vue"),
+  },
+  {
     path: "/drivers-cars-catalog",
     name: "DriversCarsCatalog",
     meta: {

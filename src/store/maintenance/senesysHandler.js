@@ -9,6 +9,7 @@ export default {
 	},
 	actions: {
     async addSenesysData({commit, getters}, payload) {
+      console.log(payload)
       const rawData = payload.filter(e => e.__EMPTY_3);
       const companies = [];
       rawData.shift();
@@ -61,6 +62,7 @@ export default {
           ? (company.departments.sort((a, b) => (a.name > b.name ? 1 : b.name > a.name ? -1 : 0)), (company.departments.forEach(d => d.employees.sort((a, b) => (a.name > b.name ? 1 : b.name > a.name ? -1 : 0)))))
           : company.employees.sort((a, b) => (a.name > b.name ? 1 : b.name > a.name ? -1 : 0))
       })
+      console.log(companies)
      return await commit("addSenesysData", companies)
     }
 	},

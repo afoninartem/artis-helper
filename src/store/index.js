@@ -76,6 +76,12 @@ export default new Vuex.Store({
         title: "Сервис",
         services: [
           {
+            name: "today-working-service",
+            link: "/today-working-service",
+            title: "Сегодня работают",
+            permissions: ["service", "personal"],
+          },
+          {
             name: "drivers-cars-catalog",
             link: "/drivers-cars-catalog",
             title: "Справочник ОС",
