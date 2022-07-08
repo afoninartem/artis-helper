@@ -10,7 +10,7 @@
       </button>
     </div>
     <div class="btn-block service-btn" v-if="currentCompanyDinners">
-      <xlsx-workbook>
+      <xlsx-workbook class="download">
         <xlsx-sheet
           :collection="sheet.data"
           v-for="sheet in sheets"
@@ -158,6 +158,9 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.download {
+  padding: 20px;
+}
 .dinners__result {
   .output-block {
     display: grid;
