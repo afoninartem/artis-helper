@@ -44,7 +44,7 @@
                 <th
                   v-for="(dayInfo, wd) in daySpec(date.month, date.year)"
                   :key="`weekday-${wd}`"
-                  :style="weekendColor(dayInfo)"
+                  :style="dayStyles(dayInfo)"
                 >
                   {{ dayInfo.weekday }}
                 </th>
@@ -53,7 +53,7 @@
                 <th
                   v-for="(dayInfo, md) in daySpec(date.month, date.year)"
                   :key="`day-of-month-${md}`"
-                  :style="weekendColor(dayInfo)"
+                  :style="dayStyles(dayInfo)"
                 >
                   {{ dayInfo.dayOfMonth }}
                 </th>
@@ -86,7 +86,8 @@
                 <td
                   v-for="(day, d) in header"
                   :key="`date-${d}`"
-                  :style="weekendColor(day)"
+                  :style="dayStyles(day)"
+                  @click.prevent="setExtra(driver, day)"
                 >
                   {{
                     count(
@@ -156,6 +157,11 @@ export default {
     };
   },
   methods: {
+    setExtra(driver, day) {
+      console.log(event.target, driver, day);
+      // const cell = event.target
+      // console.log()
+    },
     setCrewData(array) {
       this.crewData = array;
     },
@@ -174,24 +180,30 @@ export default {
       this.componentKey += 1;
       return array;
     },
-    weekendColor(day) {
-      // console.log(+day, typeof day)
-      // console.log(day.hasOwnProperty("weekday"))
-      // if (typeof day === "object" && day.hasOwnProperty("weekday"))
-      return typeof day === "object" &&
-        day.weekday &&
-        (day.weekday === "сб" || day.weekday === "вс")
-        ? "background: rgba(225, 100, 100, 0.3)"
-        : new Date(this.date.year, this.date.month, day).toLocaleString(
-            "default",
-            { weekday: "short" }
-          ) === "сб" ||
-          new Date(this.date.year, this.date.month, day).toLocaleString(
-            "default",
-            { weekday: "short" }
-          ) === "вс"
-        ? "background: rgba(225, 100, 100, 0.3)"
-        : null;
+    dayStyles(day) {
+      //styles will be store in other place
+      const weekendStyle = "background: rgba(225, 100, 100, 0.3)";
+      const todayStyle = "border: 2px solid blue";
+      // ↑
+      const stylesArray = [];
+      const styleDivider = "; ";
+      //define terms data ↓
+      const today = new Date().getDate();
+      const cellday =
+        typeof day === "string"
+          ? new Date(this.date.year, this.date.month, day).getDate()
+          : day.dayOfMonth;
+      const weekday =
+        typeof day === "string"
+          ? new Date(this.date.year, this.date.month, day).toLocaleString(
+              "default",
+              { weekday: "short" }
+            )
+          : day.weekday;
+      //drfine terms itself
+      if (today === cellday) stylesArray.push(todayStyle);
+      if (weekday === "сб" || weekday === "вс") stylesArray.push(weekendStyle);
+      return stylesArray.join(styleDivider);
     },
     async close() {
       this.tips = null;
