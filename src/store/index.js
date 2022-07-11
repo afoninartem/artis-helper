@@ -42,6 +42,7 @@ import needsHandler from "./marketing/warehouse-needs/needsHandler";
 import vacanciesHandler from "./personal/vacanciesHandler";
 import catalogPersonalHandler from "./personal/catalogPersonalHandler";
 import driversTimeSheetHandler from "./personal/driversTimeSheetHandler";
+import driverExtraPopupHandler from "./service/driverExtraPopupHandler";
 import stockReportHandler from "./retail/stockReportHandler";
 import firebase from "firebase/app";
 import { db } from "../main";
@@ -493,6 +494,7 @@ export default new Vuex.Store({
     driversTimeSheetHandler,
     shopsHandler,
     stockReportHandler,
-    komusCompareReportHandler
+    komusCompareReportHandler,
+    driverExtraPopupHandler
   },
 });

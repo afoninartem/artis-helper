@@ -139,11 +139,16 @@
         </ul>
       </div>
     </div>
+    <DriverExtraPopup />
   </div>
 </template>
 
 <script>
+import DriverExtraPopup from "@/components/ServiceComponents/DriverExtraPopup";
 export default {
+  components: {
+    DriverExtraPopup,
+  },
   data() {
     return {
       headerTemplate: ["#", "ФИО", "Должность"],
@@ -157,10 +162,9 @@ export default {
     };
   },
   methods: {
-    setExtra(driver, day) {
-      console.log(event.target, driver, day);
-      // const cell = event.target
-      // console.log()
+    async setExtra(driver, day) {
+      // console.log(event.target, driver, day);
+      await this.$store.dispatch("openDriverExtraPopup", { driver, day });
     },
     setCrewData(array) {
       this.crewData = array;
@@ -169,13 +173,6 @@ export default {
       const swapIndex = arrow === "up" ? index - 1 : index + 1;
       const array = this.crewData;
       [array[index], array[swapIndex]] = [array[swapIndex], array[index]];
-      console.log(
-        array.map((c) => {
-          return [c.name, c.driverID];
-        }),
-        swapIndex
-      );
-      console.log(this.car.crew);
       this.crewData = array;
       this.componentKey += 1;
       return array;

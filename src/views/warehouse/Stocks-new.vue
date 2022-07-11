@@ -41,8 +41,8 @@
           <td>{{ ship.shipment.poster }}</td>
           <td>{{ ship.shipment.vip }}</td>
           <td>{{ ship.shipment.vipPack }}</td>
-          <td>{{ ship.shipment.cup }}</td>
-          <td>{{ ship.shipment.cupPack }}</td>
+          <td>{{ ship.shipment.cup || 0 }}</td>
+          <td>{{ ship.shipment.cupPack || 0 }}</td>
           <td>{{ ship.shipment.vine }}</td>
           <td>{{ ship.shipment.chocoSet }}</td>
           <td>{{ ship.shipment.chest }}</td>
