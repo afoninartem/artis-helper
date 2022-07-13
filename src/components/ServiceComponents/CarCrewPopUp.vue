@@ -87,7 +87,10 @@
                   v-for="(day, d) in header"
                   :key="`date-${d}`"
                   :style="dayStyles(day)"
-                  @click.prevent="setExtra(driver, day)"
+                  @mousedown.prevent="startCollect"
+                  @mouseover.prevent="collecting"
+                  @mouseup.prevent="endCollect"                  @
+                  @contextmenu.prevent="setExtra(driver, day)"
                 >
                   {{
                     count(
@@ -159,9 +162,20 @@ export default {
       },
       crewData: null,
       componentKey: 0,
+      cellsCollection: []
     };
   },
   methods: {
+    // async startCollect() {
+    //   this.cellsCollection = [];
+    //   this.cellsCollection.push(event.target)
+    // },
+    // async collecting() {
+    //   if (this.cellsCollection.length > 0) this.cellsCollection.push(event.target)
+    // },
+    // async endCollect() {
+    //   if (this.cellsCollection.length > 0) this.cellsCollection.push(event.target)
+    // },
     async setExtra(driver, day) {
       // console.log(event.target, driver, day);
       await this.$store.dispatch("openDriverExtraPopup", { driver, day });

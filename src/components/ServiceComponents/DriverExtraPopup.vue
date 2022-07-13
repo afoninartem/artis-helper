@@ -1,20 +1,39 @@
 <template>
   <div class="popup" v-if="show">
     <div class="popup__content">
-      <h1>{{ info.driver.name }}</h1>
-      <h2>{{info.driver.car}}</h2>
-      <button class="close-btn" @click.prevent="close">Закрыть</button>
+      <h1>{{ info.driver.name }} - {{ info.driver.car }}</h1>
+      <div class="conventions">
+        <div
+          class="conventions__item"
+          v-for="(item, i) in conventions"
+          :key="`conventions-item-${i}`"
+        >
+          <div class="conventions__sample" :style="{ background: item.color }">
+            {{ item.cut }}
+          </div>
+          <div class="conventions__description">{{ item.description }}</div>
+        </div>
+      </div>
+      <div class="block-btn">
+        <button class="save-btn" @click.prevent="save">Сохранить</button>
+        <button class="close-btn" @click.prevent="close">Закрыть</button>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
-// import ClickOutside from "vue-click-outside";
 export default {
-  name: "DriverExtraPopup",
-  // directives: {
-  //   ClickOutside,
-  // },
+  data() {
+    return {
+      conventions: [
+        { description: "Отпуск", cut: "О", color: "#FF7F50" },
+        { description: "Больничный", cut: "Б", color: "#40E0D0" },
+        { description: "Хочет работать", cut: "ХР", color: "#00FF7F" },
+        { description: "Неявка", cut: "Н", color: "#B22222" },
+      ],
+    };
+  },
   methods: {
     close() {
       return this.$store.dispatch("closeDriverExtraPopup");
@@ -33,22 +52,46 @@ export default {
 
 <style lang="scss" scoped>
 .popup {
-  position: absolute;
+  position: fixed;
   top: 100px;
   bottom: 100px;
   left: 100px;
   right: 100px;
   background: #fff;
   border-radius: 25px;
-  .content {
-    position: relative;
-    top: 20px;
-    bottom: 20px;
-    left: 20px;
-    right: 20px;
-    .close-btn {
-      position: absolute;
-      bottom: 0;
+  .popup__content {
+    height: 100%;
+    padding-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    // justify-content: space-between;
+    align-items: center;
+    .conventions {
+      display: flex;
+      justify-content: space-between;
+      gap: 30px;
+      .conventions__item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+        &:hover {
+          transform: scale(1.1);
+        }
+        .conventions__sample {
+          height: 25px;
+          width: 25px;
+          border: 0.5px solid black;
+          display: grid;
+          place-content: center;
+        }
+      }
+    }
+    .block-btn {
+      margin-top: auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
     }
   }
 }

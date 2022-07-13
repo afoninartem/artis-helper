@@ -17,7 +17,7 @@
           :key="`convention-${i}`"
         >
           <div class="color-plate" :style="item.color"></div>
-          <p>{{ item.desctiption }}</p>
+          <p>{{ item.description }}</p>
         </div>
       </div>
       <button @click.prevent="save">Сохранить</button>
@@ -193,20 +193,20 @@ export default {
       },
       conventions: [
         {
-          desctiption: "Вышел на работу в свой выходной",
+          description: "Вышел на работу в свой выходной",
           color:
             "background: rgba(225, 50, 50, 0.9); color: red; font-weight: bold",
         },
         {
-          desctiption: "Не вышел на работу",
+          description: "Не вышел на работу",
           color: "background: rgba(251, 255, 0, 0.452)",
         },
         {
-          desctiption: "Работал в отпуске",
+          description: "Работал в отпуске",
           color: "background: rgb(0, 128, 0)",
         },
         {
-          desctiption: "Несоответсвие ОС и 1С8",
+          description: "Несоответсвие ОС и 1С8",
           color: "background: rgba(153, 0, 255, 0.288)",
         },
       ],

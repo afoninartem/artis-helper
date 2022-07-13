@@ -6,7 +6,6 @@ export default {
 	},
 	mutations: {
 		openDriverExtraPopup(state, payload) {
-      console.log(payload)
 			state.show = true;
 			state.driver = payload.driver;
 			state.day = payload.day;
