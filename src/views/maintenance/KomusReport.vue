@@ -13,30 +13,39 @@
           {{ Number(komusReport.canseledSum).toLocaleString("ru-Ru") }} руб.
         </h1>
       </div>
-      <xlsx-workbook v-if="result">
-        <xlsx-sheet
-          :collection="sheet.data"
-          v-for="sheet in sheets"
-          :key="sheet.name"
-          :sheet-name="sheet.name"
-        />
-        <xlsx-download filename="Проверить счета Комус.xlsx">
-          <button>Скачать таблицу в XLSX</button>
-        </xlsx-download>
-      </xlsx-workbook>
-      <table v-if="result">
+      <div class="btn-block">
+        <xlsx-workbook v-if="toCheck">
+          <xlsx-sheet
+            :collection="sheet.data"
+            v-for="sheet in sheets"
+            :key="sheet.name"
+            :sheet-name="sheet.name"
+          />
+          <xlsx-download filename="Комус.xlsx">
+            <button @click.prevent="addSheets">Скачать XLSX</button>
+          </xlsx-download>
+        </xlsx-workbook>
+      </div>
+
+      <table v-if="toCheck">
         <thead>
           <tr>
             <th>#</th>
             <th>№ заказа</th>
             <th>Сумма</th>
+            <th>Добавить в консолидацию</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(order, o) in result" :key="`order-${o}`">
-            <td>{{o + 1}}</td>
+          <tr v-for="(order, o) in filteredToChech" :key="`order-${o}`">
+            <td>{{ o + 1 }}</td>
             <td>{{ order[0] }}</td>
             <td>{{ Number(order[1]).toLocaleString("ru-Ru") }} руб.</td>
+            <td>
+              <button @click.prevent="addToConsolidation(order)">
+                Добавить
+              </button>
+            </td>
           </tr>
         </tbody>
       </table>
@@ -60,22 +69,74 @@ export default {
     XlsxSheet,
     XlsxWorkbook,
   },
+  data() {
+    return {
+      consolidationXLSXData: [],
+      sheets: [],
+    };
+  },
   methods: {
+    addSheets() {
+      if (this.consolidationXLSXData.length) {
+        this.sheets.push({
+          name: "Консолидация",
+          data: this.consolidationXLSXData.map((item) => [
+            item[0],
+            parseFloat(item[1]),
+          ]),
+        });
+      }
+      if (this.toCheck.length) {
+        this.sheets.push({
+          name: "Проверить счета",
+          data: this.toCheck
+            ? this.filteredToChech.map((el) => {
+                return { Счёт: el[0], Сумма: parseFloat(el[1]) };
+              })
+            : null,
+        });
+      }
+    },
     casesHandler(num, word) {
       const ch = require("../../store/casesHandler");
       return ch(num, word);
     },
+    setConsolidationData(payload) {
+      this.consolidationXLSXData = payload
+        .map((arr) =>
+          Array.from(arr[1]).map((el) => {
+            return { [el]: arr[0] };
+          })
+        )
+        .flat()
+        .map((el) => Object.entries(el))
+        .flat()
+        .sort((a, b) => a[1] - b[1]);
+    },
+    addToConsolidation(payload) {
+      this.consolidationXLSXData.push([payload[0], [payload[1]]]);
+      this.sheets = [];
+    },
   },
   computed: {
-    sheets() {
+    consolidationXLSX() {
       return {
         sheets: {
-          name: "Проверить счета",
-          data: this.result ? this.result.map((el) => {
-            return { Счёт: el[0], Сумма: el[1] };
-          }) : null,
+          name: "Согласовано для консолидации",
+          data: this.consolidationXLSXData,
         },
       };
+    },
+    consolidation() {
+      if (!this.komusReport || !this.komusCompareAct) return;
+      const result = Object.entries(this.komusCompareAct).filter((el) =>
+        Object.prototype.hasOwnProperty.call(
+          this.komusReport.deliveredBySum,
+          el[0]
+        )
+      );
+      this.setConsolidationData(result);
+      return result;
     },
     komusReport() {
       return this.$store.getters.getKomusReportData;
@@ -83,7 +144,14 @@ export default {
     komusCompareAct() {
       return this.$store.getters.getKomusCompareActData;
     },
-    result() {
+    filteredToChech() {
+      if (!this.toCheck) return null;
+      return this.toCheck.filter(
+        (item) =>
+          !this.consolidationXLSXData.map((arr) => arr[0]).includes(item[0])
+      );
+    },
+    toCheck() {
       if (!this.komusReport || !this.komusCompareAct) return;
       const dataToCheck = Object.entries(this.komusCompareAct).filter(
         (el) =>
@@ -101,7 +169,7 @@ export default {
         .flat()
         .map((el) => Object.entries(el))
         .flat()
-        .sort((a, b) => a[1] - b[1])
+        .sort((a, b) => a[1] - b[1]);
     },
   },
 };

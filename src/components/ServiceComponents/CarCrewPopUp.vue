@@ -84,13 +84,14 @@
                   {{ driver.position }}
                 </td>
                 <td
+                  class="cell"
                   v-for="(day, d) in header"
                   :key="`date-${d}`"
                   :style="dayStyles(day)"
-                  @mousedown.prevent="startCollect"
-                  @mouseover.prevent="collecting"
-                  @mouseup.prevent="endCollect"                  @
                   @contextmenu.prevent="setExtra(driver, day)"
+                  @mousedown="startCollectSelectionCells(driver.driverID, day)"
+                  @mouseover="collectSelectionCells(driver, day)"
+                  @mouseup="stopCollectSelectionCells"
                 >
                   {{
                     count(
@@ -162,20 +163,31 @@ export default {
       },
       crewData: null,
       componentKey: 0,
-      cellsCollection: []
+      mouseIsDown: false,
+      selectedDriver: null,
+      cellsCollection: [],
     };
   },
   methods: {
-    // async startCollect() {
-    //   this.cellsCollection = [];
-    //   this.cellsCollection.push(event.target)
-    // },
-    // async collecting() {
-    //   if (this.cellsCollection.length > 0) this.cellsCollection.push(event.target)
-    // },
-    // async endCollect() {
-    //   if (this.cellsCollection.length > 0) this.cellsCollection.push(event.target)
-    // },
+    async startCollectSelectionCells(driverID, day) {
+      this.mouseIsDown = true;
+      this.cellsCollection = [day];
+      this.selectedDriver = driverID;
+    },
+    async stopCollectSelectionCells() {
+      this.mouseIsDown = false;
+      this.selectedDriver = null;
+    },
+    async collectSelectionCells(driver, day) {
+      if (
+        this.mouseIsDown &&
+        this.selectedDriver &&
+        driver.driverID === this.selectedDriver
+      ) {
+        console.log(driver, day);
+        this.cellsCollection.push(day);
+      }
+    },
     async setExtra(driver, day) {
       // console.log(event.target, driver, day);
       await this.$store.dispatch("openDriverExtraPopup", { driver, day });
@@ -195,6 +207,7 @@ export default {
       //styles will be store in other place
       const weekendStyle = "background: rgba(225, 100, 100, 0.3)";
       const todayStyle = "border: 2px solid blue";
+      // const selectedStyle = "background: rgba(0, 0, 255, 0.1)";
       // ↑
       const stylesArray = [];
       const styleDivider = "; ";
@@ -211,7 +224,8 @@ export default {
               { weekday: "short" }
             )
           : day.weekday;
-      //drfine terms itself
+      //define terms itself
+      // if (this.)
       if (today === cellday) stylesArray.push(todayStyle);
       if (weekday === "сб" || weekday === "вс") stylesArray.push(weekendStyle);
       return stylesArray.join(styleDivider);
@@ -334,11 +348,6 @@ export default {
         ? this.$store.getters.getActualStates.catalogCars
         : null;
       return id && cars ? cars.filter((car) => car.carID === id)[0] : null;
-      // if (id && cars) {
-      //   const car = cars.filter((car) => car.carID === id)[0];
-      //   return car;
-      // }
-      // return null;
     },
   },
   mounted: async function () {
@@ -417,7 +426,12 @@ p {
 .position {
   cursor: pointer;
 }
+.cell:hover {
+  background: rgba(0, 0, 255, 0.2) !important;
+  cursor: pointer;
+}
 .car-crew-popup {
+  user-select: none;
   .car-crew-popup__background {
     position: fixed;
     top: 0;

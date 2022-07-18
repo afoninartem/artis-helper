@@ -1,6 +1,7 @@
 <template>
   <form class="employees__form">
     <h3>Загрузить отчет Комус</h3>
+    <p>Отчет выгружается в ЛК, раздел Отчетность, тип отчета - История заказов, период - Период согласования</p>
     <input type="file" id="file" @change="onChangeKomusReport" />
     <xlsx-read :file="file">
       <xlsx-json>
