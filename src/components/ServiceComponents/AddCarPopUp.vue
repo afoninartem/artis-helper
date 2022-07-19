@@ -27,8 +27,11 @@
           />
         </form>
         <div class="buttons">
-          <button @click.prevent="addCar">
-            {{ dataToChange ? `Сохранить изменения` : `Добавить машину` }}
+          <button @click.prevent="addCar" v-if="!dataToChange">
+            Добавить машину
+          </button>
+          <button @click.prevent="saveCar" v-if="dataToChange">
+            Сохранить изменения
           </button>
           <button @click.prevent="closePopUp">Отмена</button>
         </div>
@@ -55,6 +58,18 @@ export default {
         number: this.number,
         mark: this.mark,
       });
+      await this.$store.dispatch("updateCatalogCarsDate");
+      await this.$store.dispatch("setActualCatalogCars");
+      this.number = "";
+      this.mark = "";
+      return await this.$store.dispatch("closeCarPopup");
+    },
+    async saveCar() {
+      const payload = {
+        oldData: this.dataToChange,
+        newData: { number: this.number, mark: this.mark },
+      };
+      await this.$store.dispatch("saveCar", payload);
       await this.$store.dispatch("updateCatalogCarsDate");
       await this.$store.dispatch("setActualCatalogCars");
       this.number = "";

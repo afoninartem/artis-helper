@@ -112,6 +112,9 @@ export default {
 				.doc(payload.carID)
 				.set(payload);
 		},
+    async saveCar(context, payload) {
+      console.log(payload)
+    },
 		async openChangeCarPopup(context, payload) {
 			await context.commit("changeCarData", payload);
 			await context.commit("openCarPopup");
@@ -159,19 +162,25 @@ export default {
 				.set({ carslist: carslist }, { merge: true });
 		},
 		async removeDriverFromCar({ getters }, payload) {
-			console.log(payload);
+			// console.log(`payload: `, payload);
 			const drivers = getters.getActualStates.catalogDrivers;
 			const driver = drivers.filter((d) => d.driverID === payload.driverID)[0];
+      // console.log(`driver: `, driver)
 			const carslist = driver.carslist;
+      // console.log(`driver.carslist: `, driver.carslist)
 			const newCarslist = carslist.filter((car) => car.carID !== payload.carID);
-			await db
-				.collection("service/catalog/drivers")
-				.doc(payload.driverID)
-				.update({ carslist: newCarslist });
+      // console.log(`newCarslist: `, newCarslist)
+
 			const cars = getters.getActualStates.catalogCars;
 			const car = cars.filter((car) => car.carID === payload.carID)[0];
 			const crew = car.crew;
 			const newCrew = crew.filter((cmID) => cmID !== payload.driverID);
+
+      await db
+      .collection("service/catalog/drivers")
+      .doc(payload.driverID)
+      .update({ carslist: newCarslist });
+
 			await db
 				.collection("service/catalog/cars")
 				.doc(payload.carID)
