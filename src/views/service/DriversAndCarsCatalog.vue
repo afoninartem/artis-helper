@@ -16,8 +16,18 @@
         </thead>
         <tbody>
           <tr v-for="(car, c) in cars" :key="c">
-            <td>{{ car.mark }}</td>
-            <td :style="{ fontWeight: `bold` }">{{ car.number }}</td>
+            <td
+              @click.prevent="openChangeCarPopup(car)"
+              :style="{ cursor: `pointer` }"
+            >
+              {{ car.mark.toUpperCase() }}
+            </td>
+            <td
+              @click.prevent="openChangeCarPopup(car)"
+              :style="{ fontWeight: `bold`, cursor: `pointer` }"
+            >
+              {{ car.number }}
+            </td>
             <td @click.prevent="openCarCrewPopup(car.carID)" class="crew">
               <div v-if="car.crew.length">
                 <p v-for="(member, m) in car.crew" :key="m">
@@ -98,8 +108,8 @@
 <script>
 import AddCarPopUp from "@/components/ServiceComponents/AddCarPopUp";
 import CarCrewPopUp from "@/components/ServiceComponents/CarCrewPopUp";
-import AddPositionPopup from "@/components/ServiceComponents/AddPositionPopup";
 import ShedulePopUp from "@/components/ServiceComponents/ShedulePopUp";
+import AddPositionPopup from "@/components/ServiceComponents/AddPositionPopup";
 // import PrintShedule from "@/components/ServiceComponents/PrintShedule";
 // import AddDriversCatalog from "@/components/PersonalComponents/AddDriversCatalog";
 export default {
@@ -124,6 +134,9 @@ export default {
     async openAddPositionPopup() {
       return await this.$store.dispatch("openAddPositionPopup");
     },
+    async openChangeCarPopup(car) {
+      return await this.$store.dispatch("openChangeCarPopup", car)
+    }
   },
   computed: {
     drivers() {

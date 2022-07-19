@@ -271,6 +271,21 @@ export default {
     async addToCrew(payload) {
       this.$refs.findDriver.value = "";
       this.tips = null;
+      console.log(payload);
+      if (
+        payload.driver.position === "водитель" &&
+        payload.driver.carslist
+          .map((d) => d.position)
+          .includes(payload.driver.position)
+      ) {
+        alert(
+          `Сотрудник ${payload.driver.name} уже назначен водителем на машине ${
+            payload.driver.carslist.filter(
+              (car) => car.position === payload.driver.position
+            )[0].car
+          }. Пожалуйста, проверьте корректность заполнения графика.`
+        );
+      }
       await this.$store.dispatch("updateCarCrew", payload);
       await this.$store.dispatch("updateCatalogCarsDate");
       await this.$store.dispatch("setActualCatalogCars");

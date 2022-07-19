@@ -10,9 +10,11 @@ export default {
   },
   actions: {
     async setKomusCompareActData(context, payload) {
+      console.log(payload)
       const compareData = Array.from(payload).filter(
         (d) =>
-          d["Наименование документа"] === "Универсальный передаточный документ"
+          d["Наименование документа"] === "Универсальный передаточный документ" ||
+          d["Наименование документа"] === "Товарная накладная"
       );
       const unitedData = {};
       compareData.forEach((item) => {

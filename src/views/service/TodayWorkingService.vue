@@ -1,6 +1,7 @@
 <template>
   <div class="today-working">
-    <h1>{{ new Date(Date.now()).toLocaleDateString() }}</h1>
+    <h1>{{ today }}</h1>
+
     <xlsx-workbook>
       <xlsx-sheet
         :collection="sheet.data"
@@ -8,65 +9,46 @@
         :key="sheet.name"
         :sheet-name="sheet.name"
       />
-      <xlsx-download filename="Сегодня работают.xlsx">
+      <xlsx-download :filename="`${today}.xlsx`">
         <button>Скачать</button>
       </xlsx-download>
     </xlsx-workbook>
+
     <div class="today-working__grid">
-      <h2>ВАРИАНТ 1</h2>
-      <table v-if="todayWorks">
-        <thead>
-          <tr>
-            <th>Машина</th>
-            <th>№</th>
-            <th>Сотрудник</th>
-          </tr>
-        </thead>
-        <tbody
-          v-for="(car, c) in todayWorks"
-          :key="`car-table-${c}`"
-          :style="{ color: car.length > 1 ? `black` : `red` }"
-        >
-          <tr>
-            <td :rowspan="car.length">{{ c }}</td>
-            <td>1</td>
-            <td>{{ car[0] }}</td>
-          </tr>
-          <tr v-for="(driver, d) in car.slice(1)" :key="`driver-table-${d}`">
-            <td>{{ d + 2 }}</td>
-            <td>{{ driver }}</td>
-          </tr>
-        </tbody>
-      </table>
-      <h2>ВАРИАНТ 2</h2>
       <div class="cars-grid" v-if="todayWorks">
-        <div
-          class="car"
-          v-for="(car, c) in Object.keys(todayWorks)"
-          :key="`car-${c}`"
-        >
+        <div class="car" v-for="(car, ca) in todayWorks" :key="ca">
           <div class="card">
             <div
               class="card__title"
-              :style="{ background: todayWorks[car].length > 1 ? null : `red` }"
+              @click.prevent="openCarCrewPopup(car.carID)"
+              :style="{ background: car.crewDetails.length > 1 ? null : `red` }"
+              :title="`Открыть график экипажа машины ${car.mark.toUpperCase()} ${
+                car.number
+              }`"
             >
-              {{ car }}
+              {{ car.mark.toUpperCase() }} {{ car.number }}
             </div>
             <div
               class="card__driver"
-              v-for="(driver, d) in todayWorks[car]"
-              :key="`driver-card-${d}`"
+              @click.prevent="openShedulePopup(driver.name)"
+              v-for="(driver, dr) in car.crewDetails"
+              :key="dr"
+              :title="`Открыть график сотрудника ${driver.name}`"
             >
-              {{ driver }}
+              {{ driver.name }}
             </div>
           </div>
         </div>
       </div>
     </div>
+    <ShedulePopUp />
+    <CarCrewPopUp />
   </div>
 </template>
 
 <script>
+import CarCrewPopUp from "@/components/ServiceComponents/CarCrewPopUp";
+import ShedulePopUp from "@/components/ServiceComponents/ShedulePopUp";
 import {
   XlsxDownload,
   XlsxSheet,
@@ -77,77 +59,86 @@ export default {
     XlsxDownload,
     XlsxSheet,
     XlsxWorkbook,
+    CarCrewPopUp,
+    ShedulePopUp,
   },
   methods: {
     sheduleCounter(sheduleStart, sheduleType, sheduleShift, currDate) {
       const counter = require("../../store/service/sheduleCounter");
       return counter.default(sheduleStart, sheduleType, sheduleShift, currDate);
     },
+    async openCarCrewPopup(car_id) {
+      return await this.$store.dispatch("openCarCrewPopup", car_id);
+    },
+    async openShedulePopup(name) {
+      return await this.$store.dispatch("openShedulePopup", name);
+    },
   },
   computed: {
+    today() {
+      return new Date(Date.now()).toLocaleDateString();
+    },
     sheets() {
       return {
         sheets: {
-          name: "Работают сегодня",
+          name: this.today,
           data: this.xlsxData,
         },
       };
     },
     todayWorks() {
       if (!this.cars || !this.drivers) return null;
-      const array = [];
       const year = new Date().getFullYear();
       const month = new Date().getMonth();
       const day = new Date().getDate();
-      this.cars
+      return this.cars
         .filter((car) => car.crew.length)
-        .forEach((car) =>
-          car.crew.forEach((driverID) => {
-            const driver = this.drivers
-              .filter((d) => d.driverID === driverID)[0]
-              .carslist.filter((c) => c.carID === car.carID)[0];
-            if (
-              this.sheduleCounter(
-                driver.sheduleStart,
-                driver.sheduleType,
-                driver.sheduleShift,
-                new Date(year, month, day)
+        .map((car) => {
+          const crewDetails = car.crew
+            .map(
+              (driverID) =>
+                this.drivers
+                  .filter((d) => d.driverID === driverID)[0]
+                  .carslist.filter((cl) => cl.carID === car.carID)[0]
+            )
+            .filter((driver) =>
+              Boolean(
+                this.sheduleCounter(
+                  driver.sheduleStart,
+                  driver.sheduleType,
+                  driver.sheduleShift,
+                  new Date(year, month, day)
+                )
               )
-            ) {
-              driver.fullcar = `${car.mark.toUpperCase()} ${car.number}`;
-              // console.log(driver.fullcar, driver.name);
-              array.push(driver);
-            }
-          })
-        );
-      const result = {};
-      array.forEach((item) =>
-        result[item.fullcar]
-          ? result[item.fullcar].push(item.name)
-          : (result[item.fullcar] = [item.name])
-      );
-
-      return (
-        Object.keys(result)
-          // .sort()
-          .reduce((obj, key) => {
-            obj[key] = result[key];
-            return obj;
-          }, {})
-      );
+            );
+          car.crewDetails = crewDetails;
+          return car;
+        })
+        .filter((car) => car.crewDetails.length);
     },
+
     xlsxData() {
       if (!this.todayWorks)
         return [
-          [`Ошибка при загрузке данных, попробуйте скачать файл повторно или обратитесь к Афонину Артему.`],
+          [
+            `Ошибка при загрузке данных, попробуйте скачать файл повторно, в случае неудачи обратитесь к Афонину Артему.`,
+          ],
         ];
-      return Object.entries(this.todayWorks)
-        .map((item) => {
-          return Array.from(item[1]).map((el, i) => {
-            return { Машина: item[0], "№": i + 1, Сотрудник: el };
-          });
-        })
-        .flat();
+      // return Object.entries(this.todayWorks)
+      //   .map((item) => {
+      //     return Array.from(item[1]).map((el, i) => {
+      //       return { Машина: item[0], "№": i + 1, Сотрудник: el };
+      //     });
+      //   })
+      //   .flat();
+      return this.todayWorks.map((car) =>
+        Array.from(
+          car.crewDetails.map((driver) => ({
+            Машина: `${car.mark} ${car.number}`,
+            Сотрудник: driver.name,
+          }))
+        )
+      );
     },
     drivers() {
       return this.$store.getters.getActualStates.catalogDrivers
@@ -184,19 +175,29 @@ tbody:nth-child(2n + 1) > tr > td {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 10px;
+  padding: 10px;
   .car {
     .card {
       border: 0.5px solid black;
-      border-radius: 5px;
+      border-radius: 15px;
+      overflow: hidden;
       // padding: 5px;
       &__title {
         background: #ccc;
         font-weight: bold;
         font-size: 24px;
+        &:hover {
+          cursor: pointer;
+          transform: scale(1.1);
+        }
       }
       &__driver {
         // border: .5px solid black;
         padding: 5px;
+        &:hover {
+          cursor: pointer;
+          transform: scale(1.1);
+        }
       }
     }
   }

@@ -8,7 +8,9 @@
             type="text"
             name="number"
             id="number"
-            placeholder="Цифры номера"
+            :placeholder="
+              dataToChange ? `${dataToChange.number}` : `Цифры номера`
+            "
             v-model="number"
             required
           />
@@ -17,13 +19,17 @@
             type="text"
             name="mark"
             id="mark"
-            placeholder="Например, Исузу"
+            :placeholder="
+              dataToChange ? `${dataToChange.mark}` : `например, Исузу`
+            "
             v-model="mark"
             required
           />
         </form>
         <div class="buttons">
-          <button @click.prevent="addCar">Добавить машину</button>
+          <button @click.prevent="addCar">
+            {{ dataToChange ? `Сохранить изменения` : `Добавить машину` }}
+          </button>
           <button @click.prevent="closePopUp">Отмена</button>
         </div>
       </div>
@@ -41,6 +47,7 @@ export default {
   },
   methods: {
     async closePopUp() {
+      await this.$store.dispatch("stopChangeCarData");
       return await this.$store.dispatch("closeCarPopup");
     },
     async addCar() {
@@ -58,6 +65,9 @@ export default {
   computed: {
     show() {
       return this.$store.getters.getCarPopupVisibility;
+    },
+    dataToChange() {
+      return this.$store.getters.getCarChangeData;
     },
   },
 };

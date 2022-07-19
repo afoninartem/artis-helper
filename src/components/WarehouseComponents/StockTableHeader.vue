@@ -57,7 +57,11 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
+th {
+  position: sticky;
+  top: 0px;
+  }
 // thead {
 //   tr {
 //     th {
