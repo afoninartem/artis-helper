@@ -179,6 +179,16 @@ const routes = [
     component: () => import("../views/personal/HiringReport.vue"),
   },
   {
+    path: "/weekly-reqruitment-report",
+    name: "WeeklyReqruitmentReport",
+    meta: {
+      layout: "MainLayout",
+      auth: true,
+      permissions: ["admin", "recruitment", "personal"],
+    },
+    component: () => import("../views/personal/WeeklyReqruitmentReport.vue"),
+  },
+  {
     path: "/hiring-report-new",
     name: "HiringReportNew",
     meta: {

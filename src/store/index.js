@@ -183,6 +183,12 @@ export default new Vuex.Store({
             permissions: ["recruitment"],
           },
           {
+            name: "WeeklyReqruitmentReport",
+            link: "/weekly-reqruitment-report",
+            title: "Недельный отчет",
+            permissions: ["recruitment", "personal"],
+          },
+          {
             name: "hiringreport-new",
             link: "/hiring-report-new",
             title: "Cводка Test",
