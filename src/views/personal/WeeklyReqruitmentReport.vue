@@ -1,13 +1,20 @@
 <template>
   <div class="weekly-reqruitment-report">
-    <!-- {{
-      statusByDate.filter((s) => s.status === "Самоотказ после собеседования")
-    }}
-    {{
-      statusByDate.filter((s) => s.status === "Самоотказ после собеседования")
-        .length
-    }} -->
-    <table v-if="gsWeeksInfo.length">
+    <xlsx-workbook>
+      <xlsx-sheet
+        :collection="sheet.data"
+        v-for="sheet in sheets"
+        :key="sheet.name"
+        :sheet-name="sheet.name"
+      />
+      <xlsx-download :filename="`${filename}.xlsx`">
+        <button class="hidden-button"  ref="hiddenButton">
+          Скачать таблицу в XLSX
+        </button>
+      </xlsx-download>
+    </xlsx-workbook>
+
+    <table v-if="weeks">
       <thead>
         <tr>
           <th v-for="(head, h) in header" :key="h">{{ head }}</th>
@@ -22,14 +29,20 @@
       <tbody>
         <tr v-for="(week, w) in weeks" :key="w">
           <th>
-            {{ compareWeekInfo(weekInfo(week)) }}
+            {{ w + 1 }}
           </th>
-          <th>{{ weekInfo(week).monday }} - {{ weekInfo(week).sunday }}</th>
-          <th v-for="(status, s) in statuses" :key="s">
-            {{
-              weekInfo(week).items.filter((w) => w.status === status.status)
-                .length
-            }}
+          <th @click="downloadWeekList(week.items)">{{ week.tableMonday }} - {{ week.tableSunday }}</th>
+          <th
+            v-for="(status, s) in statuses"
+            :key="s"
+            :style="{
+              color:
+                week.items.filter((w) => w.status === status.status).length > 0
+                  ? `black`
+                  : `gray`,
+            }"
+          >
+            {{ week.items.filter((w) => w.status === status.status).length || "" }}
           </th>
         </tr>
       </tbody>
@@ -38,23 +51,55 @@
 </template>
 
 <script>
+import {
+  XlsxDownload,
+  XlsxSheet,
+  XlsxWorkbook,
+} from "vue-xlsx/dist/vue-xlsx.es";
 export default {
+  components: {
+    XlsxDownload,
+    XlsxSheet,
+    XlsxWorkbook,
+  },
   data() {
     return {
-      gsIndexes: {
-        date: null,
-        candidate: null,
-        vacancy: null,
-        status: null,
-      },
-      gsRows: null,
-      gsWeeks: [],
-      gsWeeksInfo: [],
-      macrosUrl:
-        "https://script.google.com/macros/s/AKfycbyKyJV7MAVolVr2nW1bQPqY44H66d3c9wtcp2q3mX2O4J_CeF5kLb7sn2YZ-D2_7RtH/exec",
+      filename: "",
+      sheets: [],
+      // gsIndexes: {
+      //   date: null,
+      //   candidate: null,
+      //   vacancy: null,
+      //   status: null,
+      // },
+      // gsRows: null,
+      // gsWeeks: [],
+      // gsWeeksInfo: [],
+      // macrosUrl:
+      //   "https://script.google.com/macros/s/AKfycbyKyJV7MAVolVr2nW1bQPqY44H66d3c9wtcp2q3mX2O4J_CeF5kLb7sn2YZ-D2_7RtH/exec",
     };
   },
   methods: {
+    async downloadWeekList(list) {
+      const button = this.$refs.hiddenButton;
+      console.log(button)
+      this.filename = event.target.innerText;
+      this.sheets = [];
+      this.sheets.push({ name: this.filename, data: list });
+      button.click();
+    },
+    // cursor() {
+    //   // console.log(event.target)
+    //   const cell = event.target;
+    //   const row = cell.parentElement;
+    //   const rowCells = row.children;
+    //   const tbody = row.parentElement;
+    //   const tbodyRows = tbody.children;
+    //   console.log(tbodyRows)
+    //   const colIndex = Array.from(rowCells).indexOf(cell);
+    //   // const col = Array.from(tbodyRows).map((r) => );
+    //   // console.log(row, col);
+    // },
     compareWeekInfo(weekInfo) {
       let gsWeekInfo = this.gsWeeksInfo.filter(
         (w) => w.monday === weekInfo.monday
@@ -75,11 +120,6 @@ export default {
         // console.log(weekInfo_item, i);
         const gsWeekInfo_item = gsWeekInfo.items[i];
         for (let key in weekInfo_item) {
-          // console.log(
-          //   weekInfo_item[key],
-          //   gsWeekInfo_item[key],
-          //   weekInfo_item[key] !== gsWeekInfo_item[key]
-          // );
           if (weekInfo_item[key] !== gsWeekInfo_item[key]) {
             mistakes += 1;
           }
@@ -87,32 +127,16 @@ export default {
       });
       return mistakes;
     },
-
-    weekInfo(week) {
-      // console.log(week);
-      const dateHandler = require("../../store/dateHandler");
-      const date = new Date(week[0].date);
-      const first = date.getDate() - date.getDay() + 1;
-      const monday = new Date(date.setDate(first));
-      const sunday = new Date(date.setDate(first + 6));
-      const items = this.statusByDate.filter(
-        (s) =>
-          new Date(s.date) >= new Date(monday) &&
-          new Date(s.date) <= new Date(sunday)
-      );
-      // console.log({
-      //   monday: dateHandler.getFullDate(monday),
-      //   sunday: dateHandler.getFullDate(sunday),
-      //   items,
-      // });
-      return {
-        monday: dateHandler.getFullDate(monday),
-        sunday: dateHandler.getFullDate(sunday),
-        items,
-      };
-    },
   },
   computed: {
+    // sheets() {
+    //   return {
+    //     sheets: {
+    //       name: this.filename,
+    //       data: this.listToDownload,
+    //     },
+    //   };
+    // },
     candidates() {
       return this.$store.getters.getActualStates.candidates;
     },
@@ -130,39 +154,43 @@ export default {
                     new Date(status.datetime.split("T")[0]).getDay() === 0
                       ? 7
                       : new Date(status.datetime.split("T")[0]).getDay(),
-                  // weekday: new Date(
-                  //   status.datetime.split("T")[0]
-                  // ).toLocaleString("default", { weekday: "short" }),
                 }))
             )
             .flat()
             .sort((a, b) => new Date(a.date) - new Date(b.date))
         : null;
     },
-    startDate() {
-      if (!this.statusByDate) return null;
-      return this.statusByDate[0].date;
-    },
     weeks() {
       if (!this.statusByDate) return null;
+      const dateHandler = require("../../store/dateHandler");
+
       const arr = Array.from(this.statusByDate);
       const weeks = [];
-      let start = 0;
-      arr.forEach((elem, i) => {
-        if (arr[i + 1]) {
-          const day1 = new Date(elem.date).getDate();
-          const day2 = new Date(arr[i + 1].date).getDate();
-          console.log(Math.abs(day2 - day1));
-          if (arr[i + 1].weekday < arr[i].weekday) {
-            weeks.push(arr.slice(start, i + 1));
-            start = i + 1;
-          }
+      const mondays = [];
+      arr.forEach((elem) => {
+        const date = new Date(elem.date);
+        const first = date.getDate() - date.getDay() + 1;
+        const monday = new Date(date.setDate(first));
+        if (!mondays.includes(monday.toString())) {
+          mondays.push(monday.toString());
+          const sunday = new Date(date.setDate(first + 6));
+          const items = this.statusByDate
+            .filter(
+              (s) =>
+                new Date(s.date) >= new Date(monday) &&
+                new Date(s.date) <= new Date(sunday)
+            )
+            .map((i) => ({ date: i.date, status: i.status, name: i.name }));
+          const tableMonday = dateHandler.getFullDate(monday);
+          const tableSunday = dateHandler.getFullDate(sunday);
+          weeks.push({ monday, tableMonday, sunday, tableSunday, items });
         }
       });
+
       return weeks.reverse();
     },
     header() {
-      return ["!", "Неделя"].concat(this.statuses.map((s) => s.status));
+      return ["#", "Неделя"].concat(this.statuses.map((s) => s.status));
     },
     statuses() {
       return this.$store.getters.getCandidateStatusList;
@@ -170,42 +198,43 @@ export default {
   },
   mounted: async function () {
     await this.$store.dispatch("setActualCandidates");
-    await fetch(this.macrosUrl)
-      .then((res) => res.json())
-      .then((data) => {
-        // console.log(data);
-        const statuses = this.statuses.map((s) => s.status);
-        this.gsIndexes.date = data[0].indexOf("Дата");
-        this.gsIndexes.candidate = data[0].indexOf("ФИО");
-        this.gsIndexes.status = data[0].indexOf("Статус");
-        this.gsIndexes.vacancy = data[0].indexOf("Вакансия");
-        this.gsRows = data
-          .filter((row) => statuses.includes(row[this.gsIndexes.status]))
-          .map((row) => ({
-            date: row[this.gsIndexes.date].split("T")[0],
-            name: row[this.gsIndexes.candidate],
-            status: row[this.gsIndexes.status],
-            weekday:
-              new Date(row[this.gsIndexes.date].split("T")[0]).getDay() === 0
-                ? 7
-                : new Date(row[this.gsIndexes.date].split("T")[0]).getDay(),
-          }))
-          .filter((row) => row.date >= this.startDate);
-        let start = 0;
-        this.gsRows.forEach((elem, i) => {
-          if (
-            this.gsRows[i + 1] &&
-            this.gsRows[i + 1].weekday < this.gsRows[i].weekday
-          ) {
-            this.gsWeeks.push(this.gsRows.slice(start, i + 1));
-            start = i + 1;
-          }
-        });
-        this.gsWeeks.reverse();
-        this.gsWeeks.forEach((week) =>
-          this.gsWeeksInfo.push(this.weekInfo(week))
-        );
-      });
+    //  fetch(this.macrosUrl)
+    //   .then((res) => res.json())
+    //   .then((data) => {
+    //     // console.log(data);
+    //     const statuses = this.statuses.map((s) => s.status);
+    //     this.gsIndexes.date = data[0].indexOf("Дата");
+    //     this.gsIndexes.candidate = data[0].indexOf("ФИО");
+    //     this.gsIndexes.status = data[0].indexOf("Статус");
+    //     this.gsIndexes.vacancy = data[0].indexOf("Вакансия");
+    //     this.gsRows = data
+    //       .filter((row) => statuses.includes(row[this.gsIndexes.status]))
+    //       .map((row) => ({
+    //         date: row[this.gsIndexes.date].split("T")[0],
+    //         name: row[this.gsIndexes.candidate],
+    //         status: row[this.gsIndexes.status],
+    //         weekday:
+    //           new Date(row[this.gsIndexes.date].split("T")[0]).getDay() === 0
+    //             ? 7
+    //             : new Date(row[this.gsIndexes.date].split("T")[0]).getDay(),
+    //       }))
+    //       .filter((row) => row.date >= this.startDate);
+    //     let start = 0;
+    //     this.gsRows.forEach((elem, i) => {
+    //       if (
+    //         this.gsRows[i + 1] &&
+    //         this.gsRows[i + 1].weekday < this.gsRows[i].weekday
+    //       ) {
+    //         this.gsWeeks.push(this.gsRows.slice(start, i + 1));
+    //         start = i + 1;
+    //       }
+    //     });
+    //     this.gsWeeks.reverse();
+    //     this.gsWeeks.forEach((week) =>
+    //       this.gsWeeksInfo.push(this.weekInfo(week))
+    //     );
+    //   });
+    //   this.componentKey += 1;
   },
 };
 </script>
@@ -215,5 +244,9 @@ export default {
 @include personal-table;
 table {
   font-size: 14px;
+}
+.hidden-button {
+  position: absolute;
+  top: -100px
 }
 </style>

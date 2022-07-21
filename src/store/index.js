@@ -185,19 +185,19 @@ export default new Vuex.Store({
           {
             name: "WeeklyReqruitmentReport",
             link: "/weekly-reqruitment-report",
-            title: "Недельный отчет",
+            title: "Сводка по неделям",
             permissions: ["recruitment", "personal"],
           },
           {
             name: "hiringreport-new",
             link: "/hiring-report-new",
-            title: "Cводка Test",
+            title: "Сводка по кандидатам",
             permissions: ["recruitment", "personal"],
           },
           {
             name: "hiringreport-result",
             link: "/hiring-report-result",
-            title: "Подбор Result",
+            title: "Сводка по вакансиям",
             permissions: ["recruitment", "personal"],
           },
           {
