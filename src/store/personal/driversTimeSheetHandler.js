@@ -112,16 +112,39 @@ export default {
 				.doc(payload.carID)
 				.set(payload);
 		},
-    async saveCar(context, payload) {
-      console.log(payload)
-    },
+		async saveCar({ getters }, payload) {
+			console.log(payload);
+			const drivers = getters.getActualStates.catalogDrivers;
+			const cars = getters.getActualStates.catalogCars;
+			const carID = payload.oldData.carID;
+			const crew = payload.oldData.crew;
+			const crewDetails = crew
+				.map(
+					(id) => drivers.filter((d) => d.driverID === id)[0]
+					// .carslist.filter((car) => car.carID === carID)
+				)
+				.flat();
+			const car = cars.filter((car) => car.carID === carID)[0];
+			car.mark = payload.newData.mark ? payload.newData.mark : car.mark;
+			car.number = payload.newData.number ? payload.newData.number : car.number;
+			// console.log(car);
+        await db.collection("service/catalog/cars").doc(carID).update({mark: car.mark, number: car.number})
+			crewDetails.forEach(async (driver) => {
+				const newCarslist = driver.carslist;
+				newCarslist.forEach((c) => {
+					if (c.carID === carID) c.car = car.number;
+				});
+        // console.log(newCarslist);
+        await db.collection("service/catalog/drivers").doc(driver.driverID).update({carslist: newCarslist})
+			});
+		},
 		async openChangeCarPopup(context, payload) {
 			await context.commit("changeCarData", payload);
 			await context.commit("openCarPopup");
 		},
-    async stopChangeCarData(context) {
-      await context.commit("stopChangeCarData")
-    },
+		async stopChangeCarData(context) {
+			await context.commit("stopChangeCarData");
+		},
 		async openCarCrewPopup(context, payload) {
 			return await context.commit("openCarCrewPopup", payload);
 		},
@@ -165,21 +188,21 @@ export default {
 			// console.log(`payload: `, payload);
 			const drivers = getters.getActualStates.catalogDrivers;
 			const driver = drivers.filter((d) => d.driverID === payload.driverID)[0];
-      // console.log(`driver: `, driver)
+			// console.log(`driver: `, driver)
 			const carslist = driver.carslist;
-      // console.log(`driver.carslist: `, driver.carslist)
+			// console.log(`driver.carslist: `, driver.carslist)
 			const newCarslist = carslist.filter((car) => car.carID !== payload.carID);
-      // console.log(`newCarslist: `, newCarslist)
+			// console.log(`newCarslist: `, newCarslist)
 
 			const cars = getters.getActualStates.catalogCars;
 			const car = cars.filter((car) => car.carID === payload.carID)[0];
 			const crew = car.crew;
 			const newCrew = crew.filter((cmID) => cmID !== payload.driverID);
 
-      await db
-      .collection("service/catalog/drivers")
-      .doc(payload.driverID)
-      .update({ carslist: newCarslist });
+			await db
+				.collection("service/catalog/drivers")
+				.doc(payload.driverID)
+				.update({ carslist: newCarslist });
 
 			await db
 				.collection("service/catalog/cars")

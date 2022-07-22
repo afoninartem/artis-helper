@@ -8,7 +8,7 @@
         :sheet-name="sheet.name"
       />
       <xlsx-download :filename="`${filename}.xlsx`">
-        <button class="hidden-button"  ref="hiddenButton">
+        <button class="hidden-button" ref="hiddenButton">
           Скачать таблицу в XLSX
         </button>
       </xlsx-download>
@@ -20,18 +20,25 @@
           <th v-for="(head, h) in header" :key="h">{{ head }}</th>
         </tr>
         <tr>
-          <th colspan="2">ИТОГО</th>
+          <th></th>
+          <th>ИТОГО</th>
           <th v-for="(status, s) in statuses" :key="s">
             {{ statusByDate.filter((s) => s.status === status.status).length }}
           </th>
         </tr>
       </thead>
-      <tbody>
+      <!-- cursorOn and cursorOff on tag tbody ↓ -->
+      <tbody> 
         <tr v-for="(week, w) in weeks" :key="w">
           <th>
             {{ w + 1 }}
           </th>
-          <th @click="downloadWeekList(week.items)">{{ week.tableMonday }} - {{ week.tableSunday }}</th>
+          <th
+            @click="downloadWeekList(week.items)"
+            :style="{ cursor: `pointer` }"
+          >
+            {{ week.tableMonday }} - {{ week.tableSunday }}
+          </th>
           <th
             v-for="(status, s) in statuses"
             :key="s"
@@ -42,7 +49,9 @@
                   : `gray`,
             }"
           >
-            {{ week.items.filter((w) => w.status === status.status).length || "" }}
+            {{
+              week.items.filter((w) => w.status === status.status).length || ""
+            }}
           </th>
         </tr>
       </tbody>
@@ -82,23 +91,32 @@ export default {
   methods: {
     async downloadWeekList(list) {
       const button = this.$refs.hiddenButton;
-      console.log(button)
+      console.log(button);
       this.filename = event.target.innerText;
       this.sheets = [];
       this.sheets.push({ name: this.filename, data: list });
       button.click();
     },
-    // cursor() {
-    //   // console.log(event.target)
+    // cursorOn() {
     //   const cell = event.target;
     //   const row = cell.parentElement;
     //   const rowCells = row.children;
     //   const tbody = row.parentElement;
     //   const tbodyRows = tbody.children;
-    //   console.log(tbodyRows)
     //   const colIndex = Array.from(rowCells).indexOf(cell);
-    //   // const col = Array.from(tbodyRows).map((r) => );
-    //   // console.log(row, col);
+    //   const thead = tbody.parentElement.firstChild;
+    //   const theadCells = Array.from(thead.children).map(
+    //     (tr) => tr.children[colIndex]
+    //   );
+    //   const col = Array.from(tbodyRows).map((r) => r.children[colIndex]);
+    //   theadCells
+    //     .concat(Array.from(rowCells), Array.from(col))
+    //     .forEach((r) => r.classList.add("cursor"));
+    // },
+    // cursorOff() {
+    //   console.log(event.target)
+    //   Array.from(event.target.children).forEach(elem => Array.from(elem.children).forEach(e => e.classList.remove("cursor")))
+    //   Array.from(event.target.parentElement.firstChild.children).forEach(row => Array.from(row.children).forEach(th => th.classList.remove("cursor")))
     // },
     compareWeekInfo(weekInfo) {
       let gsWeekInfo = this.gsWeeksInfo.filter(
@@ -247,6 +265,9 @@ table {
 }
 .hidden-button {
   position: absolute;
-  top: -100px
+  top: -100px;
+}
+.cursor {
+  background: rgba(28, 103, 201, 0.39);
 }
 </style>

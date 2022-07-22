@@ -155,6 +155,7 @@ export default {
   },
   data() {
     return {
+      img: null,
       headerTemplate: ["#", "ФИО", "Должность"],
       tips: null,
       date: {
@@ -370,6 +371,7 @@ export default {
     await this.$store.dispatch("setActualCatalogCars");
     this.date.year = new Date().getFullYear();
     this.date.month = new Date().getMonth();
+
   },
 };
 </script>

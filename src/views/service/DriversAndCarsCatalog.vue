@@ -16,16 +16,10 @@
         </thead>
         <tbody>
           <tr v-for="(car, c) in cars" :key="c">
-            <td
-              @click.prevent="openChangeCarPopup(car)"
-              :style="{ cursor: `pointer` }"
-            >
+            <td class="car-info" @click.prevent="openChangeCarPopup(car)">
               {{ car.mark.toUpperCase() }}
             </td>
-            <td
-              @click.prevent="openChangeCarPopup(car)"
-              :style="{ fontWeight: `bold`, cursor: `pointer` }"
-            >
+            <td class="car-info" @click.prevent="openChangeCarPopup(car)">
               {{ car.number }}
             </td>
             <td @click.prevent="openCarCrewPopup(car.carID)" class="crew">
@@ -135,8 +129,8 @@ export default {
       return await this.$store.dispatch("openAddPositionPopup");
     },
     async openChangeCarPopup(car) {
-      return await this.$store.dispatch("openChangeCarPopup", car)
-    }
+      return await this.$store.dispatch("openChangeCarPopup", car);
+    },
   },
   computed: {
     drivers() {
@@ -173,6 +167,7 @@ export default {
 @include personal-table;
 .crew,
 .shedule,
+.car-info,
 .car {
   cursor: pointer;
   &:hover {
