@@ -1,6 +1,7 @@
 import { db } from "../../main";
 export default {
 	state: {
+		addDriverPopupVisibility: false,
 		carPopup: false,
 		changeCarPopupData: null,
 		carCrewPopup: false,
@@ -67,14 +68,29 @@ export default {
 		stopChangeCarData(state) {
 			state.changeCarPopupData = null;
 		},
+		openAddDriverPopup(state) {
+			state.addDriverPopupVisibility = true;
+		},
+		closeAddDriverPopup(state) {
+			state.addDriverPopupVisibility = false;
+		},
 	},
 	actions: {
-		async openAddPositionPopup(context) {
-			return await context.commit("openAddPositionPopup");
+		async openAddDriverPopup(context) {
+			return await context.commit("openAddDriverPopup");
 		},
-		async closeAddPositionPopup(context) {
-			return await context.commit("closeAddPositionPopup");
-		},
+    async closeAddDriverPopup(context) {
+      return await context.commit("closeAddDriverPopup");
+    },
+    async addDriverToCatalog(context, payload) {
+      console.log(payload)
+    },
+		// async openAddPositionPopup(context) {
+		// 	return await context.commit("openAddPositionPopup");
+		// },
+		// async closeAddPositionPopup(context) {
+		// 	return await context.commit("closeAddPositionPopup");
+		// },
 		async addDriversCatalog({ getters }, payload) {
 			let initID = Date.now();
 			const positions = getters.getDriversPositions;
@@ -128,14 +144,20 @@ export default {
 			car.mark = payload.newData.mark ? payload.newData.mark : car.mark;
 			car.number = payload.newData.number ? payload.newData.number : car.number;
 			// console.log(car);
-        await db.collection("service/catalog/cars").doc(carID).update({mark: car.mark, number: car.number})
+			await db
+				.collection("service/catalog/cars")
+				.doc(carID)
+				.update({ mark: car.mark, number: car.number });
 			crewDetails.forEach(async (driver) => {
 				const newCarslist = driver.carslist;
 				newCarslist.forEach((c) => {
 					if (c.carID === carID) c.car = car.number;
 				});
-        // console.log(newCarslist);
-        await db.collection("service/catalog/drivers").doc(driver.driverID).update({carslist: newCarslist})
+				// console.log(newCarslist);
+				await db
+					.collection("service/catalog/drivers")
+					.doc(driver.driverID)
+					.update({ carslist: newCarslist });
 			});
 		},
 		async openChangeCarPopup(context, payload) {
@@ -287,9 +309,9 @@ export default {
 		getCarPopupVisibility: (state) => {
 			return state.carPopup;
 		},
-		getAddPositionPopupVisibility: (state) => {
-			return state.addPositionPopup;
-		},
+		// getAddPositionPopupVisibility: (state) => {
+		// 	return state.addPositionPopup;
+		// },
 		getCarCrewPopupVisibility: (state) => {
 			return { show: state.carCrewPopup, id: state.carIDForCrewPopup };
 		},
@@ -316,6 +338,9 @@ export default {
 		},
 		getCarChangeData: (state) => {
 			return state.changeCarPopupData;
+		},
+		getAddDriverPopupVisibility: (state) => {
+			return state.addDriverPopupVisibility;
 		},
 	},
 };

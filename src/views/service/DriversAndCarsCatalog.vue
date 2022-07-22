@@ -53,7 +53,7 @@
     <div class="catalog__drivers" v-if="drivers">
       <h1>Справочник сотрудников доставки</h1>
       <!-- <AddDriversCatalog /> -->
-      <!-- <button @click.prevent="addDriver">Добавить сотрудника</button> -->
+      <button @click.prevent="addDriver">Добавить сотрудника</button>
       <table>
         <thead>
           <tr>
@@ -96,6 +96,7 @@
     <CarCrewPopUp />
     <ShedulePopUp />
     <AddPositionPopup />
+    <AddDriverPopup />
   </div>
 </template>
 
@@ -104,6 +105,7 @@ import AddCarPopUp from "@/components/ServiceComponents/AddCarPopUp";
 import CarCrewPopUp from "@/components/ServiceComponents/CarCrewPopUp";
 import ShedulePopUp from "@/components/ServiceComponents/ShedulePopUp";
 import AddPositionPopup from "@/components/ServiceComponents/AddPositionPopup";
+import AddDriverPopup from "@/components/ServiceComponents/AddDriverPopup";
 // import PrintShedule from "@/components/ServiceComponents/PrintShedule";
 // import AddDriversCatalog from "@/components/PersonalComponents/AddDriversCatalog";
 export default {
@@ -112,12 +114,16 @@ export default {
     CarCrewPopUp,
     ShedulePopUp,
     AddPositionPopup,
+    AddDriverPopup,
     // PrintShedule,
     // AddDriversCatalog,
   },
   methods: {
     async addCar() {
       return await this.$store.dispatch("openCarPopup");
+    },
+    async addDriver() {
+      return await this.$store.dispatch("openAddDriverPopup");
     },
     async openCarCrewPopup(car_id) {
       return await this.$store.dispatch("openCarCrewPopup", car_id);
@@ -145,7 +151,6 @@ export default {
     cars() {
       return this.$store.getters.getActualStates.catalogCars && this.drivers
         ? Array.from(this.$store.getters.getActualStates.catalogCars)
-
             // .map((car) => {
             // return car.crew.map(cm => this.drivers.filter(d => d.driverID === cm)[0])
             // })
