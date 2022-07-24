@@ -85,20 +85,54 @@
               v-for="(day, d) in daySpec(date.month, date.year)"
               :key="`curr-date-${d}`"
               :style="
-                setStyle(
-                  new Date(date.year, date.month, day.dayOfMonth),
-                  driver,
-                  day
-                )
+                driver.extras.filter(
+                  (e) =>
+                    e.day == new Date(date.year, date.month, day.dayOfMonth).toString()
+                ).length
+                  ? driver.extras.filter(
+                      (e) =>
+                        e.day == new Date(date.year, date.month, day.dayOfMonth).toString()
+                    )[0].cut.length
+                    ? `background: ${
+                        driver.extras.filter(
+                          (e) =>
+                            e.day ==
+                            new Date(date.year, date.month, day.dayOfMonth).toString()
+                        )[0].bgColor
+                      }`
+                    : setStyle(
+                        new Date(date.year, date.month, day.dayOfMonth),
+                        driver,
+                        day
+                      )
+                  : setStyle(
+                      new Date(date.year, date.month, day.dayOfMonth),
+                      driver,
+                      day
+                    )
               "
             >
               {{
-                count(
-                  driver.sheduleStart,
-                  driver.sheduleType,
-                  driver.sheduleShift,
-                  new Date(date.year, date.month, day.dayOfMonth)
-                )
+                driver.extras.filter(
+                  (e) =>
+                    e.day ==
+                    new Date(date.year, date.month, day.dayOfMonth).toString()
+                ).length
+                  ? driver.extras.filter(
+                      (e) =>
+                        e.day ==
+                        new Date(
+                          date.year,
+                          date.month,
+                          day.dayOfMonth
+                        ).toString()
+                    )[0].cut
+                  : count(
+                      driver.sheduleStart,
+                      driver.sheduleType,
+                      driver.sheduleShift,
+                      new Date(date.year, date.month, day.dayOfMonth)
+                    )
               }}
             </td>
           </tr>
@@ -332,6 +366,7 @@ export default {
             cl.name = driver.name;
             cl.position = driver.position;
             cl.driverID = driver.driverID;
+            cl.extras = driver.extras || [];
             return cl;
           })[0];
         result.rowspan = 1;
