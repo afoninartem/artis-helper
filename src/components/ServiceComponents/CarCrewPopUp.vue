@@ -87,19 +87,40 @@
                   class="cell"
                   v-for="(day, d) in header"
                   :key="`date-${d}`"
-                  :style="dayStyles(day)"
-                  @contextmenu.prevent="setExtra(driver, day)"
-                  @mousedown="startCollectSelectionCells(driver.driverID, day)"
+                  :style="
+                    driver.extras.filter(
+                      (e) =>
+                        e.day == new Date(date.year, date.month, day).toString()
+                    ).length
+                      ? `background: ${
+                          driver.extras.filter(
+                            (e) =>
+                              e.day ==
+                              new Date(date.year, date.month, day).toString()
+                          )[0].bgColor
+                        }`
+                      : dayStyles(day)
+                  "
+                  @mousedown="startCollectSelectionCells(driver, day)"
                   @mouseover="collectSelectionCells(driver, day)"
                   @mouseup="stopCollectSelectionCells"
                 >
                   {{
-                    count(
-                      driver.sheduleStart,
-                      driver.sheduleType,
-                      driver.sheduleShift,
-                      new Date(date.year, date.month, day)
-                    )
+                    driver.extras.filter(
+                      (e) =>
+                        e.day == new Date(date.year, date.month, day).toString()
+                    ).length
+                      ? driver.extras.filter(
+                          (e) =>
+                            e.day ==
+                            new Date(date.year, date.month, day).toString()
+                        )[0].cut
+                      : count(
+                          driver.sheduleStart,
+                          driver.sheduleType,
+                          driver.sheduleShift,
+                          new Date(date.year, date.month, day)
+                        )
                   }}
                 </td>
                 <td
@@ -155,7 +176,7 @@ export default {
   },
   data() {
     return {
-      img: null,
+      // img: null,
       headerTemplate: ["#", "ФИО", "Должность"],
       tips: null,
       date: {
@@ -170,29 +191,38 @@ export default {
     };
   },
   methods: {
-    async startCollectSelectionCells(driverID, day) {
+    async startCollectSelectionCells(driver, day) {
       this.mouseIsDown = true;
       this.cellsCollection = [day];
-      this.selectedDriver = driverID;
+      this.selectedDriver = driver;
     },
     async stopCollectSelectionCells() {
       this.mouseIsDown = false;
+      const days = this.cellsCollection.map(
+        (day) => new Date(this.date.year, this.date.month, day)
+      );
+      await this.$store.dispatch("openDriverExtraPopup", {
+        driver: this.selectedDriver,
+        days,
+      });
       this.selectedDriver = null;
     },
     async collectSelectionCells(driver, day) {
       if (
         this.mouseIsDown &&
         this.selectedDriver &&
-        driver.driverID === this.selectedDriver
+        driver.driverID === this.selectedDriver.driverID
       ) {
         console.log(driver, day);
         this.cellsCollection.push(day);
       }
     },
-    async setExtra(driver, day) {
-      // console.log(event.target, driver, day);
-      await this.$store.dispatch("openDriverExtraPopup", { driver, day });
-    },
+    // async setExtra(driver, day) {
+    //   // console.log(event.target, driver, day);
+    //   const days = [day];
+    //   console.log(days)
+    //   await this.$store.dispatch("openDriverExtraPopup", { driver, days });
+    // },
     setCrewData(array) {
       this.crewData = array;
     },
@@ -327,6 +357,7 @@ export default {
             cl.name = driver.name;
             cl.position = driver.position;
             cl.driverID = driver.driverID;
+            cl.extras = driver.extras ? driver.extras : [];
             return cl;
           });
         crew.push(result);
@@ -371,7 +402,6 @@ export default {
     await this.$store.dispatch("setActualCatalogCars");
     this.date.year = new Date().getFullYear();
     this.date.month = new Date().getMonth();
-
   },
 };
 </script>

@@ -7,11 +7,25 @@
           class="conventions__item"
           v-for="(item, i) in conventions"
           :key="`conventions-item-${i}`"
+          @click.prevent="setExtra(item)"
         >
           <div class="conventions__sample" :style="{ background: item.color }">
             {{ item.cut }}
           </div>
           <div class="conventions__description">{{ item.description }}</div>
+        </div>
+        <div class="conventions__item" @click.prevent="setExtra({color: `#fff`, description: `Очистить`, cut: `delete`})">
+          <div class="conventions__sample"></div>
+          <div class="conventions__description">Очистить</div>
+        </div>
+      </div>
+      <div class="dates" v-if="info" ref="dates">
+        <div v-if="info.days.length === 1">
+          {{ info.days[0].toLocaleString().split(",")[0] }}
+        </div>
+        <div v-if="info.days.length > 1">
+          {{ info.days[0].toLocaleString().split(",")[0] }} -
+          {{ info.days[info.days.length - 1].toLocaleString().split(",")[0] }}
         </div>
       </div>
       <div class="block-btn">
@@ -32,11 +46,30 @@ export default {
         { description: "Хочет работать", cut: "ХР", color: "#00FF7F" },
         { description: "Неявка", cut: "Н", color: "#B22222" },
       ],
+      result: null,
     };
   },
   methods: {
-    close() {
-      return this.$store.dispatch("closeDriverExtraPopup");
+    async close() {
+      return await this.$store.dispatch("closeDriverExtraPopup");
+    },
+    setExtra(item) {
+      console.log(item);
+      const dates = this.$refs.dates;
+      console.log(dates);
+      dates.style.background = item.color;
+      this.result = {
+        days: Array.from(this.info.days).map((day) => ({ day: day.toString(), cut: item.cut, bgColor: item.color })),
+      };
+    },
+    async save() {
+      if (!this.result) return;
+      const result = this.result;
+      result.driverID = this.info.driver.driverID;
+      await this.$store.dispatch("updateExtras", result);
+      await this.$store.dispatch("updateCatalogDriversDate");
+      await this.$store.dispatch("setActualCatalogDrivers");
+      return await this.$store.dispatch("closeDriverExtraPopup");
     },
   },
   computed: {
@@ -64,9 +97,11 @@ export default {
     padding-bottom: 20px;
     display: flex;
     flex-direction: column;
-    // justify-content: space-between;
+    justify-content: space-between;
     align-items: center;
+    gap: 20px;
     .conventions {
+      margin-bottom: auto;
       display: flex;
       justify-content: space-between;
       gap: 30px;
@@ -87,8 +122,16 @@ export default {
         }
       }
     }
+    .dates {
+      margin: auto;
+      transform: translateY(-100px);
+      font-size: 24px;
+      font-weight: bold;
+      padding: 10px;
+      border: 1px solid black;
+    }
     .block-btn {
-      margin-top: auto;
+      // margin-top: auto;
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 10px;

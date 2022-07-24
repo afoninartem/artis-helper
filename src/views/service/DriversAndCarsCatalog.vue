@@ -4,6 +4,8 @@
       <h1>Справочник машин</h1>
       <div class="menu">
         <button @click.prevent="addCar">Добавить машину</button>
+        <button @click.prevent="addDriver">Добавить сотрудника</button>
+        <!-- <button @click.prevent="fixExtras">Fix сотрудника</button> -->
       </div>
       <!-- <PrintShedule /> -->
       <table>
@@ -53,7 +55,6 @@
     <div class="catalog__drivers" v-if="drivers">
       <h1>Справочник сотрудников доставки</h1>
       <!-- <AddDriversCatalog /> -->
-      <button @click.prevent="addDriver">Добавить сотрудника</button>
       <table>
         <thead>
           <tr>
@@ -137,6 +138,17 @@ export default {
     async openChangeCarPopup(car) {
       return await this.$store.dispatch("openChangeCarPopup", car);
     },
+    // async fixExtras() {
+    //   localStorage.removeItem("catalogDriversLastUpdateLS")
+      // if (!this.drivers) return;
+      // this.drivers.filter(driver => driver.extras).forEach(driver => driver.extras.forEach(e => {
+      //   if (typeof e.day !== 'string') {
+      //     const fixedDate = new Date(e.day.seconds * 1000).toString()
+      //     console.log(fixedDate, driver.driverID)
+      //     e.day = fixedDate;
+      //   }
+      // }))
+    // }
   },
   computed: {
     drivers() {

@@ -1,14 +1,20 @@
 <template>
-  <div class="add-driver-popup">
+  <div class="add-driver-popup" v-if="show">
     <div class="add-driver-popup__background">
       <div class="add-driver-popup__content">
         <h1>Добавить нового сотрудника</h1>
         <p>Желательно скопировать ФИО из 1С, чтобы избежать ошибок.</p>
-        <form action="">
+        <form action="" class="add-driver-popup__form">
           <input type="text" name="name" id="name" v-model="newDriver.name" />
-            <select name="" id=""></select>
-          <button @click.prevent="add">Добавить сотрудника</button>
-          <button @click.prevent="close">Закрыть</button>
+          <select name="position" id="position" v-model="newDriver.position">
+            <option v-for="(position, p) in positionsList" :key="p">
+              {{ position.toLowerCase() }}
+            </option>
+          </select>
+          <div class="buttons">
+            <button @click.prevent="add">Добавить сотрудника</button>
+            <button @click.prevent="close">Закрыть</button>
+          </div>
         </form>
       </div>
     </div>
@@ -27,10 +33,10 @@ export default {
   },
   methods: {
     async add() {
-      if (!this.name.trim() || !this.position.trim()) return;
+      if (!this.newDriver.name.trim() || !this.newDriver.position.trim()) return;
       return await this.$store.dispatch("addDriverToCatalog", {
-        name: this.name,
-        position: this.position,
+        name: this.newDriver.name,
+        position: this.newDriver.position,
       });
     },
     async close() {
@@ -40,6 +46,9 @@ export default {
   computed: {
     show() {
       return this.$store.getters.getAddDriverPopupVisibility;
+    },
+    positionsList() {
+      return this.$store.getters.getDriversPositions;
     },
   },
 };
@@ -58,68 +67,23 @@ export default {
     place-items: center;
     background: rgb(63, 145, 97);
     .add-driver-popup__content {
-      // transform: scale(1.2);
+      transform: scale(1.2);
       display: grid;
-      .actual-crew {
-        ul {
-          li {
-            display: flex;
-            justify-content: space-between;
-          }
-        }
-      }
-      .add-driver__form__form {
+      .add-driver-popup__form {
         display: grid;
         padding: 20px;
-        grid-template-columns: repeat(2, 1fr);
+        // grid-template-columns: repeat(2, 1fr);
         gap: 20px;
         width: max-content;
         margin: 0 auto;
 
-        label {
-          text-align: right;
-          // vertical-align: middle;
-          // display: grid;
-          // place-content: center;
-        }
-        input {
-          // width: max-content;
-          text-align: center;
-          width: 200px;
-        }
-        input::-webkit-outer-spin-button,
-        input::-webkit-inner-spin-button {
-          -webkit-appearance: none;
-          -moz-appearance: none; // не работает в FF почему-то
-          margin: 0;
-        }
-      }
-      .close-btn {
-        width: 20%;
-        margin: 0 auto;
-      }
-      ul {
-        list-style: none;
-        // margin: 0 auto;
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-        li {
-          padding: 2px;
-        }
-        .tip {
-          border: 1px solid #000;
-          transform: scale(0.7);
-          cursor: pointer;
-        }
       }
       .buttons {
         display: flex;
         justify-content: center;
-        // grid-column: 1/3;
         button {
           padding: 5px;
-          width: 15%;
+          // width: 15%;
         }
       }
     }
