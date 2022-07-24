@@ -14,12 +14,17 @@
           </div>
           <div class="conventions__description">{{ item.description }}</div>
         </div>
-        <div class="conventions__item" @click.prevent="setExtra({color: `#fff`, description: `Очистить`, cut: `delete`})">
+        <div
+          class="conventions__item"
+          @click.prevent="
+            setExtra({ color: `#fff`, description: `Очистить`, cut: `` })
+          "
+        >
           <div class="conventions__sample"></div>
           <div class="conventions__description">Очистить</div>
         </div>
       </div>
-      <div class="dates" v-if="info" ref="dates">
+      <div class="dates" v-if="info" ref="dates" :style="oldExtras">
         <div v-if="info.days.length === 1">
           {{ info.days[0].toLocaleString().split(",")[0] }}
         </div>
@@ -28,6 +33,7 @@
           {{ info.days[info.days.length - 1].toLocaleString().split(",")[0] }}
         </div>
       </div>
+
       <div class="block-btn">
         <button class="save-btn" @click.prevent="save">Сохранить</button>
         <button class="close-btn" @click.prevent="close">Закрыть</button>
@@ -59,7 +65,11 @@ export default {
       console.log(dates);
       dates.style.background = item.color;
       this.result = {
-        days: Array.from(this.info.days).map((day) => ({ day: day.toString(), cut: item.cut, bgColor: item.color })),
+        days: Array.from(this.info.days).map((day) => ({
+          day: day.toString(),
+          cut: item.cut,
+          bgColor: item.color,
+        })),
       };
     },
     async save() {
@@ -78,6 +88,15 @@ export default {
     },
     info() {
       return this.$store.getters.getDriverExtraPopupDetails;
+    },
+    oldExtras() {
+      if (!this.info) return;
+      // return this.info.driver.extras;
+      const oldExtras = this.info.driver.extras;
+      const newExtras = this.info.days.map((day) => new Date(day).toString());
+      const bgColor = oldExtras.filter((e) => newExtras.includes(e.day))[0]
+        .bgColor || `#fff`
+      return `background: ${bgColor}`;
     },
   },
 };

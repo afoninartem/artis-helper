@@ -79,7 +79,7 @@
         <tbody v-for="(driver, d) in car.crewDetails" :key="`driver-info-${d}`">
           <tr>
             <td :rowspan="driver.rowspan">{{ d + 1 }}</td>
-            <td :rowspan="driver.rowspan">{{ driver.name }}</td>
+            <td :rowspan="driver.rowspan" ref="name">{{ driver.name }}</td>
             <td>Отдел сервиса</td>
             <td
               v-for="(day, d) in daySpec(date.month, date.year)"
@@ -211,6 +211,7 @@ export default {
         },
       ],
       showConventions: false,
+      // driverCellWidth: null,
     };
   },
   methods: {
@@ -221,7 +222,7 @@ export default {
       // console.log(date, driver)
       if (
         !driver.info1C7 ||
-        !driver.info1C8 
+        !driver.info1C8
         // ||
         // !this.info1C8_A21 ||
         // !this.info1C8_AP ||
@@ -411,6 +412,9 @@ export default {
     await this.$store.dispatch("setActualCatalogCars");
     this.date.year = new Date().getFullYear();
     this.date.month = new Date().getMonth();
+    const cells = this.$refs.name;
+    const maxWidth = Math.max(...cells.map((c) => c.clientWidth));
+    cells.forEach((cell) => (cell.style.width = `${maxWidth}px`));
   },
 };
 </script>

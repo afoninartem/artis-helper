@@ -92,13 +92,19 @@
                       (e) =>
                         e.day == new Date(date.year, date.month, day).toString()
                     ).length
-                      ? `background: ${
-                          driver.extras.filter(
-                            (e) =>
-                              e.day ==
-                              new Date(date.year, date.month, day).toString()
-                          )[0].bgColor
-                        }`
+                      ? driver.extras.filter(
+                          (e) =>
+                            e.day ==
+                            new Date(date.year, date.month, day).toString()
+                        )[0].cut.length
+                        ? `background: ${
+                            driver.extras.filter(
+                              (e) =>
+                                e.day ==
+                                new Date(date.year, date.month, day).toString()
+                            )[0].bgColor
+                          }`
+                        : dayStyles(day)
                       : dayStyles(day)
                   "
                   @mousedown="startCollectSelectionCells(driver, day)"

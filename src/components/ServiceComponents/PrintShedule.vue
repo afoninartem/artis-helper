@@ -80,7 +80,7 @@
       ref="html2Pdf"
     >
       <section slot="pdf-content">
-           <table>
+        <table>
       <tbody v-for="(car, c) in cars" :key="`car-${c}`">
         <thead>
           <tr>
@@ -169,7 +169,7 @@ export default {
   },
   methods: {
     print() {
-      this.$refs.html2Pdf.generatePdf()
+      this.$refs.html2Pdf.generatePdf();
     },
     count(sheduleStart, sheduleType, sheduleShift, currDate) {
       const count = require("../../store/service/sheduleCounter");
