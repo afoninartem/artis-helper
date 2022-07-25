@@ -33,11 +33,17 @@ export default {
   },
   methods: {
     async add() {
-      if (!this.newDriver.name.trim() || !this.newDriver.position.trim()) return;
-      return await this.$store.dispatch("addDriverToCatalog", {
-        name: this.newDriver.name,
-        position: this.newDriver.position,
-      });
+      if (!this.newDriver.name.trim() || !this.newDriver.position.trim())
+        return;
+      if (Array.from(this.drivers).includes(this.newDriver.name.trim()))
+        alert(`Сотрудник с таким ФИО уже есть в справочнике.`);
+        await this.$store.dispatch("addDriverToCatalog", {
+          name: this.newDriver.name,
+          position: this.newDriver.position,
+        });
+        await this.$store.dispatch("updateCatalogDriversDate");
+        await this.$store.dispatch("setActualCatalogDrivers");
+        return await this.$store.dispatch("closeAddDriverPopup");
     },
     async close() {
       return await this.$store.dispatch("closeAddDriverPopup");
@@ -49,6 +55,15 @@ export default {
     },
     positionsList() {
       return this.$store.getters.getDriversPositions;
+    },
+    drivers() {
+      return this.$store.getters.getActualStates.catalogDrivers
+        ? new Set(
+            this.$store.getters.getActualStates.catalogDrivers.map(
+              (driver) => driver.name
+            )
+          )
+        : null;
     },
   },
 };
@@ -76,7 +91,6 @@ export default {
         gap: 20px;
         width: max-content;
         margin: 0 auto;
-
       }
       .buttons {
         display: flex;

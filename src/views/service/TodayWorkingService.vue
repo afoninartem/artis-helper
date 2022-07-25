@@ -131,14 +131,17 @@ export default {
       //     });
       //   })
       //   .flat();
-      return this.todayWorks.map((car) =>
-        Array.from(
-          car.crewDetails.map((driver) => ({
-            Машина: `${car.mark} ${car.number}`,
-            Сотрудник: driver.name,
-          }))
+      return this.todayWorks
+        .map((car) =>
+          Array.from(
+            car.crewDetails.map((driver, d) => ({
+              Машина: `${car.mark} ${car.number}`,
+              "№": d + 1,
+              Сотрудник: driver.name,
+            }))
+          )
         )
-      );
+        .flat();
     },
     drivers() {
       return this.$store.getters.getActualStates.catalogDrivers

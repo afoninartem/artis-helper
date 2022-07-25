@@ -42,8 +42,6 @@ export default {
 				  })
 				: (driver.extras = payload.days);
 			const extras = driver.extras.filter(e => e.cut.length > 0)
-      console.log(driver.extras)
-      console.log(extras)
 			await db
 				.collection("service/catalog/drivers")
 				.doc(payload.driverID)
