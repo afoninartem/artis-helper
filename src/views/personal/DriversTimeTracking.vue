@@ -20,7 +20,11 @@
           <p>{{ item.description }}</p>
         </div>
       </div>
-      <button @click.prevent="save">Сохранить</button>
+      <div class="btn-block">
+        <button @click.prevent="prevMonth">{{ prevMonthTitle }}</button>
+        <button @click.prevent="save">Сохранить</button>
+        <button @click.prevent="nextMonth">{{ nextMonthTitle }}</button>
+      </div>
     </div>
 
     <div class="car" v-for="(car, c) in cars" :key="c">
@@ -42,6 +46,7 @@
               :colspan="
                 numberOfDays(date.year, date.month) + headerTemplate.length
               "
+              class="month"
             >
               {{
                 new Date(date.year, date.month)
@@ -87,17 +92,27 @@
               :style="
                 driver.extras.filter(
                   (e) =>
-                    e.day == new Date(date.year, date.month, day.dayOfMonth).toString()
+                    e.day ==
+                    new Date(date.year, date.month, day.dayOfMonth).toString()
                 ).length
                   ? driver.extras.filter(
                       (e) =>
-                        e.day == new Date(date.year, date.month, day.dayOfMonth).toString()
+                        e.day ==
+                        new Date(
+                          date.year,
+                          date.month,
+                          day.dayOfMonth
+                        ).toString()
                     )[0].cut.length
                     ? `background: ${
                         driver.extras.filter(
                           (e) =>
                             e.day ==
-                            new Date(date.year, date.month, day.dayOfMonth).toString()
+                            new Date(
+                              date.year,
+                              date.month,
+                              day.dayOfMonth
+                            ).toString()
                         )[0].bgColor
                       }`
                     : setStyle(
@@ -249,6 +264,16 @@ export default {
     };
   },
   methods: {
+    prevMonth() {
+      this.date.month === 0
+        ? ((this.date.month = 11), (this.date.year -= 1))
+        : (this.date.month -= 1);
+    },
+    nextMonth() {
+      this.date.month === 11
+        ? ((this.date.month = 0), (this.date.year += 1))
+        : (this.date.month += 1);
+    },
     save() {
       alert("Дописать функционал сохранения");
     },
@@ -404,6 +429,32 @@ export default {
     },
   },
   computed: {
+    prevMonthTitle() {
+      return this.date.month === 0
+        ? new Date(this.date.year - 1, 11)
+            .toLocaleString("default", {
+              month: "long",
+            })
+            .toUpperCase()
+        : new Date(this.date.year, this.date.month - 1)
+            .toLocaleString("default", {
+              month: "long",
+            })
+            .toUpperCase();
+    },
+    nextMonthTitle() {
+      return this.date.month === 11
+        ? new Date(this.date.year + 1, 0)
+            .toLocaleString("default", {
+              month: "long",
+            })
+            .toUpperCase()
+        : new Date(this.date.year, this.date.month + 1)
+            .toLocaleString("default", {
+              month: "long",
+            })
+            .toUpperCase();
+    },
     cars() {
       return this.$store.getters.getActualStates.catalogCars
         ? Array.from(this.$store.getters.getActualStates.catalogCars)
@@ -460,7 +511,11 @@ export default {
 tbody {
   box-shadow: 0 0 0 2px black;
 }
-
+.month {
+  button {
+    background: green;
+  }
+}
 tbody:nth-child(2n + 1) > tr > td {
   background: rgba(204, 204, 204, 0.5);
 }

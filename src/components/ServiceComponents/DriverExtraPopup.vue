@@ -60,9 +60,9 @@ export default {
       return await this.$store.dispatch("closeDriverExtraPopup");
     },
     setExtra(item) {
-      console.log(item);
+      // console.log(item);
       const dates = this.$refs.dates;
-      console.log(dates);
+      // console.log(dates);
       dates.style.background = item.color;
       this.result = {
         days: Array.from(this.info.days).map((day) => ({
@@ -94,8 +94,10 @@ export default {
       // return this.info.driver.extras;
       const oldExtras = this.info.driver.extras;
       const newExtras = this.info.days.map((day) => new Date(day).toString());
-      const bgColor = oldExtras.filter((e) => newExtras.includes(e.day))[0]
-        .bgColor || `#fff`
+      // const bgColor = oldExtras.filter((e) => newExtras.includes(e.day))[0]
+      //   .bgColor || `#fff`
+      const bgColor = oldExtras.filter((e) => newExtras.includes(e.day)).length
+        ? oldExtras.filter((e) => newExtras.includes(e.day))[0].bgColor : `#ffffff`
       return `background: ${bgColor}`;
     },
   },

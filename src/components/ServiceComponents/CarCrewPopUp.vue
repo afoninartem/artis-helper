@@ -3,6 +3,10 @@
     <div class="car-crew-popup__background">
       <div class="car-crew-popup__content">
         <h1>{{ car.mark }} {{ car.number }}</h1>
+        <div class="btn-block">
+          <button @click.prevent="prevMonth">{{ prevMonthTitle }}</button>
+          <button @click.prevent="nextMonth">{{ nextMonthTitle }}</button>
+        </div>
         <div class="actual-crew">
           <p v-if="car.crew.length">Действующий экипаж:</p>
           <p v-if="!car.crew.length">Экипаж не назначен</p>
@@ -194,24 +198,45 @@ export default {
       mouseIsDown: false,
       selectedDriver: null,
       cellsCollection: [],
+      cellsCollectionForStyling: [],
     };
   },
+  watch: {
+    cellsCollectionForStyling(newArr, oldArray) {
+      oldArray.forEach(cell => cell.classList.remove("selected-cells"))
+      newArr.forEach(cell => cell.classList.add("selected-cells"))
+    }
+  },
   methods: {
+    prevMonth() {
+      this.date.month === 0
+        ? ((this.date.month = 11), (this.date.year -= 1))
+        : (this.date.month -= 1);
+    },
+    nextMonth() {
+      this.date.month === 11
+        ? ((this.date.month = 0), (this.date.year += 1))
+        : (this.date.month += 1);
+    },
     async startCollectSelectionCells(driver, day) {
       this.mouseIsDown = true;
       this.cellsCollection = [day];
       this.selectedDriver = driver;
+      //styles
+      this.cellsCollectionForStyling.push(event.target)
+      // event.target.style.background = `rgba(0, 0, 255, 0.2) `;
     },
     async stopCollectSelectionCells() {
       this.mouseIsDown = false;
-      const days = this.cellsCollection.map(
-        (day) => new Date(this.date.year, this.date.month, day)
-      );
+      const days = this.cellsCollection
+        .sort((a, b) => Number(a) - Number(b))
+        .map((day) => new Date(this.date.year, this.date.month, day));
       await this.$store.dispatch("openDriverExtraPopup", {
         driver: this.selectedDriver,
         days,
       });
       this.selectedDriver = null;
+      this.cellsCollectionForStyling = []
     },
     async collectSelectionCells(driver, day) {
       if (
@@ -219,8 +244,11 @@ export default {
         this.selectedDriver &&
         driver.driverID === this.selectedDriver.driverID
       ) {
-        console.log(driver, day);
+        // console.log(driver, day);
         this.cellsCollection.push(day);
+        //styles
+        this.cellsCollectionForStyling.push(event.target)
+        // event.target.style.background = `rgba(0, 0, 255, 0.2) `;
       }
     },
     // async setExtra(driver, day) {
@@ -352,6 +380,32 @@ export default {
     },
   },
   computed: {
+    prevMonthTitle() {
+      return this.date.month === 0
+        ? new Date(this.date.year - 1, 11)
+            .toLocaleString("default", {
+              month: "long",
+            })
+            .toUpperCase()
+        : new Date(this.date.year, this.date.month - 1)
+            .toLocaleString("default", {
+              month: "long",
+            })
+            .toUpperCase();
+    },
+    nextMonthTitle() {
+      return this.date.month === 11
+        ? new Date(this.date.year + 1, 0)
+            .toLocaleString("default", {
+              month: "long",
+            })
+            .toUpperCase()
+        : new Date(this.date.year, this.date.month + 1)
+            .toLocaleString("default", {
+              month: "long",
+            })
+            .toUpperCase();
+    },
     crew() {
       const driverlist = this.car ? this.car.crew : null;
       const crew = [];
@@ -414,6 +468,8 @@ export default {
 
 
 <style lang="scss" scoped>
+@import "@/scss/personalTable.scss";
+@include personal-table;
 .number-and-arrows {
   display: flex;
   flex-direction: column;
@@ -482,6 +538,9 @@ p {
 .cell:hover {
   background: rgba(0, 0, 255, 0.2) !important;
   cursor: pointer;
+}
+.selected-cells {
+  background: rgba(0, 0, 255, 0.2) !important;
 }
 .car-crew-popup {
   user-select: none;
