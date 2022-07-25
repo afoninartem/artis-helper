@@ -47,6 +47,7 @@ export default {
   data() {
     return {
       conventions: [
+        { description: "Работа", cut: "Р", color: "#0a58be80" },
         { description: "Отпуск", cut: "О", color: "#FF7F50" },
         { description: "Больничный", cut: "Б", color: "#40E0D0" },
         { description: "Хочет работать", cut: "ХР", color: "#00FF7F" },
@@ -97,7 +98,8 @@ export default {
       // const bgColor = oldExtras.filter((e) => newExtras.includes(e.day))[0]
       //   .bgColor || `#fff`
       const bgColor = oldExtras.filter((e) => newExtras.includes(e.day)).length
-        ? oldExtras.filter((e) => newExtras.includes(e.day))[0].bgColor : `#ffffff`
+        ? oldExtras.filter((e) => newExtras.includes(e.day))[0].bgColor
+        : `#ffffff`;
       return `background: ${bgColor}`;
     },
   },
@@ -158,5 +160,8 @@ export default {
       gap: 10px;
     }
   }
+}
+.test {
+  color: #0a58be80;
 }
 </style>

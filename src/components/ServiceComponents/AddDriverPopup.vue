@@ -37,13 +37,15 @@ export default {
         return;
       if (Array.from(this.drivers).includes(this.newDriver.name.trim()))
         alert(`Сотрудник с таким ФИО уже есть в справочнике.`);
-        await this.$store.dispatch("addDriverToCatalog", {
-          name: this.newDriver.name,
-          position: this.newDriver.position,
-        });
-        await this.$store.dispatch("updateCatalogDriversDate");
-        await this.$store.dispatch("setActualCatalogDrivers");
-        return await this.$store.dispatch("closeAddDriverPopup");
+      await this.$store.dispatch("addDriverToCatalog", {
+        name: this.newDriver.name,
+        position: this.newDriver.position,
+      });
+      this.newDriver.name = "";
+      this.newDriver.position = "";
+      await this.$store.dispatch("updateCatalogDriversDate");
+      await this.$store.dispatch("setActualCatalogDrivers");
+      return await this.$store.dispatch("closeAddDriverPopup");
     },
     async close() {
       return await this.$store.dispatch("closeAddDriverPopup");

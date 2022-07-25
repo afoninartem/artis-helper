@@ -83,7 +83,7 @@ export default {
 			return await context.commit("closeAddDriverPopup");
 		},
 		async addDriverToCatalog({ getters }, payload) {
-			console.log(payload);
+			// console.log(payload);
 			let initID = Date.now();
 			const positions = getters.getDriversPositions;
 			positions.forEach(async (position) => {

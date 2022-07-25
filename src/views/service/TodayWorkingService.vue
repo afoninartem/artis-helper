@@ -1,7 +1,6 @@
 <template>
   <div class="today-working">
     <h1>{{ today }}</h1>
-
     <xlsx-workbook>
       <xlsx-sheet
         :collection="sheet.data"
@@ -62,6 +61,15 @@ export default {
     CarCrewPopUp,
     ShedulePopUp,
   },
+  data() {
+    return {
+      date: {
+        month: null,
+        year: null,
+        day: null,
+      },
+    };
+  },
   methods: {
     sheduleCounter(sheduleStart, sheduleType, sheduleShift, currDate) {
       const counter = require("../../store/service/sheduleCounter");
@@ -88,18 +96,29 @@ export default {
     },
     todayWorks() {
       if (!this.cars || !this.drivers) return null;
-      const year = new Date().getFullYear();
-      const month = new Date().getMonth();
-      const day = new Date().getDate();
+      const year = this.date.year;
+      const month = this.date.month;
+      const day = this.date.day;
+      // const year = new Date().getFullYear();
+      // const month = new Date().getMonth();
+      // const day = new Date().getDate();
       return this.cars
         .filter((car) => car.crew.length)
         .map((car) => {
           const crewDetails = car.crew
             .map(
-              (driverID) =>
-                this.drivers
-                  .filter((d) => d.driverID === driverID)[0]
-                  .carslist.filter((cl) => cl.carID === car.carID)[0]
+              (driverID) => {
+                const driver = this.drivers.filter(
+                  (d) => d.driverID === driverID
+                )[0];
+                const currCar = driver.carslist
+                  .filter((cl) => cl.carID === car.carID)
+                  .map((cl) => Object.assign(cl, { extras: driver.extras }))[0];
+                return currCar;
+              }
+              // this.drivers
+              //   .filter((d) => d.driverID === driverID)[0]
+              //   .carslist.filter((cl) => cl.carID === car.carID)[0]
             )
             .filter((driver) =>
               Boolean(
@@ -135,7 +154,7 @@ export default {
         .map((car) =>
           Array.from(
             car.crewDetails.map((driver, d) => ({
-              Машина: `${car.mark} ${car.number}`,
+              Машина: `${car.mark} ${car.number}`.toUpperCase(),
               "№": d + 1,
               Сотрудник: driver.name,
             }))
@@ -163,6 +182,9 @@ export default {
   mounted: async function () {
     await this.$store.dispatch("setActualCatalogDrivers");
     await this.$store.dispatch("setActualCatalogCars");
+    this.date.year = new Date().getFullYear();
+    this.date.month = new Date().getMonth();
+    this.date.day = new Date().getDate();
   },
 };
 </script>
