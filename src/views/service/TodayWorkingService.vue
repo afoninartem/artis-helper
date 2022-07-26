@@ -99,13 +99,9 @@ export default {
     },
     todayWorks() {
       if (!this.cars || !this.drivers) return null;
-      // const year = this.date.year;
-      // const month = this.date.month;
-      // const day = this.date.day;
-      const year = new Date(this.todayDate).getFullYear() 
-      const month = new Date(this.todayDate).getMonth() 
-      const day = new Date(this.todayDate).getDate() 
-      // console.log(year, month, day)
+      const year = new Date(this.todayDate).getFullYear();
+      const month = new Date(this.todayDate).getMonth();
+      const day = new Date(this.todayDate).getDate();
       return this.cars
         .filter((car) => car.crew.length)
         .map((car) => {
@@ -117,23 +113,38 @@ export default {
                 )[0];
                 const currCar = driver.carslist
                   .filter((cl) => cl.carID === car.carID)
-                  .map((cl) => Object.assign(cl, { extras: driver.extras }))[0];
+                  .map((cl) =>
+                    Object.assign(cl, { extras: driver.extras || [] })
+                  )[0];
+                // console.log(driver.name, currCar.extras);
                 return currCar;
               }
               // this.drivers
               //   .filter((d) => d.driverID === driverID)[0]
               //   .carslist.filter((cl) => cl.carID === car.carID)[0]
             )
-            .filter((driver) =>
-              Boolean(
+            .filter((driver) => {
+              driver.todayExtra = driver.extras.filter(
+                (e) => e.day == new Date(year, month, day).toString()
+              ).length
+                ? driver.extras.filter(
+                    (e) => e.day == new Date(year, month, day).toString()
+                  )[0]
+                : null;
+              // console.log(driver.name, driver.todayExtra);
+              const sheduleWork = Boolean(
                 this.sheduleCounter(
                   driver.sheduleStart,
                   driver.sheduleType,
                   driver.sheduleShift,
                   new Date(year, month, day)
                 )
-              )
-            );
+              );
+              return sheduleWork;
+              // return extra
+              //   ? (!sheduleWork && driver.todayExtra.cut === "Р") || sheduleWork
+              //   : sheduleWork;
+            });
           car.crewDetails = crewDetails;
           return car;
         })
@@ -186,10 +197,21 @@ export default {
   mounted: async function () {
     await this.$store.dispatch("setActualCatalogDrivers");
     await this.$store.dispatch("setActualCatalogCars");
-    // this.date.year = new Date().getFullYear();
-    // this.date.month = new Date().getMonth();
-    // this.date.day = new Date().getDate();
+
     this.todayDate = new Date().toISOString().substring(0, 10);
+    // const driverOwn = this.$store.getters.getActualStates.catalogDrivers
+    //   .filter((d) => d.position !== d.mainPosition)
+    //   .filter((d) => d.carslist.length)[0].carslist[0];
+    // const driverMain = this.$store.getters.getActualStates.catalogDrivers.filter(d => d.name === driverOwn.name)[0].carslist
+    // // const
+    // console.log(driverMain) 
+    // const arr = driverMain.push(driverOwn)
+    // await db.collection("service/catalog/drivers").doc(driverMain.driverID).update({carslist: arr})
+    // drivers.forEach(async d => {
+    //   await db.collection("service/catalog/drivers").doc(d.driverID).delete()
+    // })
+    // await this.$store.dispatch("updateCatalogDriversDate");
+    // await this.$store.dispatch("setActualCatalogDrivers");
   },
 };
 </script>

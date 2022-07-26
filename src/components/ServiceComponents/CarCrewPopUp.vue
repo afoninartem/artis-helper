@@ -167,8 +167,8 @@
             @click.prevent="addToCrew({ driver: tip, car })"
           >
             <p>
-              {{ tip.name }} -
-              <span style="font-weight: bold">{{ tip.position }}</span>
+              <span style="font-weight: bold">{{ tip.name }}</span>, оформлен как
+              <span style="font-weight: bold">{{ tip.mainPosition }}</span>
             </p>
           </li>
         </ul>
@@ -365,8 +365,8 @@ export default {
           this.drivers
             .filter((driver) =>
               driver.name.toLowerCase().substring(0, str.length).includes(str)
-            )
-            .slice(0, 4) || null;
+            ) || null
+            // .slice(0, 4) || null;
       } else {
         this.tips = null;
       }
@@ -456,6 +456,9 @@ export default {
         : null;
       return id && cars ? cars.filter((car) => car.carID === id)[0] : null;
     },
+    positions() {
+      return this.$store.getters.getDriversPositions;
+    }
   },
   mounted: async function () {
     await this.$store.dispatch("setActualCatalogDrivers");

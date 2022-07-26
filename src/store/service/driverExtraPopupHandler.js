@@ -30,22 +30,29 @@ export default {
 			const driver = getters.getActualStates.catalogDrivers.filter(
 				(d) => d.driverID === payload.driverID
 			)[0];
-			driver.extras
-				? Array.from(payload.days).forEach((day) => {
-						driver.extras.map((e) => e.day).includes(day.day)
-							? driver.extras.splice(
-									driver.extras.map((e) => e.day).indexOf(day.day),
-									1,
-									day
-							  )
-							: driver.extras.push(day);
-				  })
-				: (driver.extras = payload.days);
-			const extras = driver.extras.filter(e => e.cut.length > 0)
-			await db
-				.collection("service/catalog/drivers")
-				.doc(payload.driverID)
-				.update({ extras: extras });
+			const allPositionsOfCurrentEmployee =
+				getters.getActualStates.catalogDrivers.filter(
+					(emp) => emp.name === driver.name
+				);
+			allPositionsOfCurrentEmployee.forEach(async (driver) => {
+				driver.extras
+					? Array.from(payload.days).forEach((day) => {
+							driver.extras.map((e) => e.day).includes(day.day)
+								? driver.extras.splice(
+										driver.extras.map((e) => e.day).indexOf(day.day),
+										1,
+										day
+								  )
+								: driver.extras.push(day);
+					  })
+					: (driver.extras = payload.days);
+				const extras = driver.extras.filter((e) => e.cut.length > 0);
+				await db
+					.collection("service/catalog/drivers")
+					.doc(driver.driverID)
+					.update({ extras: extras });
+			});
+			console.log(allPositionsOfCurrentEmployee);
 		},
 	},
 	getters: {

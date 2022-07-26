@@ -82,23 +82,23 @@ export default {
 		async closeAddDriverPopup(context) {
 			return await context.commit("closeAddDriverPopup");
 		},
-		async addDriverToCatalog({ getters }, payload) {
+		async addDriverToCatalog(context, payload) {
 			// console.log(payload);
-			let initID = Date.now();
-			const positions = getters.getDriversPositions;
-			positions.forEach(async (position) => {
-				initID += 1;
+			let initID = Date.now().toString();
+			// const positions = getters.getDriversPositions;
+			// positions.forEach(async (position) => {
+				// initID += 1;
 				await db
 					.collection("service/catalog/drivers")
-					.doc(initID.toString())
+					.doc(initID)
 					.set({
-						driverID: initID.toString(),
+						driverID: initID,
 						name: payload.name,
 						mainPosition: payload.position.toLowerCase(),
-						position: position,
+						// position: position,
 						carslist: [],
 					});
-			});
+			// });
 		},
 		// async openAddPositionPopup(context) {
 		// 	return await context.commit("openAddPositionPopup");
