@@ -1,17 +1,19 @@
 <template>
   <div class="today-working">
-    <h1>{{ today }}</h1>
-    <xlsx-workbook>
-      <xlsx-sheet
-        :collection="sheet.data"
-        v-for="sheet in sheets"
-        :key="sheet.name"
-        :sheet-name="sheet.name"
-      />
-      <xlsx-download :filename="`${today}.xlsx`">
-        <button>Скачать</button>
-      </xlsx-download>
-    </xlsx-workbook>
+    <div class="today-working__menu">
+      <input class="curr-date" type="date" v-model="todayDate" />
+      <xlsx-workbook>
+        <xlsx-sheet
+          :collection="sheet.data"
+          v-for="sheet in sheets"
+          :key="sheet.name"
+          :sheet-name="sheet.name"
+        />
+        <xlsx-download :filename="`${today}.xlsx`">
+          <button class="download-btn">Скачать</button>
+        </xlsx-download>
+      </xlsx-workbook>
+    </div>
 
     <div class="today-working__grid">
       <div class="cars-grid" v-if="todayWorks">
@@ -63,6 +65,7 @@ export default {
   },
   data() {
     return {
+      todayDate: new Date(),
       date: {
         month: null,
         year: null,
@@ -84,7 +87,7 @@ export default {
   },
   computed: {
     today() {
-      return new Date(Date.now()).toLocaleDateString();
+      return new Date(this.todayDate).toLocaleDateString();
     },
     sheets() {
       return {
@@ -96,12 +99,13 @@ export default {
     },
     todayWorks() {
       if (!this.cars || !this.drivers) return null;
-      const year = this.date.year;
-      const month = this.date.month;
-      const day = this.date.day;
-      // const year = new Date().getFullYear();
-      // const month = new Date().getMonth();
-      // const day = new Date().getDate();
+      // const year = this.date.year;
+      // const month = this.date.month;
+      // const day = this.date.day;
+      const year = new Date(this.todayDate).getFullYear() 
+      const month = new Date(this.todayDate).getMonth() 
+      const day = new Date(this.todayDate).getDate() 
+      // console.log(year, month, day)
       return this.cars
         .filter((car) => car.crew.length)
         .map((car) => {
@@ -182,9 +186,10 @@ export default {
   mounted: async function () {
     await this.$store.dispatch("setActualCatalogDrivers");
     await this.$store.dispatch("setActualCatalogCars");
-    this.date.year = new Date().getFullYear();
-    this.date.month = new Date().getMonth();
-    this.date.day = new Date().getDate();
+    // this.date.year = new Date().getFullYear();
+    // this.date.month = new Date().getMonth();
+    // this.date.day = new Date().getDate();
+    this.todayDate = new Date().toISOString().substring(0, 10);
   },
 };
 </script>
@@ -192,10 +197,35 @@ export default {
 <style lang="scss" scoped>
 @import "@/scss/personalTable.scss";
 @include personal-table;
-
 tbody:nth-child(2n + 1) > tr > td {
   background: rgba(204, 204, 204, 0.493);
 }
+.today-working {
+  .today-working__menu {
+    padding: 15px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    .curr-date,
+    .download-btn {
+      appearance: none;
+      padding: 5px 10px;
+      border: 1px solid black;
+      border-radius: 15px;
+      font-size: 24px;
+      background: #fff;
+      vertical-align: middle;
+      &:hover {
+        cursor: pointer;
+      }
+    }
+    .download-btn:hover {
+      background-color: #f5df4d;
+      // cursor: pointer;
+    }
+  }
+}
+
 .cars-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
