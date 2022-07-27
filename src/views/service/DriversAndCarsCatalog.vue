@@ -175,6 +175,10 @@ export default {
   mounted: async function () {
     await this.$store.dispatch("setActualCatalogDrivers");
     await this.$store.dispatch("setActualCatalogCars");
+    // const allCarslists = this.drivers ? this.drivers.map(driver => driver.carslist).flat().filter(driver => this.drivers.map(d => d.driverID).includes(driver.driverID)) : null;
+    // console.log(allCarslists)
+    // const allCrews = this.cars.map(car => car.crew).flat().filter(id => !this.drivers.map(d => d.driverID).includes(id));
+    // console.log(allCrews)
   },
 };
 </script>

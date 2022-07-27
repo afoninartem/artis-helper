@@ -3,12 +3,21 @@
     <div class="car-crew-popup__background">
       <div class="car-crew-popup__content">
         <h1>{{ car.mark }} {{ car.number }}</h1>
-        <div class="btn-block">
+        <div class="menu-block">
           <button @click.prevent="prevMonth">{{ prevMonthTitle }}</button>
+          <h2>
+            {{
+              new Date(date.year, date.month)
+                .toLocaleString("default", {
+                  month: "long",
+                })
+                .toUpperCase()
+            }}
+          </h2>
           <button @click.prevent="nextMonth">{{ nextMonthTitle }}</button>
         </div>
         <div class="actual-crew">
-          <p v-if="car.crew.length">Действующий экипаж:</p>
+          <!-- <p v-if="car.crew.length">Действующий экипаж:</p> -->
           <p v-if="!car.crew.length">Экипаж не назначен</p>
           <table>
             <thead>
@@ -149,7 +158,23 @@
           </table>
         </div>
         <form action="" class="car-crew__form">
+          <button @click.prevent="showNewEmp = true" v-if="!showNewEmp">
+            Добавить сотрудника
+          </button>
+          <select
+            name="positions"
+            id="positions"
+            v-if="showNewEmp && !showChoiceButtons"
+            v-model="newEmp.position"
+          >
+            <!-- <option :value="newEmp.position"></option> -->
+            <option v-for="(position, p) in positions" :key="p">
+              {{ position.toLowerCase() }}
+            </option>
+          </select>
           <input
+            v-if="showNewEmp && !showChoiceButtons"
+            v-model="newEmp.name"
             type="text"
             name="name"
             id="name"
@@ -157,6 +182,9 @@
             ref="findDriver"
             placeholder="Введите ФИО сотрудника"
           />
+          <button v-if="showNewEmp && newEmp.position && newEmp.name.split(` `).length > 1 && !showChoiceButtons" @click.prevent="showChoice">Добавить</button>
+          <button v-if="showChoiceButtons" @click.prevent="addToCrew(true)">Основной экипаж</button>
+          <button v-if="showChoiceButtons" @click.prevent="addToCrew(false)">Замена / Подработка</button>
         </form>
         <button class="close-btn" @click.prevent="close">Закрыть</button>
         <ul>
@@ -164,10 +192,11 @@
             v-for="(tip, t) in tips"
             :key="t"
             class="tip"
-            @click.prevent="addToCrew({ driver: tip, car })"
+            @click.prevent="setDriver({ driver: tip, car })"
           >
             <p>
-              <span style="font-weight: bold">{{ tip.name }}</span>, оформлен как
+              <span style="font-weight: bold">{{ tip.name }}</span
+              >, оформлен как
               <span style="font-weight: bold">{{ tip.mainPosition }}</span>
             </p>
           </li>
@@ -193,6 +222,14 @@ export default {
         month: null,
         year: null,
       },
+      showNewEmp: false,
+      newEmp: {
+        position: "",
+        name: "",
+        driverID: "",
+        mainCrew: null,
+      },
+      showChoiceButtons: false,
       crewData: null,
       componentKey: 0,
       mouseIsDown: false,
@@ -203,11 +240,32 @@ export default {
   },
   watch: {
     cellsCollectionForStyling(newArr, oldArray) {
-      oldArray.forEach(cell => cell.classList.remove("selected-cells"))
-      newArr.forEach(cell => cell.classList.add("selected-cells"))
-    }
+      oldArray.forEach((cell) => cell.classList.remove("selected-cells"));
+      newArr.forEach((cell) => cell.classList.add("selected-cells"));
+    },
   },
   methods: {
+    addToCrew(payload) {
+      this.newEmp.mainCrew = payload;
+      //check if driver else where
+      console.log(this.newEmp)
+      const driver = this.drivers.filter(d => d.driverID = this.newEmp.driverID)[0];
+      console.log(driver)
+      if (
+        this.newEmp.position === "водитель" &&
+        driver.carslist
+          .map((d) => d.position)
+          .includes("водитель")
+      ) {
+        alert(
+          `Сотрудник ${driver.name} уже назначен водителем на машине ${
+            driver.carslist.filter(
+              (car) => car.position === this.newEmp.position
+            )[0].car
+          }. Пожалуйста, проверьте корректность заполнения графика.`
+        );
+      }
+    },
     prevMonth() {
       this.date.month === 0
         ? ((this.date.month = 11), (this.date.year -= 1))
@@ -223,7 +281,7 @@ export default {
       this.cellsCollection = [day];
       this.selectedDriver = driver;
       //styles
-      this.cellsCollectionForStyling.push(event.target)
+      this.cellsCollectionForStyling.push(event.target);
       // event.target.style.background = `rgba(0, 0, 255, 0.2) `;
     },
     async stopCollectSelectionCells() {
@@ -236,7 +294,7 @@ export default {
         days,
       });
       this.selectedDriver = null;
-      this.cellsCollectionForStyling = []
+      this.cellsCollectionForStyling = [];
     },
     async collectSelectionCells(driver, day) {
       if (
@@ -247,7 +305,7 @@ export default {
         // console.log(driver, day);
         this.cellsCollection.push(day);
         //styles
-        this.cellsCollectionForStyling.push(event.target)
+        this.cellsCollectionForStyling.push(event.target);
         // event.target.style.background = `rgba(0, 0, 255, 0.2) `;
       }
     },
@@ -297,6 +355,9 @@ export default {
     },
     async close() {
       this.tips = null;
+      this.newEmp.position = "";
+      this.newEmp.name = "";
+      this.showNewEmp = false;
       for (let i = 0; i < this.car.crew.length; i += 1) {
         if (this.car.crew[i] !== this.crewData[i].driverID) {
           await this.$store.dispatch("updateCrewOrder", {
@@ -333,40 +394,39 @@ export default {
       }
       return result;
     },
-    async addToCrew(payload) {
-      this.$refs.findDriver.value = "";
-      this.tips = null;
+    async showChoice() {
+      this.showChoiceButtons = true;
+    },
+    async setDriver(payload) {
+      // this.$refs.findDriver.value = "";
       console.log(payload);
-      if (
-        payload.driver.position === "водитель" &&
-        payload.driver.carslist
-          .map((d) => d.position)
-          .includes(payload.driver.position)
-      ) {
-        alert(
-          `Сотрудник ${payload.driver.name} уже назначен водителем на машине ${
-            payload.driver.carslist.filter(
-              (car) => car.position === payload.driver.position
-            )[0].car
-          }. Пожалуйста, проверьте корректность заполнения графика.`
+      const carCrew = this.car.crew;
+      const driverID = payload.driver.driverID;
+      // console.log(carCrew, driverID, carCrew.includes(driverID))
+      if (carCrew.includes(driverID))
+        return alert(
+          `${payload.driver.name} уже назначен на эту машину. Поставьте ему дополнительные рабочие дни, или добавьте его в дополнительную секцию, если он будет работать в другой должности.`
         );
-      }
-      await this.$store.dispatch("updateCarCrew", payload);
-      await this.$store.dispatch("updateCatalogCarsDate");
-      await this.$store.dispatch("setActualCatalogCars");
-      await this.$store.dispatch("updateCatalogDriversDate");
-      await this.$store.dispatch("setActualCatalogDrivers");
+      this.tips = null;
+      this.newEmp.name = payload.driver.name;
+      this.newEmp.driverID = payload.driver.driverID;
+
+
+      // await this.$store.dispatch("updateCarCrew", payload);
+      // await this.$store.dispatch("updateCatalogCarsDate");
+      // await this.$store.dispatch("setActualCatalogCars");
+      // await this.$store.dispatch("updateCatalogDriversDate");
+      // await this.$store.dispatch("setActualCatalogDrivers");
     },
     findDriver() {
       // const str = this.$refs.findDriver.value.toLowerCase();
       const str = event.target.value.toLowerCase();
       if (str.length > 2) {
         this.tips =
-          this.drivers
-            .filter((driver) =>
-              driver.name.toLowerCase().substring(0, str.length).includes(str)
-            ) || null
-            // .slice(0, 4) || null;
+          this.drivers.filter((driver) =>
+            driver.name.toLowerCase().substring(0, str.length).includes(str)
+          ) || null;
+        // .slice(0, 4) || null;
       } else {
         this.tips = null;
       }
@@ -407,21 +467,33 @@ export default {
             .toUpperCase();
     },
     crew() {
+      if (!car || !drivers) return;
       const driverlist = this.car ? this.car.crew : null;
-      const crew = [];
-      Array.from(driverlist).forEach((id) => {
-        const driver = this.drivers.filter((d) => d.driverID === id)[0];
-        const result = driver.carslist
-          .filter((cl) => cl.carID === this.car.carID)
-          .map((cl) => {
-            cl.name = driver.name;
-            cl.position = driver.position;
-            cl.driverID = driver.driverID;
-            cl.extras = driver.extras ? driver.extras : [];
-            return cl;
-          });
-        crew.push(result);
-      });
+      const crew = driverlist.map(driverID => {
+        const driver = this.drivers.filter(driver => driver.driverID === driverID)[0].carslist.filter(car => car.carID === this.car.carID).map(cl => {
+          cl.name 
+        })
+
+      })
+      // const crew = [];
+      // console.log(driverlist)
+      // Array.from(driverlist).forEach((id) => {
+      //   //test
+      //   // console.log(id)
+      //   // const test = Array.from(this.drivers).filter((d) => d.driverID === id);
+      //   // console.log(test, id)
+      //   const driver = Array.from(this.drivers).filter((d) => d.driverID === id)[0];
+      //   const result = driver.carslist
+      //     .filter((cl) => cl.carID === this.car.carID)
+      //     .map((cl) => {
+      //       cl.name = driver.name;
+      //       cl.position = driver.position;
+      //       cl.driverID = driver.driverID;
+      //       cl.extras = driver.extras ? driver.extras : [];
+      //       return cl;
+      //     });
+      //   crew.push(result);
+      // });
       this.setCrewData(crew.flat());
       return this.crewData;
     },
@@ -458,7 +530,7 @@ export default {
     },
     positions() {
       return this.$store.getters.getDriversPositions;
-    }
+    },
   },
   mounted: async function () {
     await this.$store.dispatch("setActualCatalogDrivers");
@@ -559,6 +631,23 @@ p {
     .car-crew-popup__content {
       // transform: scale(1.2);
       display: grid;
+      .menu-block {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 20px;
+        button {
+          border: none;
+          padding: 5px;
+          width: 120px;
+          background: transparent;
+          cursor: pointer;
+          font-size: 20px;
+          &:hover {
+            transform: scale(1.1);
+          }
+        }
+      }
       .actual-crew {
         ul {
           li {

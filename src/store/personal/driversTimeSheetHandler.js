@@ -195,7 +195,7 @@ export default {
 				.update({ crew: payload.crewNewOrder });
 		},
 		async updateCarCrew(context, payload) {
-			// console.log(payload);
+			console.log(payload);
 			const newCrew = payload.car.crew;
 			// console.log(newCrew, typeof newCrew)
 			// newCrew.push(payload.driver.driverID);
