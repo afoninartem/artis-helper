@@ -57,7 +57,11 @@
                 <th
                   v-for="(dayInfo, wd) in daySpec(date.month, date.year)"
                   :key="`weekday-${wd}`"
-                  :style="dayStyles(dayInfo)"
+                  :style="
+                    dayStyles(
+                      new Date(date.year, date.month, wd + 1)
+                    )
+                  "
                 >
                   {{ dayInfo.weekday }}
                 </th>
@@ -66,7 +70,11 @@
                 <th
                   v-for="(dayInfo, md) in daySpec(date.month, date.year)"
                   :key="`day-of-month-${md}`"
-                  :style="dayStyles(dayInfo)"
+                  :style="
+                    dayStyles(
+                      new Date(date.year, date.month, md + 1)
+                    )
+                  "
                 >
                   {{ dayInfo.dayOfMonth }}
                 </th>
@@ -100,26 +108,7 @@
                   class="cell"
                   v-for="(day, d) in header"
                   :key="`date-${d}`"
-                  :style="
-                    driver.extras.filter(
-                      (e) =>
-                        e.day == new Date(date.year, date.month, day).toString()
-                    ).length
-                      ? driver.extras.filter(
-                          (e) =>
-                            e.day ==
-                            new Date(date.year, date.month, day).toString()
-                        )[0].cut.length
-                        ? `background: ${
-                            driver.extras.filter(
-                              (e) =>
-                                e.day ==
-                                new Date(date.year, date.month, day).toString()
-                            )[0].bgColor
-                          }`
-                        : dayStyles(day)
-                      : dayStyles(day)
-                  "
+                  :style="dayStyles(new Date(date.year, date.month, d + 1), driver.extras)"
                   @mousedown="startCollectSelectionCells(driver, day)"
                   @mouseover="collectSelectionCells(driver, day)"
                   @mouseup="stopCollectSelectionCells"
@@ -182,9 +171,23 @@
             ref="findDriver"
             placeholder="Введите ФИО сотрудника"
           />
-          <button v-if="showNewEmp && newEmp.position && newEmp.name.split(` `).length > 1 && !showChoiceButtons" @click.prevent="showChoice">Добавить</button>
-          <button v-if="showChoiceButtons" @click.prevent="addToCrew(true)">Основной экипаж</button>
-          <button v-if="showChoiceButtons" @click.prevent="addToCrew(false)">Замена / Подработка</button>
+          <button
+            v-if="
+              showNewEmp &&
+              newEmp.position &&
+              newEmp.name.split(` `).length > 1 &&
+              !showChoiceButtons
+            "
+            @click.prevent="showChoice"
+          >
+            Добавить
+          </button>
+          <button v-if="showChoiceButtons" @click.prevent="addToCrew(true)">
+            Основной экипаж
+          </button>
+          <button v-if="showChoiceButtons" @click.prevent="addToCrew(false)">
+            Замена / Подработка
+          </button>
         </form>
         <button class="close-btn" @click.prevent="close">Закрыть</button>
         <ul>
@@ -248,14 +251,14 @@ export default {
     addToCrew(payload) {
       this.newEmp.mainCrew = payload;
       //check if driver else where
-      console.log(this.newEmp)
-      const driver = this.drivers.filter(d => d.driverID = this.newEmp.driverID)[0];
-      console.log(driver)
+      console.log(this.newEmp);
+      const driver = this.drivers.filter(
+        (d) => (d.driverID = this.newEmp.driverID)
+      )[0];
+      console.log(driver);
       if (
         this.newEmp.position === "водитель" &&
-        driver.carslist
-          .map((d) => d.position)
-          .includes("водитель")
+        driver.carslist.map((d) => d.position).includes("водитель")
       ) {
         alert(
           `Сотрудник ${driver.name} уже назначен водителем на машине ${
@@ -326,32 +329,34 @@ export default {
       this.componentKey += 1;
       return array;
     },
-    dayStyles(day) {
-      //styles will be store in other place
-      const weekendStyle = "background: rgba(225, 100, 100, 0.3)";
-      const todayStyle = "border: 2px solid blue";
-      // const selectedStyle = "background: rgba(0, 0, 255, 0.1)";
-      // ↑
-      const stylesArray = [];
-      const styleDivider = "; ";
-      //define terms data ↓
-      const today = new Date().getDate();
-      const cellday =
-        typeof day === "string"
-          ? new Date(this.date.year, this.date.month, day).getDate()
-          : day.dayOfMonth;
-      const weekday =
-        typeof day === "string"
-          ? new Date(this.date.year, this.date.month, day).toLocaleString(
-              "default",
-              { weekday: "short" }
-            )
-          : day.weekday;
-      //define terms itself
-      // if (this.)
-      if (today === cellday) stylesArray.push(todayStyle);
-      if (weekday === "сб" || weekday === "вс") stylesArray.push(weekendStyle);
-      return stylesArray.join(styleDivider);
+    dayStyles(extras, date) {
+      // //styles will be store in other place
+      // const weekendStyle = "background: rgba(225, 100, 100, 0.3)";
+      // const todayStyle = "border: 2px solid blue";
+      // // const selectedStyle = "background: rgba(0, 0, 255, 0.1)";
+      // // ↑
+      // const stylesArray = [];
+      // const styleDivider = "; ";
+      // //define terms data ↓
+      // const today = new Date().getDate();
+      // const cellday =
+      //   typeof day === "string"
+      //     ? new Date(this.date.year, this.date.month, day).getDate()
+      //     : day.dayOfMonth;
+      // const weekday =
+      //   typeof day === "string"
+      //     ? new Date(this.date.year, this.date.month, day).toLocaleString(
+      //         "default",
+      //         { weekday: "short" }
+      //       )
+      //     : day.weekday;
+      // //define terms itself
+      // // if (this.)
+      // if (today === cellday) stylesArray.push(todayStyle);
+      // if (weekday === "сб" || weekday === "вс") stylesArray.push(weekendStyle);
+      // return stylesArray.join(styleDivider);
+      const styles = require("../../store/service/sheduleDayStyles");
+      return styles.default(extras, date);
     },
     async close() {
       this.tips = null;
@@ -411,7 +416,6 @@ export default {
       this.newEmp.name = payload.driver.name;
       this.newEmp.driverID = payload.driver.driverID;
 
-
       // await this.$store.dispatch("updateCarCrew", payload);
       // await this.$store.dispatch("updateCatalogCarsDate");
       // await this.$store.dispatch("setActualCatalogCars");
@@ -467,33 +471,20 @@ export default {
             .toUpperCase();
     },
     crew() {
-      if (!car || !drivers) return;
-      const driverlist = this.car ? this.car.crew : null;
-      const crew = driverlist.map(driverID => {
-        const driver = this.drivers.filter(driver => driver.driverID === driverID)[0].carslist.filter(car => car.carID === this.car.carID).map(cl => {
-          cl.name 
-        })
-
-      })
-      // const crew = [];
-      // console.log(driverlist)
-      // Array.from(driverlist).forEach((id) => {
-      //   //test
-      //   // console.log(id)
-      //   // const test = Array.from(this.drivers).filter((d) => d.driverID === id);
-      //   // console.log(test, id)
-      //   const driver = Array.from(this.drivers).filter((d) => d.driverID === id)[0];
-      //   const result = driver.carslist
-      //     .filter((cl) => cl.carID === this.car.carID)
-      //     .map((cl) => {
-      //       cl.name = driver.name;
-      //       cl.position = driver.position;
-      //       cl.driverID = driver.driverID;
-      //       cl.extras = driver.extras ? driver.extras : [];
-      //       return cl;
-      //     });
-      //   crew.push(result);
-      // });
+      if (!this.car || !this.drivers) return;
+      const crew = this.car.crew.map(
+        (id) => {
+          const driver = this.drivers.filter(d => d.driverID === id)[0];
+          const extras = driver.extras || [];
+          return driver.carslist.filter(car => car.carID === this.car.carID).map(cl => {
+            cl.extras = extras;
+            return cl;
+          })
+        }
+          // this.drivers
+          //   .filter((driver) => driver.driverID === id)[0]
+          //   .carslist.filter((car) => car.carID === this.car.carID)[0]
+      );
       this.setCrewData(crew.flat());
       return this.crewData;
     },

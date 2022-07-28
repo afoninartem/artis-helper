@@ -48,6 +48,7 @@
 </template>
 
 <script>
+import { db } from "../../main.js";
 import CarCrewPopUp from "@/components/ServiceComponents/CarCrewPopUp";
 import ShedulePopUp from "@/components/ServiceComponents/ShedulePopUp";
 import {
@@ -197,21 +198,27 @@ export default {
   mounted: async function () {
     await this.$store.dispatch("setActualCatalogDrivers");
     await this.$store.dispatch("setActualCatalogCars");
-
     this.todayDate = new Date().toISOString().substring(0, 10);
-    // const driverOwn = this.$store.getters.getActualStates.catalogDrivers
-    //   .filter((d) => d.position !== d.mainPosition)
-    //   .filter((d) => d.carslist.length)[0].carslist[0];
-    // const driverMain = this.$store.getters.getActualStates.catalogDrivers.filter(d => d.name === driverOwn.name)[0].carslist
-    // // const
-    // console.log(driverMain) 
-    // const arr = driverMain.push(driverOwn)
-    // await db.collection("service/catalog/drivers").doc(driverMain.driverID).update({carslist: arr})
-    // drivers.forEach(async d => {
-    //   await db.collection("service/catalog/drivers").doc(d.driverID).delete()
-    // })
-    // await this.$store.dispatch("updateCatalogDriversDate");
-    // await this.$store.dispatch("setActualCatalogDrivers");
+
+    const drivers = this.drivers;
+    drivers.forEach(async (driver) => {
+      delete driver.position;
+      // console.log(d + 1, JSON.stringify(driver), JSON.stringify(driver).length)
+      driver.carslist.forEach((cl) => {
+        delete cl.extras;
+        delete cl.todayExtra;
+      });
+      driver.extras
+        ? driver.extras.forEach(
+            (e) => (e.day = new Date(e.day).toISOString().substring(0, 10))
+          )
+        : null;
+      // console.log(d + 1, JSON.stringify(driver), JSON.stringify(driver).length);
+      // await db.collection("service/catalog/drivers_JSON").doc(driver.driverID).set({json: JSON.stringify(driver)})
+    });
+    // const test = JSON.stringify(drivers);
+    // console.log(new Blob([test]).size)
+    console.log(db);
   },
 };
 </script>

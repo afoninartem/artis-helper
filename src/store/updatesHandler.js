@@ -177,7 +177,6 @@ export default {
 							cars.push(doc.data());
 						});
 					});
-          // console.log(drivers)
 				localStorage.setItem("actualCatalogCars", JSON.stringify(cars));
 				console.log("КАТАЛОГ МАШИН ВЗЯТ ИЗ БД И ЗАПИСАН В ХРАНИЛИЩЕ");
 			} else {
@@ -211,7 +210,7 @@ export default {
 				);
 
 				await db
-					.collection("service/catalog/drivers")
+					.collection("service/catalog/drivers_JSON")
 					.get()
 					.then((querySnapshot) => {
 						querySnapshot.forEach((doc) => {
@@ -749,7 +748,7 @@ export default {
 				vacancies: state.actualVacancies,
         catalogPersonal: state.actualCatalogPersonal,
         candidates: state.actualCandidates,
-        catalogDrivers: state.actualCatalogDrivers,
+        catalogDrivers: state.actualCatalogDrivers ? state.actualCatalogDrivers .map(driver => JSON.parse(driver.json)) : null,
         catalogCars: state.actualCatalogCars,
 			};
 		},

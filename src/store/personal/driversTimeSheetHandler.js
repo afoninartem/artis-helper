@@ -1,55 +1,42 @@
 import { db } from "../../main";
 export default {
 	state: {
-		addDriverPopupVisibility: false,
-		carPopup: false,
-		changeCarPopupData: null,
-		carCrewPopup: false,
-		addPositionPopup: false,
-		carIDForCrewPopup: null,
-		driverNameForShedulePopup: null,
-		shedulePopup: false,
-		driverPopup: false,
+
+		// addPositionPopup: false,
+
 		info1C7: null,
 		info1C8_A21: null,
 		info1C8_AP: null,
 		info1C8_DP: null,
-		positions: [
-			"Водитель",
-			"экспедитор",
-			"Водитель на своем  авто",
-			"ночной экспедитор",
-			"д. экспедитор",
-			"Рекламатор",
-		],
+
 	},
 	mutations: {
-		openCarPopup(state) {
-			state.carPopup = true;
-		},
-		closeCarPopup(state) {
-			state.carPopup = false;
-		},
-		openAddPositionPopup(state) {
-			state.addPositionPopup = true;
-		},
-		closeAddPositionPopup(state) {
-			state.addPositionPopup = false;
-		},
-		openCarCrewPopup(state, payload) {
-			state.carIDForCrewPopup = payload;
-			state.carCrewPopup = true;
-		},
-		closeCarCrewPopup(state) {
-			state.carCrewPopup = false;
-		},
-		openShedulePopup(state, payload) {
-			state.driverNameForShedulePopup = payload;
-			state.shedulePopup = true;
-		},
-		closeShedulePopup(state) {
-			state.shedulePopup = false;
-		},
+		// openCarPopup(state) {
+		// 	state.carPopup = true;
+		// },
+		// closeCarPopup(state) {
+		// 	state.carPopup = false;
+		// },
+		// openAddPositionPopup(state) {
+		// 	state.addPositionPopup = true;
+		// },
+		// closeAddPositionPopup(state) {
+		// 	state.addPositionPopup = false;
+		// },
+		// openCarCrewPopup(state, payload) {
+		// 	state.carIDForCrewPopup = payload;
+		// 	state.carCrewPopup = true;
+		// },
+		// closeCarCrewPopup(state) {
+		// 	state.carCrewPopup = false;
+		// },
+		// openShedulePopup(state, payload) {
+		// 	state.driverNameForShedulePopup = payload;
+		// 	state.shedulePopup = true;
+		// },
+		// closeShedulePopup(state) {
+		// 	state.shedulePopup = false;
+		// },
 		add1C7info(state, payload) {
 			state.info1C7 = payload;
 		},
@@ -62,18 +49,18 @@ export default {
 		add1C8info_DP(state, payload) {
 			state.info1C8_DP = payload;
 		},
-		changeCarData(state, payload) {
-			state.changeCarPopupData = payload;
-		},
-		stopChangeCarData(state) {
-			state.changeCarPopupData = null;
-		},
-		openAddDriverPopup(state) {
-			state.addDriverPopupVisibility = true;
-		},
-		closeAddDriverPopup(state) {
-			state.addDriverPopupVisibility = false;
-		},
+		// changeCarData(state, payload) {
+		// 	state.changeCarPopupData = payload;
+		// },
+		// stopChangeCarData(state) {
+		// 	state.changeCarPopupData = null;
+		// },
+		// openAddDriverPopup(state) {
+		// 	state.addDriverPopupVisibility = true;
+		// },
+		// closeAddDriverPopup(state) {
+		// 	state.addDriverPopupVisibility = false;
+		// },
 	},
 	actions: {
 		async openAddDriverPopup(context) {
@@ -83,11 +70,7 @@ export default {
 			return await context.commit("closeAddDriverPopup");
 		},
 		async addDriverToCatalog(context, payload) {
-			// console.log(payload);
 			let initID = Date.now().toString();
-			// const positions = getters.getDriversPositions;
-			// positions.forEach(async (position) => {
-				// initID += 1;
 				await db
 					.collection("service/catalog/drivers")
 					.doc(initID)
@@ -98,7 +81,6 @@ export default {
 						// position: position,
 						carslist: [],
 					});
-			// });
 		},
 		// async openAddPositionPopup(context) {
 		// 	return await context.commit("openAddPositionPopup");
@@ -128,122 +110,9 @@ export default {
 		async closeShedulePopup(context) {
 			return await context.commit("closeShedulePopup");
 		},
-		async openCarPopup(context) {
-			return await context.commit("openCarPopup");
-		},
-		async closeCarPopup(context) {
-			return await context.commit("closeCarPopup");
-		},
-		async addCar(context, payload) {
-			payload.carID = Date.now().toString();
-			payload.crew = [];
-			await db
-				.collection("service/catalog/cars")
-				.doc(payload.carID)
-				.set(payload);
-		},
-		async saveCar({ getters }, payload) {
-			console.log(payload);
-			const drivers = getters.getActualStates.catalogDrivers;
-			const cars = getters.getActualStates.catalogCars;
-			const carID = payload.oldData.carID;
-			const crew = payload.oldData.crew;
-			const crewDetails = crew
-				.map(
-					(id) => drivers.filter((d) => d.driverID === id)[0]
-					// .carslist.filter((car) => car.carID === carID)
-				)
-				.flat();
-			const car = cars.filter((car) => car.carID === carID)[0];
-			car.mark = payload.newData.mark ? payload.newData.mark : car.mark;
-			car.number = payload.newData.number ? payload.newData.number : car.number;
-			// console.log(car);
-			await db
-				.collection("service/catalog/cars")
-				.doc(carID)
-				.update({ mark: car.mark, number: car.number });
-			crewDetails.forEach(async (driver) => {
-				const newCarslist = driver.carslist;
-				newCarslist.forEach((c) => {
-					if (c.carID === carID) c.car = car.number;
-				});
-				// console.log(newCarslist);
-				await db
-					.collection("service/catalog/drivers")
-					.doc(driver.driverID)
-					.update({ carslist: newCarslist });
-			});
-		},
-		async openChangeCarPopup(context, payload) {
-			await context.commit("changeCarData", payload);
-			await context.commit("openCarPopup");
-		},
-		async stopChangeCarData(context) {
-			await context.commit("stopChangeCarData");
-		},
-		async openCarCrewPopup(context, payload) {
-			return await context.commit("openCarCrewPopup", payload);
-		},
-		async closeCarCrewPopup(context) {
-			return await context.commit("closeCarCrewPopup");
-		},
-		async updateCrewOrder(context, payload) {
-			// console.log(payload);
-			return await db
-				.collection("service/catalog/cars")
-				.doc(payload.carID)
-				.update({ crew: payload.crewNewOrder });
-		},
-		async updateCarCrew(context, payload) {
-			console.log(payload);
-			const newCrew = payload.car.crew;
-			// console.log(newCrew, typeof newCrew)
-			// newCrew.push(payload.driver.driverID);
-			newCrew.includes(payload.driver.driverID)
-				? null
-				: newCrew.push(payload.driver.driverID);
-			const carslist = payload.driver.carslist;
-			carslist.push({
-				car: payload.car.number,
-				carID: payload.car.carID,
-				sheduleStart: null,
-				sheduleType: null,
-				sheduleShift: null,
-			});
-			await db
-				.collection("service/catalog/cars")
-				.doc(payload.car.carID)
-				.update({ crew: newCrew });
-			await db
-				.collection("service/catalog/drivers")
-				.doc(payload.driver.driverID)
-				// .update({ carslist: carslist }).then(() => console.log("Список машин добавлен в объект водителя")).catch((error) => console.log(error));
-				.set({ carslist: carslist }, { merge: true });
-		},
-		async removeDriverFromCar({ getters }, payload) {
-			// console.log(`payload: `, payload);
-			const drivers = getters.getActualStates.catalogDrivers;
-			const driver = drivers.filter((d) => d.driverID === payload.driverID)[0];
-			// console.log(`driver: `, driver)
-			const carslist = driver.carslist;
-			// console.log(`driver.carslist: `, driver.carslist)
-			const newCarslist = carslist.filter((car) => car.carID !== payload.carID);
-			// console.log(`newCarslist: `, newCarslist)
-			const cars = getters.getActualStates.catalogCars;
-			const car = cars.filter((car) => car.carID === payload.carID)[0];
-			const crew = car.crew;
-			const newCrew = crew.filter((cmID) => cmID !== payload.driverID);
 
-			await db
-				.collection("service/catalog/drivers")
-				.doc(payload.driverID)
-				.update({ carslist: newCarslist });
 
-			await db
-				.collection("service/catalog/cars")
-				.doc(payload.carID)
-				.update({ crew: newCrew });
-		},
+
 		async setShedule({ getters }, payload) {
 			console.log("setShedule_payload:", payload);
 
@@ -319,24 +188,18 @@ export default {
 		},
 	},
 	getters: {
-		getCarPopupVisibility: (state) => {
-			return state.carPopup;
-		},
+
 		// getAddPositionPopupVisibility: (state) => {
 		// 	return state.addPositionPopup;
 		// },
-		getCarCrewPopupVisibility: (state) => {
-			return { show: state.carCrewPopup, id: state.carIDForCrewPopup };
-		},
+
 		getShedulePopupVisibility: (state) => {
 			return {
 				show: state.shedulePopup,
 				name: state.driverNameForShedulePopup,
 			};
 		},
-		getDriversPositions: (state) => {
-			return state.positions;
-		},
+
 		get1C7info: (state) => {
 			return state.info1C7;
 		},
@@ -349,9 +212,7 @@ export default {
 		get1C8info_DP: (state) => {
 			return state.info1C8_DP;
 		},
-		getCarChangeData: (state) => {
-			return state.changeCarPopupData;
-		},
+
 		getAddDriverPopupVisibility: (state) => {
 			return state.addDriverPopupVisibility;
 		},

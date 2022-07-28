@@ -39,7 +39,7 @@
                     >{{
                       drivers
                         .filter((d) => d.driverID === member)[0]
-                        .position.toLowerCase()
+                        .carslist.filter(cl => cl.carID === car.carID)[0].position
                     }}</span
                   >
                 </p>
