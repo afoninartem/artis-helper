@@ -48,10 +48,11 @@ export default {
 				.doc(payload.car.carID)
 				.update({ crew: newCrew });
 			await db
-				.collection("service/catalog/drivers")
+				.collection("service/catalog/drivers_JSON")
 				.doc(payload.driver.driverID)
 				// .update({ carslist: carslist }).then(() => console.log("Список машин добавлен в объект водителя")).catch((error) => console.log(error));
-				.set({ carslist: carslist }, { merge: true });
+				// .set({ carslist: carslist }, { merge: true });
+				.update({json: JSON.stringify(payload.driver)})
 		},
 		async removeDriverFromCar({ getters }, payload) {
 			// console.log(`payload: `, payload);
@@ -66,11 +67,12 @@ export default {
 			const car = cars.filter((car) => car.carID === payload.carID)[0];
 			const crew = car.crew;
 			const newCrew = crew.filter((cmID) => cmID !== payload.driverID);
-
+			driver.carslist = newCarslist;
 			await db
 				.collection("service/catalog/drivers")
 				.doc(payload.driverID)
-				.update({ carslist: newCarslist });
+				// .update({ carslist: newCarslist });
+				.update({json: JSON.stringify(driver)})
 
 			await db
 				.collection("service/catalog/cars")

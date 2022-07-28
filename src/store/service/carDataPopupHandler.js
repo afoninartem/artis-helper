@@ -1,3 +1,4 @@
+import { update } from "vue-click-outside";
 import { db } from "../../main.js";
 export default {
 	state: { carPopup: false, changeCarPopupData: null },
@@ -54,11 +55,13 @@ export default {
 				newCarslist.forEach((c) => {
 					if (c.carID === carID) c.car = car.number;
 				});
+				driver.carslist = newCarslist
 				// console.log(newCarslist);
 				await db
-					.collection("service/catalog/drivers")
+					.collection("service/catalog/drivers_JSON")
 					.doc(driver.driverID)
-					.update({ carslist: newCarslist });
+					// .update({ carslist: newCarslist });
+					update({json: JSON.stringify(driver)})
 			});
 		},
 	},

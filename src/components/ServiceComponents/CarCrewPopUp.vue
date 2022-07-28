@@ -57,11 +57,7 @@
                 <th
                   v-for="(dayInfo, wd) in daySpec(date.month, date.year)"
                   :key="`weekday-${wd}`"
-                  :style="
-                    dayStyles(
-                      new Date(date.year, date.month, wd + 1)
-                    )
-                  "
+                  :style="dayStyles(new Date(date.year, date.month, wd + 1))"
                 >
                   {{ dayInfo.weekday }}
                 </th>
@@ -70,11 +66,7 @@
                 <th
                   v-for="(dayInfo, md) in daySpec(date.month, date.year)"
                   :key="`day-of-month-${md}`"
-                  :style="
-                    dayStyles(
-                      new Date(date.year, date.month, md + 1)
-                    )
-                  "
+                  :style="dayStyles(new Date(date.year, date.month, md + 1))"
                 >
                   {{ dayInfo.dayOfMonth }}
                 </th>
@@ -108,7 +100,12 @@
                   class="cell"
                   v-for="(day, d) in header"
                   :key="`date-${d}`"
-                  :style="dayStyles(new Date(date.year, date.month, d + 1), driver.extras)"
+                  :style="
+                    dayStyles(
+                      new Date(date.year, date.month, d + 1),
+                      driver.extras
+                    )
+                  "
                   @mousedown="startCollectSelectionCells(driver, day)"
                   @mouseover="collectSelectionCells(driver, day)"
                   @mouseup="stopCollectSelectionCells"
@@ -251,23 +248,23 @@ export default {
     addToCrew(payload) {
       this.newEmp.mainCrew = payload;
       //check if driver else where
-      console.log(this.newEmp);
+      console.log(`this.newEmp: `, this.newEmp);
       const driver = this.drivers.filter(
         (d) => (d.driverID = this.newEmp.driverID)
       )[0];
-      console.log(driver);
-      if (
-        this.newEmp.position === "водитель" &&
-        driver.carslist.map((d) => d.position).includes("водитель")
-      ) {
-        alert(
-          `Сотрудник ${driver.name} уже назначен водителем на машине ${
-            driver.carslist.filter(
-              (car) => car.position === this.newEmp.position
-            )[0].car
-          }. Пожалуйста, проверьте корректность заполнения графика.`
-        );
-      }
+      console.log(`driver from getter: `, driver.name, driver.driverID);
+      // if (
+      //   this.newEmp.position === "водитель" &&
+      //   driver.carslist.map((d) => d.position).includes("водитель")
+      // ) {
+      //   alert(
+      //     `Сотрудник ${driver.name} уже назначен водителем на машине ${
+      //       driver.carslist.filter(
+      //         (car) => car.position === this.newEmp.position
+      //       )[0].car
+      //     }. Пожалуйста, проверьте корректность заполнения графика.`
+      //   );
+      // }
     },
     prevMonth() {
       this.date.month === 0
@@ -330,31 +327,6 @@ export default {
       return array;
     },
     dayStyles(extras, date) {
-      // //styles will be store in other place
-      // const weekendStyle = "background: rgba(225, 100, 100, 0.3)";
-      // const todayStyle = "border: 2px solid blue";
-      // // const selectedStyle = "background: rgba(0, 0, 255, 0.1)";
-      // // ↑
-      // const stylesArray = [];
-      // const styleDivider = "; ";
-      // //define terms data ↓
-      // const today = new Date().getDate();
-      // const cellday =
-      //   typeof day === "string"
-      //     ? new Date(this.date.year, this.date.month, day).getDate()
-      //     : day.dayOfMonth;
-      // const weekday =
-      //   typeof day === "string"
-      //     ? new Date(this.date.year, this.date.month, day).toLocaleString(
-      //         "default",
-      //         { weekday: "short" }
-      //       )
-      //     : day.weekday;
-      // //define terms itself
-      // // if (this.)
-      // if (today === cellday) stylesArray.push(todayStyle);
-      // if (weekday === "сб" || weekday === "вс") stylesArray.push(weekendStyle);
-      // return stylesArray.join(styleDivider);
       const styles = require("../../store/service/sheduleDayStyles");
       return styles.default(extras, date);
     },
@@ -474,16 +446,18 @@ export default {
       if (!this.car || !this.drivers) return;
       const crew = this.car.crew.map(
         (id) => {
-          const driver = this.drivers.filter(d => d.driverID === id)[0];
-          const extras = driver.extras || [];
-          return driver.carslist.filter(car => car.carID === this.car.carID).map(cl => {
-            cl.extras = extras;
-            return cl;
-          })
+          const driver = this.drivers.filter((d) => d.driverID === id)[0];
+          const extras = driver.extras ? driver.extras : []
+          return driver.carslist
+            .filter((car) => car.carID === this.car.carID)
+            .map((cl) => {
+              cl.extras = extras;
+              return cl;
+            });
         }
-          // this.drivers
-          //   .filter((driver) => driver.driverID === id)[0]
-          //   .carslist.filter((car) => car.carID === this.car.carID)[0]
+        // this.drivers
+        //   .filter((driver) => driver.driverID === id)[0]
+        //   .carslist.filter((car) => car.carID === this.car.carID)[0]
       );
       this.setCrewData(crew.flat());
       return this.crewData;
