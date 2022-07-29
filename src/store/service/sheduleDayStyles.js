@@ -1,3 +1,4 @@
+
 export default function (date, extras = []) {
 	//styles will be store in other place
 	// console.log(date, extras)
@@ -16,7 +17,7 @@ export default function (date, extras = []) {
 	if (today === cellday) stylesArray.push(todayStyle);
 	if (weekday === "сб" || weekday === "вс") stylesArray.push(weekendStyle);
 	Array.from(extras).forEach((extra) => {
-		if (new Date(date).toString() == new Date(extra.day).toString()) {
+		if (new Date(date).toISOString() == extra.day) {
 			stylesArray.push(`background: ${extra.bgColor}`);
 		}
 	});

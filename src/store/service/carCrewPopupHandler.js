@@ -39,6 +39,9 @@ export default {
 			carslist.push({
 				car: payload.car.number,
 				carID: payload.car.carID,
+        driverID: payload.driver.driverID,
+        name: payload.driver.name,
+        position: payload.position,
 				sheduleStart: null,
 				sheduleType: null,
 				sheduleShift: null,
@@ -69,7 +72,7 @@ export default {
 			const newCrew = crew.filter((cmID) => cmID !== payload.driverID);
 			driver.carslist = newCarslist;
 			await db
-				.collection("service/catalog/drivers")
+				.collection("service/catalog/drivers_JSON")
 				.doc(payload.driverID)
 				// .update({ carslist: newCarslist });
 				.update({json: JSON.stringify(driver)})

@@ -93,7 +93,7 @@
                 driver.extras.filter(
                   (e) =>
                     e.day ==
-                    new Date(date.year, date.month, day.dayOfMonth).toString()
+                    new Date(date.year, date.month, day.dayOfMonth).toISOString()
                 ).length
                   ? driver.extras.filter(
                       (e) =>
@@ -102,7 +102,7 @@
                           date.year,
                           date.month,
                           day.dayOfMonth
-                        ).toString()
+                        ).toISOString()
                     )[0].cut.length
                     ? `background: ${
                         driver.extras.filter(
@@ -112,7 +112,7 @@
                               date.year,
                               date.month,
                               day.dayOfMonth
-                            ).toString()
+                            ).toISOString()
                         )[0].bgColor
                       }`
                     : setStyle(
@@ -131,7 +131,11 @@
                 driver.extras.filter(
                   (e) =>
                     e.day ==
-                    new Date(date.year, date.month, day.dayOfMonth).toString()
+                    new Date(
+                      date.year,
+                      date.month,
+                      day.dayOfMonth
+                    ).toISOString()
                 ).length
                   ? driver.extras.filter(
                       (e) =>
@@ -140,7 +144,7 @@
                           date.year,
                           date.month,
                           day.dayOfMonth
-                        ).toString()
+                        ).toISOString()
                     )[0].cut
                   : count(
                       driver.sheduleStart,
@@ -260,7 +264,6 @@ export default {
         },
       ],
       showConventions: false,
-      // driverCellWidth: null,
     };
   },
   methods: {
@@ -279,15 +282,7 @@ export default {
     },
     setStyle(date, driver, day) {
       // console.log(date, driver)
-      if (
-        !driver.info1C7 ||
-        !driver.info1C8
-        // ||
-        // !this.info1C8_A21 ||
-        // !this.info1C8_AP ||
-        // !this.info1C8_DP
-      )
-        return;
+      if (!driver.info1C7 || !driver.info1C8) return;
       const redBGredColor =
         "background: rgba(225, 50, 50, 0.9); color: red; font-weight: bold";
       const greenBG = "background: rgb(0, 128, 0)";

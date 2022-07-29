@@ -31,7 +31,7 @@
             </div>
             <div
               class="card__driver"
-              @click.prevent="openShedulePopup(driver.name)"
+              @click.prevent="openShedulePopup(driver.driverID)"
               v-for="(driver, dr) in car.crewDetails"
               :key="dr"
               :title="`Открыть график сотрудника ${driver.name}`"
@@ -114,15 +114,13 @@ export default {
                 )[0];
                 const currCar = driver.carslist
                   .filter((cl) => cl.carID === car.carID)
-                  .map((cl) =>
-                    Object.assign(cl, { extras: driver.extras || [] })
+                  .map((cl) => {
+                    cl.extras = driver.extras ? driver.extras : []
+                    return cl
+                  }
                   )[0];
-                // console.log(driver.name, currCar.extras);
                 return currCar;
               }
-              // this.drivers
-              //   .filter((d) => d.driverID === driverID)[0]
-              //   .carslist.filter((cl) => cl.carID === car.carID)[0]
             )
             .filter((driver) => {
               driver.todayExtra = driver.extras.filter(
@@ -142,9 +140,7 @@ export default {
                 )
               );
               return sheduleWork;
-              // return extra
-              //   ? (!sheduleWork && driver.todayExtra.cut === "Р") || sheduleWork
-              //   : sheduleWork;
+
             });
           car.crewDetails = crewDetails;
           return car;

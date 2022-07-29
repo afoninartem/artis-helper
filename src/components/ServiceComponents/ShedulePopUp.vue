@@ -2,7 +2,7 @@
   <div class="shedule-popup" v-if="show.show">
     <div class="shedule-popup__background">
       <div class="shedule-popup__content">
-        <h1>{{ show.name }}</h1>
+        <h1>{{ driver.name }}</h1>
         <table>
           <thead>
             <tr>
@@ -35,14 +35,30 @@
             <tr v-for="(item, i) in table" :key="i">
               <td>{{ item.position }}</td>
               <td>{{ item.car }}</td>
-              <td v-for="(day, d) in daySpec(date.month, date.year)" :key="d">
+              <td
+                v-for="(day, d) in daySpec(date.month, date.year)"
+                :key="d"
+                :style="
+                  dayStyles(new Date(date.year, date.month, d + 1), item.extras)
+                "
+              >
                 {{
-                  count(
-                    item.sheduleStart,
-                    item.sheduleType,
-                    item.sheduleShift,
-                    new Date(date.year, date.month, day.dayOfMonth)
-                  )
+                  item.extras.filter(
+                    (e) =>
+                      e.day ==
+                      new Date(date.year, date.month, d + 1).toISOString()
+                  ).length
+                    ? item.extras.filter(
+                        (e) =>
+                          e.day ==
+                          new Date(date.year, date.month, d + 1).toISOString()
+                      )[0].cut
+                    : count(
+                        item.sheduleStart,
+                        item.sheduleType,
+                        item.sheduleShift,
+                        new Date(date.year, date.month, d + 1)
+                      )
                 }}
               </td>
             </tr>
@@ -53,7 +69,7 @@
           <select
             name="car-and-position"
             id="car-and-position"
-            v-model="driverID"
+            v-model="carNumberAndDriverID"
           >
             <option
               v-for="(option, o) in table"
@@ -108,7 +124,7 @@ export default {
       conditionalStartDate: "2022-04-01T00:00",
       sheduleShift: null,
       sheduleType: null,
-      driverID: null,
+      carNumberAndDriverID: null,
       date: {
         month: null,
         year: null,
@@ -116,6 +132,10 @@ export default {
     };
   },
   methods: {
+    dayStyles(extras, date) {
+      const styles = require("../../store/service/sheduleDayStyles");
+      return styles.default(extras, date);
+    },
     count(sheduleStart, sheduleType, sheduleShift, currDate) {
       const count = require("../../store/service/sheduleCounter");
       return count.default(sheduleStart, sheduleType, sheduleShift, currDate);
@@ -127,13 +147,14 @@ export default {
       if (
         (this.startDate?.length || this.sheduleShift) &&
         this.sheduleType &&
-        this.driverID
+        this.carNumberAndDriverID
       ) {
         await this.$store.dispatch("setShedule", {
           sheduleType: this.sheduleType,
           sheduleStart: this.startDate,
           sheduleShift: this.sheduleShift,
-          driverID: this.driverID,
+          carNum: this.carNumberAndDriverID.car,
+          driverID: this.carNumberAndDriverID.id
         });
         await this.$store.dispatch("updateCatalogDriversDate");
         await this.$store.dispatch("setActualCatalogDrivers");
@@ -165,40 +186,25 @@ export default {
     },
   },
   computed: {
-    person() {
+    driver() {
+      if (
+        !this.$store.getters.getActualStates.catalogDrivers ||
+        !this.$store.getters.getActualStates.catalogDrivers.filter(
+          (driver) => driver.driverID === this.show.driverID
+        ).length
+      )
+        return;
       return this.$store.getters.getActualStates.catalogDrivers.filter(
-        (driver) => driver.name === this.show.name
-      );
+        (driver) => driver.driverID === this.show.driverID
+      )[0];
     },
     table() {
-      if (this.person) {
-        const result = [];
-        this.person
-          .filter((p) => {
-            return p.carslist && p.carslist.length;
-          })
-          .forEach((p) => {
-            // console.log("person:", p)
-            p.carslist.forEach((car) => {
-              // console.log("personID:", p.driverID);
-              result.push({
-                car: car.car,
-                position: p.position,
-                driverID: p.driverID,
-                sheduleType: car.sheduleType,
-                sheduleStart: car.sheduleStart || this.conditionalStartDate,
-                sheduleShift: car.sheduleShift,
-                // sheduleStart: car.sheduleStart?.length
-                //   ? car.sheduleStart
-                //   : this.conditionalStartDate,
-                // sheduleShift: car.sheduleShift || null,
-              });
-            });
-          });
-          // console.log(result)
-        return result;
-      }
-      return null;
+      if (!this.driver) return;
+      return this.driver.carslist.map((cl) => {
+        cl.extras = this.driver.extras;
+        cl.name = this.driver.name;
+        return cl;
+      });
     },
     show() {
       return this.$store.getters.getShedulePopupVisibility;

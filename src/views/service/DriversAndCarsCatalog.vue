@@ -39,7 +39,8 @@
                     >{{
                       drivers
                         .filter((d) => d.driverID === member)[0]
-                        .carslist.filter(cl => cl.carID === car.carID)[0].position
+                        .carslist.filter((cl) => cl.carID === car.carID)[0]
+                        .position
                     }}</span
                   >
                 </p>
@@ -80,7 +81,10 @@
                 {{ typeof car == "string" ? car : car.car }}
               </p>
             </td>
-            <td @click.prevent="openShedulePopup(driver.name)" class="shedule">
+            <td
+              @click.prevent="openShedulePopup(driver.driverID)"
+              class="shedule"
+            >
               <p v-for="(shedule, s) in driver.carslist" :key="s">
                 <span>{{ shedule.car }}</span> -
                 <span>{{ shedule.sheduleType || `не указан` }}</span>
@@ -102,6 +106,7 @@
 </template>
 
 <script>
+// import { db } from "../../main.js";
 import AddCarPopUp from "@/components/ServiceComponents/AddCarPopUp";
 import CarCrewPopUp from "@/components/ServiceComponents/CarCrewPopUp";
 import ShedulePopUp from "@/components/ServiceComponents/ShedulePopUp";
@@ -139,16 +144,14 @@ export default {
       return await this.$store.dispatch("openChangeCarPopup", car);
     },
     // async fixExtras() {
-    //   localStorage.removeItem("catalogDriversLastUpdateLS")
-      // if (!this.drivers) return;
-      // this.drivers.filter(driver => driver.extras).forEach(driver => driver.extras.forEach(e => {
-      //   if (typeof e.day !== 'string') {
-      //     const fixedDate = new Date(e.day.seconds * 1000).toString()
-      //     console.log(fixedDate, driver.driverID)
-      //     e.day = fixedDate;
-      //   }
-      // }))
-    // }
+    //   if (!this.drivers) return;
+    //   this.drivers.forEach(async driver => {
+    //     driver.extras = [];
+    //     await db.collection("service/catalog/drivers_JSON").doc(driver.driverID).update({json: JSON.stringify(driver)})
+    //   })
+
+    //   localStorage.removeItem("catalogDriversLastUpdateLS");
+    // },
   },
   computed: {
     drivers() {
@@ -175,10 +178,6 @@ export default {
   mounted: async function () {
     await this.$store.dispatch("setActualCatalogDrivers");
     await this.$store.dispatch("setActualCatalogCars");
-    // const allCarslists = this.drivers ? this.drivers.map(driver => driver.carslist).flat().filter(driver => this.drivers.map(d => d.driverID).includes(driver.driverID)) : null;
-    // console.log(allCarslists)
-    // const allCrews = this.cars.map(car => car.crew).flat().filter(id => !this.drivers.map(d => d.driverID).includes(id));
-    // console.log(allCrews)
   },
 };
 </script>

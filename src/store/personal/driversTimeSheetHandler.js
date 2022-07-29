@@ -104,36 +104,11 @@ export default {
 				});
 			});
 		},
-		async openShedulePopup(context, payload) {
-			return await context.commit("openShedulePopup", payload);
-		},
-		async closeShedulePopup(context) {
-			return await context.commit("closeShedulePopup");
-		},
 
 
 
-		async setShedule({ getters }, payload) {
-			console.log("setShedule_payload:", payload);
 
-			const driver = Array.from(getters.getActualStates.catalogDrivers).filter(
-				(d) => d.driverID === payload.driverID.id
-			)[0];
 
-			const carslist = driver.carslist;
-			carslist.forEach((car) => {
-				if (car.car === payload.driverID.car) {
-					car.sheduleType = payload.sheduleType;
-					car.sheduleStart = payload.sheduleStart;
-					car.sheduleShift = payload.sheduleShift;
-				}
-			});
-
-			await db
-				.collection("service/catalog/drivers")
-				.doc(payload.driverID.id)
-				.update({ carslist: carslist });
-		},
 		async add1C7info({ getters, commit }, payload) {
 			const drivers = getters.getActualStates.catalogDrivers;
 			const positions = getters.getDriversPositions;
@@ -193,12 +168,7 @@ export default {
 		// 	return state.addPositionPopup;
 		// },
 
-		getShedulePopupVisibility: (state) => {
-			return {
-				show: state.shedulePopup,
-				name: state.driverNameForShedulePopup,
-			};
-		},
+
 
 		get1C7info: (state) => {
 			return state.info1C7;

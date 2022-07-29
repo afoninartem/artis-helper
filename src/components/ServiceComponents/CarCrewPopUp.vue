@@ -87,11 +87,14 @@
                   ></span>
                   <span class="number">{{ d + 1 }}</span>
                 </td>
-                <td @click.prevent="openShedulePopup(driver.name)" class="car">
+                <td
+                  @click.prevent="openShedulePopup(driver.driverID)"
+                  class="car"
+                >
                   {{ driver.name }}
                 </td>
                 <td
-                  @click.prevent="openShedulePopup(driver.name)"
+                  @click.prevent="openShedulePopup(driver.driverID)"
                   class="position"
                 >
                   {{ driver.position }}
@@ -113,12 +116,12 @@
                   {{
                     driver.extras.filter(
                       (e) =>
-                        e.day == new Date(date.year, date.month, day).toString()
+                        e.day == new Date(date.year, date.month, day).toISOString()
                     ).length
                       ? driver.extras.filter(
                           (e) =>
                             e.day ==
-                            new Date(date.year, date.month, day).toString()
+                            new Date(date.year, date.month, day).toISOString()
                         )[0].cut
                       : count(
                           driver.sheduleStart,
@@ -245,26 +248,34 @@ export default {
     },
   },
   methods: {
-    addToCrew(payload) {
+    async addToCrew(payload) {
       this.newEmp.mainCrew = payload;
       //check if driver else where
-      console.log(`this.newEmp: `, this.newEmp);
       const driver = this.drivers.filter(
-        (d) => (d.driverID = this.newEmp.driverID)
+        (d) => d.driverID === this.newEmp.driverID
       )[0];
-      console.log(`driver from getter: `, driver.name, driver.driverID);
-      // if (
-      //   this.newEmp.position === "водитель" &&
-      //   driver.carslist.map((d) => d.position).includes("водитель")
-      // ) {
-      //   alert(
-      //     `Сотрудник ${driver.name} уже назначен водителем на машине ${
-      //       driver.carslist.filter(
-      //         (car) => car.position === this.newEmp.position
-      //       )[0].car
-      //     }. Пожалуйста, проверьте корректность заполнения графика.`
-      //   );
-      // }
+      if (
+        this.newEmp.position === "водитель" &&
+        driver.carslist.map((d) => d.position).includes("водитель")
+      ) {
+        alert(
+          `Сотрудник ${driver.name} уже назначен водителем на машине ${
+            driver.carslist.filter(
+              (car) => car.position === this.newEmp.position
+            )[0].car
+          }. Пожалуйста, проверьте корректность заполнения графика.`
+        );
+      }
+
+      await this.$store.dispatch("updateCarCrew", {
+        driver: driver,
+        position: this.newEmp.position,
+        car: this.car,
+      });
+      await this.$store.dispatch("updateCatalogCarsDate");
+      await this.$store.dispatch("setActualCatalogCars");
+      await this.$store.dispatch("updateCatalogDriversDate");
+      await this.$store.dispatch("setActualCatalogDrivers");
     },
     prevMonth() {
       this.date.month === 0
@@ -348,8 +359,8 @@ export default {
       }
       return await this.$store.dispatch("closeCarCrewPopup");
     },
-    async openShedulePopup(car_id) {
-      return await this.$store.dispatch("openShedulePopup", car_id);
+    async openShedulePopup(payload) {
+      return await this.$store.dispatch("openShedulePopup", payload);
     },
     count(sheduleStart, sheduleType, sheduleShift, currDate) {
       const count = require("../../store/service/sheduleCounter");
@@ -387,12 +398,6 @@ export default {
       this.tips = null;
       this.newEmp.name = payload.driver.name;
       this.newEmp.driverID = payload.driver.driverID;
-
-      // await this.$store.dispatch("updateCarCrew", payload);
-      // await this.$store.dispatch("updateCatalogCarsDate");
-      // await this.$store.dispatch("setActualCatalogCars");
-      // await this.$store.dispatch("updateCatalogDriversDate");
-      // await this.$store.dispatch("setActualCatalogDrivers");
     },
     findDriver() {
       // const str = this.$refs.findDriver.value.toLowerCase();
@@ -447,11 +452,13 @@ export default {
       const crew = this.car.crew.map(
         (id) => {
           const driver = this.drivers.filter((d) => d.driverID === id)[0];
-          const extras = driver.extras ? driver.extras : []
+          const extras = driver.extras ? driver.extras : [];
+
           return driver.carslist
             .filter((car) => car.carID === this.car.carID)
             .map((cl) => {
               cl.extras = extras;
+              cl.name = driver.name;
               return cl;
             });
         }

@@ -26,11 +26,11 @@
       </div>
       <div class="dates" v-if="info" ref="dates" :style="oldExtras">
         <div v-if="info.days.length === 1">
-          {{ info.days[0].toLocaleString().split(",")[0] }}
+          {{ info.days[0].toLocaleDateString() }}
         </div>
         <div v-if="info.days.length > 1">
           {{ info.days[0].toLocaleString().split(",")[0] }} -
-          {{ info.days[info.days.length - 1].toLocaleString().split(",")[0] }}
+          {{ info.days[info.days.length - 1].toLocaleDateString() }}
         </div>
       </div>
 
@@ -67,7 +67,7 @@ export default {
       dates.style.background = item.color;
       this.result = {
         days: Array.from(this.info.days).map((day) => ({
-          day: day.toString(),
+          day: new Date(day).toISOString(),
           cut: item.cut,
           bgColor: item.color,
         })),

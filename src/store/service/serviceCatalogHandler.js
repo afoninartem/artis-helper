@@ -10,21 +10,13 @@ export default {
 			"Рекламатор",
 		],
 
-		driverNameForShedulePopup: null,
+		// driverNameForShedulePopup: null,
 		shedulePopup: false,
 		driverPopup: false,
 		addDriverPopupVisibility: false,
-
 	},
 	mutations: {
 
-		openShedulePopup(state, payload) {
-			state.driverNameForShedulePopup = payload;
-			state.shedulePopup = true;
-		},
-		closeShedulePopup(state) {
-			state.shedulePopup = false;
-		},
 
 		openAddDriverPopup(state) {
 			state.addDriverPopupVisibility = true;

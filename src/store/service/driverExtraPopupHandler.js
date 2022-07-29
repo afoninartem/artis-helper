@@ -26,7 +26,7 @@ export default {
       return await context.commit("closeDriverExtraPopup");
     },
     async updateExtras({ getters }, payload) {
-      // console.log(payload.driverID, payload.days)
+      console.log(payload.driverID, payload.days)
       const driver = getters.getActualStates.catalogDrivers.filter(
         (d) => d.driverID === payload.driverID
       )[0];
