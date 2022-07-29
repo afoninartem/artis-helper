@@ -1,14 +1,12 @@
 import { db } from "../../main";
 export default {
 	state: {
-
 		// addPositionPopup: false,
 
 		info1C7: null,
 		info1C8_A21: null,
 		info1C8_AP: null,
 		info1C8_DP: null,
-
 	},
 	mutations: {
 		// openCarPopup(state) {
@@ -71,16 +69,13 @@ export default {
 		},
 		async addDriverToCatalog(context, payload) {
 			let initID = Date.now().toString();
-				await db
-					.collection("service/catalog/drivers")
-					.doc(initID)
-					.set({
-						driverID: initID,
-						name: payload.name,
-						mainPosition: payload.position.toLowerCase(),
-						// position: position,
-						carslist: [],
-					});
+			await db.collection("service/catalog/drivers").doc(initID).set({
+				driverID: initID,
+				name: payload.name,
+				mainPosition: payload.position.toLowerCase(),
+				// position: position,
+				carslist: [],
+			});
 		},
 		// async openAddPositionPopup(context) {
 		// 	return await context.commit("openAddPositionPopup");
@@ -104,10 +99,6 @@ export default {
 				});
 			});
 		},
-
-
-
-
 
 		async add1C7info({ getters, commit }, payload) {
 			const drivers = getters.getActualStates.catalogDrivers;
@@ -163,12 +154,9 @@ export default {
 		},
 	},
 	getters: {
-
 		// getAddPositionPopupVisibility: (state) => {
 		// 	return state.addPositionPopup;
 		// },
-
-
 
 		get1C7info: (state) => {
 			return state.info1C7;

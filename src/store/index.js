@@ -111,6 +111,12 @@ export default new Vuex.Store({
             title: "Taxcom",
             permissions: ["accounting"],
           },
+          {
+            name: "client-payments-xml",
+            link: "/client-payments-xml",
+            title: "XML-платежи",
+            permissions: ["accounting"],
+          },
         ],
       },
       {

@@ -390,6 +390,16 @@ const routes = [
     },
     component: () => import("../views/accounting/TaxcomCheck.vue"),
   },
+  {
+    path: "/client-payments-xml",
+    name: "ClientPaymentsXML",
+    meta: {
+      layout: "MainLayout",
+      auth: true,
+      permissions: ["admin", "accounting"],
+    },
+    component: () => import("../views/accounting/ClientPaymentXMLHandler.vue"),
+  },
   // SERVICE ↓
   {
     path: "/today-working-service",
