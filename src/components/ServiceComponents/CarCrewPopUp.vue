@@ -19,7 +19,7 @@
         <div class="actual-crew">
           <!-- <p v-if="car.crew.length">Действующий экипаж:</p> -->
           <p v-if="!car.crew.length">Экипаж не назначен</p>
-          <table>
+          <table v-if="crew">
             <thead>
               <tr>
                 <th
@@ -329,6 +329,7 @@ export default {
     // },
     setCrewData(array) {
       this.crewData = array;
+      // this.componentKey += 1
     },
     move(index, arrow) {
       const swapIndex = arrow === "up" ? index - 1 : index + 1;
@@ -453,13 +454,13 @@ export default {
       const crew = this.car.crew.map(
         (id) => {
           const driver = this.drivers.filter((d) => d.driverID === id)[0];
-          const extras = driver.extras ? driver.extras : [];
+          // const extras = driver.extras ? driver.extras : [];
 
           return driver.carslist
             .filter((car) => car.carID === this.car.carID)
             .map((cl) => {
-              cl.extras = extras;
-              cl.name = driver.name;
+              // cl.extras = extras;
+              // cl.name = driver.name;
               return cl;
             });
         }
