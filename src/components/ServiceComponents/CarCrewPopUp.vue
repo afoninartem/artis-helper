@@ -302,6 +302,7 @@ export default {
         .map((day) => new Date(this.date.year, this.date.month, day));
       await this.$store.dispatch("openDriverExtraPopup", {
         driver: this.selectedDriver,
+        carID: this.car.carID,
         days,
       });
       this.selectedDriver = null;

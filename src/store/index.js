@@ -38,6 +38,7 @@ import taxcomHandler from "./accounting/taxcomHandler";
 import fiscalHandler from "./accounting/fiscalHandler";
 import onlineShopHandler from "./accounting/onlineShopHandler";
 import payLinksHandler from "./accounting/payLinksHandler";
+import xml2json from "./accounting/xml/xml2json";
 import needsHandler from "./marketing/warehouse-needs/needsHandler";
 import vacanciesHandler from "./personal/vacanciesHandler";
 import catalogPersonalHandler from "./personal/catalogPersonalHandler";
@@ -111,12 +112,12 @@ export default new Vuex.Store({
             title: "Taxcom",
             permissions: ["accounting"],
           },
-          {
-            name: "client-payments-xml",
-            link: "/client-payments-xml",
-            title: "XML-платежи",
-            permissions: ["accounting"],
-          },
+          // {
+          //   name: "client-payments-xml",
+          //   link: "/client-payments-xml",
+          //   title: "XML2XLS",
+          //   permissions: ["accounting"],
+          // },
         ],
       },
       {
@@ -515,6 +516,7 @@ export default new Vuex.Store({
     serviceCatalogHandler,
     carDataPopupHandler,
     carCrewPopupHandler,
-    shedulePopupHandler
+    shedulePopupHandler,
+    xml2json
   },
 });

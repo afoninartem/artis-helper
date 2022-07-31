@@ -5,17 +5,20 @@ export default {
     show: false,
     driver: null,
     days: null,
+    carID: null,
   },
   mutations: {
     openDriverExtraPopup(state, payload) {
       state.show = true;
       state.driver = payload.driver;
       state.days = payload.days;
+      state.carID = payload.carID;
     },
     closeDriverExtraPopup(state) {
       state.show = false;
       state.driver = null;
       state.day = null;
+      state.carID = null;
     },
   },
   actions: {
@@ -26,7 +29,7 @@ export default {
       return await context.commit("closeDriverExtraPopup");
     },
     async updateExtras({ getters }, payload) {
-      console.log(payload.driverID, payload.days)
+      console.log(payload);
       const driver = getters.getActualStates.catalogDrivers.filter(
         (d) => d.driverID === payload.driverID
       )[0];
@@ -43,7 +46,9 @@ export default {
           })
         : (driver.extras = payload.days);
       const extras = driver.extras.filter((e) => e.cut.length > 0);
+      console.log(extras);
       driver.extras = extras;
+      driver.carslist.forEach(cl => delete cl.extras)
       await db
         .collection("service/catalog/drivers_JSON")
         .doc(driver.driverID)

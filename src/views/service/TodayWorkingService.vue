@@ -48,7 +48,7 @@
 </template>
 
 <script>
-import { db } from "../../main.js";
+// import { db } from "../../main.js";
 import CarCrewPopUp from "@/components/ServiceComponents/CarCrewPopUp";
 import ShedulePopUp from "@/components/ServiceComponents/ShedulePopUp";
 import {
@@ -107,27 +107,24 @@ export default {
         .filter((car) => car.crew.length)
         .map((car) => {
           const crewDetails = car.crew
-            .map(
-              (driverID) => {
-                const driver = this.drivers.filter(
-                  (d) => d.driverID === driverID
-                )[0];
-                const currCar = driver.carslist
-                  .filter((cl) => cl.carID === car.carID)
-                  .map((cl) => {
-                    cl.extras = driver.extras ? driver.extras : []
-                    return cl
-                  }
-                  )[0];
-                return currCar;
-              }
-            )
+            .map((driverID) => {
+              const driver = this.drivers.filter(
+                (d) => d.driverID === driverID
+              )[0];
+              const currCar = driver.carslist
+                .filter((cl) => cl.carID === car.carID)
+                .map((cl) => {
+                  cl.extras = driver.extras ? driver.extras : [];
+                  return cl;
+                })[0];
+              return currCar;
+            })
             .filter((driver) => {
               driver.todayExtra = driver.extras.filter(
-                (e) => e.day == new Date(year, month, day).toString()
+                (e) => e.day == new Date(year, month, day).toISOString()
               ).length
                 ? driver.extras.filter(
-                    (e) => e.day == new Date(year, month, day).toString()
+                    (e) => e.day == new Date(year, month, day).toISOString()
                   )[0]
                 : null;
               // console.log(driver.name, driver.todayExtra);
@@ -139,8 +136,12 @@ export default {
                   new Date(year, month, day)
                 )
               );
-              return sheduleWork;
-
+              // return sheduleWork;
+              return driver.todayExtra
+                ? driver.todayExtra.cut === "Р"
+                  ? true
+                  : sheduleWork
+                : sheduleWork;
             });
           car.crewDetails = crewDetails;
           return car;
@@ -214,7 +215,7 @@ export default {
     });
     // const test = JSON.stringify(drivers);
     // console.log(new Blob([test]).size)
-    console.log(db);
+    // console.log(db);
   },
 };
 </script>

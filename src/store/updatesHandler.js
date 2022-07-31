@@ -748,7 +748,7 @@ export default {
 				vacancies: state.actualVacancies,
         catalogPersonal: state.actualCatalogPersonal,
         candidates: state.actualCandidates,
-        catalogDrivers: state.actualCatalogDrivers ? state.actualCatalogDrivers .map(driver => JSON.parse(driver.json)) : null,
+        catalogDrivers: state.actualCatalogDrivers ? state.actualCatalogDrivers.map(driver => JSON.parse(driver.json)) : null,
         catalogCars: state.actualCatalogCars,
 			};
 		},

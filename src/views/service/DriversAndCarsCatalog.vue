@@ -145,11 +145,14 @@ export default {
     },
     // async fixExtras() {
     //   if (!this.drivers) return;
-    //   this.drivers.forEach(async driver => {
+    //   this.drivers.forEach(async (driver) => {
     //     driver.extras = [];
-    //     await db.collection("service/catalog/drivers_JSON").doc(driver.driverID).update({json: JSON.stringify(driver)})
-    //   })
-
+    //     driver.carslist.forEach(cl => delete cl.extras)
+    //     await db
+    //       .collection("service/catalog/drivers_JSON")
+    //       .doc(driver.driverID)
+    //       .update({ json: JSON.stringify(driver) });
+    //   });
     //   localStorage.removeItem("catalogDriversLastUpdateLS");
     // },
   },

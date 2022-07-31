@@ -70,6 +70,7 @@ export default {
           day: new Date(day).toISOString(),
           cut: item.cut,
           bgColor: item.color,
+          carID: item.carID
         })),
       };
     },
