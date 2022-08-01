@@ -70,7 +70,8 @@ export default {
           day: new Date(day).toISOString(),
           cut: item.cut,
           bgColor: item.color,
-          carID: item.carID
+          carID: this.info.driver.carID
+
         })),
       };
     },
@@ -78,6 +79,8 @@ export default {
       if (!this.result) return;
       const result = this.result;
       result.driverID = this.info.driver.driverID;
+      result.carID = this.info.driver.carID;
+      // console.log(`result from ExtraVue: `, result)
       await this.$store.dispatch("updateExtras", result);
       await this.$store.dispatch("updateCatalogDriversDate");
       await this.$store.dispatch("setActualCatalogDrivers");

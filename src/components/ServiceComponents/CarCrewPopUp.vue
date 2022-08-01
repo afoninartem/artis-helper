@@ -19,7 +19,7 @@
         <div class="actual-crew">
           <!-- <p v-if="car.crew.length">Действующий экипаж:</p> -->
           <p v-if="!car.crew.length">Экипаж не назначен</p>
-          <table v-if="crew">
+          <table v-if="crew.length">
             <thead>
               <tr>
                 <th
@@ -239,6 +239,7 @@ export default {
       selectedDriver: null,
       cellsCollection: [],
       cellsCollectionForStyling: [],
+      carID: null,
     };
   },
   watch: {
@@ -302,7 +303,6 @@ export default {
         .map((day) => new Date(this.date.year, this.date.month, day));
       await this.$store.dispatch("openDriverExtraPopup", {
         driver: this.selectedDriver,
-        carID: this.car.carID,
         days,
       });
       this.selectedDriver = null;

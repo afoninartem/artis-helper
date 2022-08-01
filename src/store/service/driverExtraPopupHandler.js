@@ -12,7 +12,7 @@ export default {
       state.show = true;
       state.driver = payload.driver;
       state.days = payload.days;
-      state.carID = payload.carID;
+      state.carID = payload.driver.carID;
     },
     closeDriverExtraPopup(state) {
       state.show = false;
@@ -23,13 +23,14 @@ export default {
   },
   actions: {
     async openDriverExtraPopup(context, payload) {
+      // console.log(payload)
       return await context.commit("openDriverExtraPopup", payload);
     },
     async closeDriverExtraPopup(context) {
       return await context.commit("closeDriverExtraPopup");
     },
     async updateExtras({ getters }, payload) {
-      console.log(payload);
+      // console.log(`payload from ExtraJS: `, payload);
       const driver = getters.getActualStates.catalogDrivers.filter(
         (d) => d.driverID === payload.driverID
       )[0];
@@ -48,7 +49,7 @@ export default {
       const extras = driver.extras.filter((e) => e.cut.length > 0);
       console.log(extras);
       driver.extras = extras;
-      driver.carslist.forEach(cl => delete cl.extras)
+      // driver.carslist.forEach(cl => delete cl.extras)
       await db
         .collection("service/catalog/drivers_JSON")
         .doc(driver.driverID)

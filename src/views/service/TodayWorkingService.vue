@@ -67,6 +67,7 @@ export default {
   data() {
     return {
       todayDate: new Date(),
+      todayDateInput: new Date(),
       date: {
         month: null,
         year: null,
@@ -197,22 +198,22 @@ export default {
     await this.$store.dispatch("setActualCatalogCars");
     this.todayDate = new Date().toISOString().substring(0, 10);
 
-    const drivers = this.drivers;
-    drivers.forEach(async (driver) => {
-      delete driver.position;
-      // console.log(d + 1, JSON.stringify(driver), JSON.stringify(driver).length)
-      driver.carslist.forEach((cl) => {
-        delete cl.extras;
-        delete cl.todayExtra;
-      });
-      driver.extras
-        ? driver.extras.forEach(
-            (e) => (e.day = new Date(e.day).toISOString().substring(0, 10))
-          )
-        : null;
+    // const drivers = this.drivers;
+    // drivers.forEach(async (driver) => {
+    //   delete driver.position;
+    //   // console.log(d + 1, JSON.stringify(driver), JSON.stringify(driver).length)
+    //   driver.carslist.forEach((cl) => {
+    //     delete cl.extras;
+    //     delete cl.todayExtra;
+    //   });
+    //   driver.extras
+    //     ? driver.extras.forEach(
+    //         (e) => (e.day = new Date(e.day).toISOString().substring(0, 10))
+    //       )
+    //     : null;
       // console.log(d + 1, JSON.stringify(driver), JSON.stringify(driver).length);
       // await db.collection("service/catalog/drivers_JSON").doc(driver.driverID).set({json: JSON.stringify(driver)})
-    });
+    // });
     // const test = JSON.stringify(drivers);
     // console.log(new Blob([test]).size)
     // console.log(db);
