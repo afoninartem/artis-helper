@@ -609,6 +609,7 @@ p {
         display: flex;
         align-items: center;
         justify-content: center;
+        align-items: center;
         gap: 20px;
         button {
           border: none;
@@ -616,7 +617,13 @@ p {
           width: 120px;
           background: transparent;
           cursor: pointer;
-          font-size: 20px;
+          font-size: 18px;
+          &:first-child {
+            text-align: right;
+          }
+          &:last-child {
+            text-align-last: left;
+          }
           &:hover {
             transform: scale(1.1);
           }
