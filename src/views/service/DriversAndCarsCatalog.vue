@@ -5,7 +5,7 @@
       <div class="menu">
         <button @click.prevent="addCar">Добавить машину</button>
         <button @click.prevent="addDriver">Добавить сотрудника</button>
-        <button @click.prevent="fixExtras">Fix сотрудника</button>
+        <!-- <button @click.prevent="fixExtras">Fix сотрудника</button> -->
       </div>
       <!-- <PrintShedule /> -->
       <table>
@@ -106,7 +106,7 @@
 </template>
 
 <script>
-import { db } from "../../main.js";
+// import { db } from "../../main.js";
 import AddCarPopUp from "@/components/ServiceComponents/AddCarPopUp";
 import CarCrewPopUp from "@/components/ServiceComponents/CarCrewPopUp";
 import ShedulePopUp from "@/components/ServiceComponents/ShedulePopUp";
@@ -143,18 +143,18 @@ export default {
     async openChangeCarPopup(car) {
       return await this.$store.dispatch("openChangeCarPopup", car);
     },
-    async fixExtras() {
-      if (!this.drivers) return;
-      this.drivers.forEach(async (driver) => {
-        driver.extras = [];
-        driver.carslist.forEach(cl => delete cl.extras)
-        await db
-          .collection("service/catalog/drivers_JSON")
-          .doc(driver.driverID)
-          .update({ json: JSON.stringify(driver) });
-      });
-      localStorage.removeItem("catalogDriversLastUpdateLS");
-    },
+    // async fixExtras() {
+    //   if (!this.drivers) return;
+    //   this.drivers.forEach(async (driver) => {
+    //     driver.extras = [];
+    //     driver.carslist.forEach(cl => delete cl.extras)
+    //     await db
+    //       .collection("service/catalog/drivers_JSON")
+    //       .doc(driver.driverID)
+    //       .update({ json: JSON.stringify(driver) });
+    //   });
+    //   localStorage.removeItem("catalogDriversLastUpdateLS");
+    // },
   },
   computed: {
     drivers() {

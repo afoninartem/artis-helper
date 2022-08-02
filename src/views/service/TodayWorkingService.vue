@@ -36,7 +36,20 @@
               :key="dr"
               :title="`Открыть график сотрудника ${driver.name}`"
             >
-              {{ driver.name }}
+              <span>{{ driver.name }}</span>
+              <span
+                v-if="driver.todayExtra"
+                :style="{
+                  background: `${driver.todayExtra.bgColor}`,
+                  display: `inline-block`,
+                  width: `25px`,
+                  heigth: `25px`,
+                  border: `1px solid black`,
+                  position: `absolute`,
+                  right: `20px`,
+                }"
+                >{{ driver.todayExtra.cut }}</span
+              >
             </div>
           </div>
         </div>
@@ -121,12 +134,15 @@ export default {
               return currCar;
             })
             .filter((driver) => {
-              driver.todayExtra = driver.extras.filter(
-                (e) => e.day == new Date(year, month, day).toISOString()
-              ).length
+              if (!driver) return;
+              driver.todayExtra = driver.extras
                 ? driver.extras.filter(
                     (e) => e.day == new Date(year, month, day).toISOString()
-                  )[0]
+                  ).length
+                  ? driver.extras.filter(
+                      (e) => e.day == new Date(year, month, day).toISOString()
+                    )[0]
+                  : null
                 : null;
               // console.log(driver.name, driver.todayExtra);
               const sheduleWork = Boolean(
@@ -137,12 +153,21 @@ export default {
                   new Date(year, month, day)
                 )
               );
-              // return sheduleWork;
-              return driver.todayExtra
-                ? driver.todayExtra.cut === "Р"
-                  ? true
-                  : sheduleWork
-                : sheduleWork;
+              let result;
+              if (!driver.todayExtra) return sheduleWork;
+              switch (driver.todayExtra.cut) {
+                case `Р`:
+                case `ХР`:
+                  result = true;
+                  break;
+                case `Б`:
+                case `Н`:
+                case `О`:
+                case `ДО`:
+                  result = sheduleWork ? true : false;
+                  break;
+              }
+              return result;
             });
           car.crewDetails = crewDetails;
           return car;
@@ -197,26 +222,6 @@ export default {
     await this.$store.dispatch("setActualCatalogDrivers");
     await this.$store.dispatch("setActualCatalogCars");
     this.todayDate = new Date().toISOString().substring(0, 10);
-
-    // const drivers = this.drivers;
-    // drivers.forEach(async (driver) => {
-    //   delete driver.position;
-    //   // console.log(d + 1, JSON.stringify(driver), JSON.stringify(driver).length)
-    //   driver.carslist.forEach((cl) => {
-    //     delete cl.extras;
-    //     delete cl.todayExtra;
-    //   });
-    //   driver.extras
-    //     ? driver.extras.forEach(
-    //         (e) => (e.day = new Date(e.day).toISOString().substring(0, 10))
-    //       )
-    //     : null;
-      // console.log(d + 1, JSON.stringify(driver), JSON.stringify(driver).length);
-      // await db.collection("service/catalog/drivers_JSON").doc(driver.driverID).set({json: JSON.stringify(driver)})
-    // });
-    // const test = JSON.stringify(drivers);
-    // console.log(new Blob([test]).size)
-    // console.log(db);
   },
 };
 </script>
@@ -275,7 +280,11 @@ tbody:nth-child(2n + 1) > tr > td {
       }
       &__driver {
         // border: .5px solid black;
+        position: relative;
         padding: 5px;
+        display: flex;
+        justify-content: center;
+        gap: 30px;
         &:hover {
           cursor: pointer;
           transform: scale(1.1);

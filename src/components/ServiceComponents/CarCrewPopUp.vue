@@ -114,22 +114,30 @@
                   @mouseup="stopCollectSelectionCells"
                 >
                   {{
-                    driver.extras.filter(
-                      (e) =>
-                        e.day == new Date(date.year, date.month, day).toISOString()
-                    ).length
+                    driver.extras
                       ? driver.extras.filter(
                           (e) =>
                             e.day ==
                             new Date(date.year, date.month, day).toISOString()
-                        )[0].cut
+                        ).length
+                        ? driver.extras.filter(
+                            (e) =>
+                              e.day ==
+                              new Date(date.year, date.month, day).toISOString()
+                          )[0].cut
+                        : count(
+                            driver.sheduleStart,
+                            driver.sheduleType,
+                            driver.sheduleShift,
+                            new Date(date.year, date.month, day)
+                          )
                       : count(
                           driver.sheduleStart,
                           driver.sheduleType,
                           driver.sheduleShift,
                           new Date(date.year, date.month, day)
                         )
-                  }}
+                  }} 
                 </td>
                 <td
                   class="delete-btn"
@@ -273,6 +281,7 @@ export default {
         position: this.newEmp.position,
         car: this.car,
       });
+      this.showChoiceButtons = false
       await this.$store.dispatch("updateCatalogCarsDate");
       await this.$store.dispatch("setActualCatalogCars");
       await this.$store.dispatch("updateCatalogDriversDate");
@@ -348,6 +357,7 @@ export default {
       this.newEmp.position = "";
       this.newEmp.name = "";
       this.showNewEmp = false;
+      this.showChoiceButtons = false;
       for (let i = 0; i < this.car.crew.length; i += 1) {
         if (this.car.crew[i] !== this.crewData[i].driverID) {
           await this.$store.dispatch("updateCrewOrder", {

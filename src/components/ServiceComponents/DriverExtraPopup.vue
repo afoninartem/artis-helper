@@ -49,6 +49,7 @@ export default {
       conventions: [
         { description: "Работа", cut: "Р", color: "#0a58be80" },
         { description: "Отпуск", cut: "О", color: "#FF7F50" },
+        { description: "За свой счёт", cut: "ДО", color: "#841a9980" },
         { description: "Больничный", cut: "Б", color: "#40E0D0" },
         { description: "Хочет работать", cut: "ХР", color: "#00FF7F" },
         { description: "Неявка", cut: "Н", color: "#B22222" },
@@ -97,7 +98,7 @@ export default {
     oldExtras() {
       if (!this.info) return;
       // return this.info.driver.extras;
-      const oldExtras = this.info.driver.extras;
+      const oldExtras = this.info.driver.extras ? this.info.driver.extras : [];
       const newExtras = this.info.days.map((day) => new Date(day).toString());
       // const bgColor = oldExtras.filter((e) => newExtras.includes(e.day))[0]
       //   .bgColor || `#fff`
@@ -166,6 +167,6 @@ export default {
   }
 }
 .test {
-  color: #0a58be80;
+  color: #841a9980;
 }
 </style>
