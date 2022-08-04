@@ -1,5 +1,5 @@
 
-export default function (date, extras = []) {
+export default function (date, extras = [], currCarID) {
 	//styles will be store in other place
 	// console.log(date, extras)
 	const weekendStyle = "background: rgba(225, 100, 100, 0.3)";
@@ -16,7 +16,10 @@ export default function (date, extras = []) {
 	//define terms itself
 	if (today === cellday) stylesArray.push(todayStyle);
 	if (weekday === "сб" || weekday === "вс") stylesArray.push(weekendStyle);
-	Array.from(extras).forEach((extra) => {
+	Array.from(extras).filter(e => {
+    if (e.cut === `Р` && e.carID !== currCarID) return false;
+    return true
+  }).forEach((extra) => {
 		if (new Date(date).toISOString() == extra.day) {
 			stylesArray.push(`background: ${extra.bgColor}`);
 		}

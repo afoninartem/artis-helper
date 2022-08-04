@@ -106,7 +106,8 @@
                   :style="
                     dayStyles(
                       new Date(date.year, date.month, d + 1),
-                      driver.extras
+                      driver.extras,
+                      driver.carID
                     )
                   "
                   @mousedown="startCollectSelectionCells(driver, day)"
@@ -114,30 +115,15 @@
                   @mouseup="stopCollectSelectionCells"
                 >
                   {{
-                    driver.extras
-                      ? driver.extras.filter(
-                          (e) =>
-                            e.day ==
-                            new Date(date.year, date.month, day).toISOString()
-                        ).length
-                        ? driver.extras.filter(
-                            (e) =>
-                              e.day ==
-                              new Date(date.year, date.month, day).toISOString()
-                          )[0].cut
-                        : count(
-                            driver.sheduleStart,
-                            driver.sheduleType,
-                            driver.sheduleShift,
-                            new Date(date.year, date.month, day)
-                          )
-                      : count(
-                          driver.sheduleStart,
-                          driver.sheduleType,
-                          driver.sheduleShift,
-                          new Date(date.year, date.month, day)
-                        )
-                  }} 
+                    extrasAndShedule(
+                      driver.sheduleStart,
+                      driver.sheduleType,
+                      driver.sheduleShift,
+                      new Date(date.year, date.month, day),
+                      driver.extras,
+                      driver.carID
+                    )
+                  }}
                 </td>
                 <td
                   class="delete-btn"
@@ -257,6 +243,10 @@ export default {
     },
   },
   methods: {
+    extrasAndShedule(sheduleStart, sheduleType, sheduleShift, currDate, extras, currCarID) {
+      const res = require("../../store/service/extrasAndShedule");
+      return res.default(sheduleStart, sheduleType, sheduleShift, currDate, extras, currCarID);
+    },
     async addToCrew(payload) {
       this.newEmp.mainCrew = payload;
       //check if driver else where
@@ -281,7 +271,7 @@ export default {
         position: this.newEmp.position,
         car: this.car,
       });
-      this.showChoiceButtons = false
+      this.showChoiceButtons = false;
       await this.$store.dispatch("updateCatalogCarsDate");
       await this.$store.dispatch("setActualCatalogCars");
       await this.$store.dispatch("updateCatalogDriversDate");
@@ -348,9 +338,9 @@ export default {
       this.componentKey += 1;
       return array;
     },
-    dayStyles(extras, date) {
+    dayStyles(extras, date, currCarID) {
       const styles = require("../../store/service/sheduleDayStyles");
-      return styles.default(extras, date);
+      return styles.default(extras, date, currCarID);
     },
     async close() {
       this.tips = null;
@@ -374,10 +364,10 @@ export default {
     async openShedulePopup(payload) {
       return await this.$store.dispatch("openShedulePopup", payload);
     },
-    count(sheduleStart, sheduleType, sheduleShift, currDate) {
-      const count = require("../../store/service/sheduleCounter");
-      return count.default(sheduleStart, sheduleType, sheduleShift, currDate);
-    },
+    // count(sheduleStart, sheduleType, sheduleShift, currDate) {
+    //   const count = require("../../store/service/sheduleCounter");
+    //   return count.default(sheduleStart, sheduleType, sheduleShift, currDate);
+    // },
     numberOfDays(month, year) {
       return new Date(year, month + 1, 0).getDate();
     },

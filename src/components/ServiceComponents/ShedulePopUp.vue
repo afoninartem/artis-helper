@@ -39,26 +39,22 @@
                 v-for="(day, d) in daySpec(date.month, date.year)"
                 :key="d"
                 :style="
-                  dayStyles(new Date(date.year, date.month, d + 1), item.extras)
+                  dayStyles(
+                    new Date(date.year, date.month, d + 1),
+                    item.extras,
+                    item.carID
+                  )
                 "
               >
                 {{
-                  item.extras.filter(
-                    (e) =>
-                      e.day ==
-                      new Date(date.year, date.month, d + 1).toISOString()
-                  ).length
-                    ? item.extras.filter(
-                        (e) =>
-                          e.day ==
-                          new Date(date.year, date.month, d + 1).toISOString()
-                      )[0].cut
-                    : count(
-                        item.sheduleStart,
-                        item.sheduleType,
-                        item.sheduleShift,
-                        new Date(date.year, date.month, d + 1)
-                      )
+                  extrasAndShedule(
+                    item.sheduleStart,
+                    item.sheduleType,
+                    item.sheduleShift,
+                    new Date(date.year, date.month, d + 1),
+                    item.extras,
+                    item.carID
+                  )
                 }}
               </td>
             </tr>
@@ -132,13 +128,27 @@ export default {
     };
   },
   methods: {
-    dayStyles(extras, date) {
+    dayStyles(extras, date, currCarID) {
       const styles = require("../../store/service/sheduleDayStyles");
-      return styles.default(extras, date);
+      return styles.default(extras, date, currCarID);
     },
-    count(sheduleStart, sheduleType, sheduleShift, currDate) {
-      const count = require("../../store/service/sheduleCounter");
-      return count.default(sheduleStart, sheduleType, sheduleShift, currDate);
+    extrasAndShedule(
+      sheduleStart,
+      sheduleType,
+      sheduleShift,
+      currDate,
+      extras,
+      currCarID
+    ) {
+      const res = require("../../store/service/extrasAndShedule");
+      return res.default(
+        sheduleStart,
+        sheduleType,
+        sheduleShift,
+        currDate,
+        extras,
+        currCarID
+      );
     },
     async close() {
       return await this.$store.dispatch("closeShedulePopup");
@@ -154,7 +164,7 @@ export default {
           sheduleStart: this.startDate,
           sheduleShift: this.sheduleShift,
           carNum: this.carNumberAndDriverID.car,
-          driverID: this.carNumberAndDriverID.id
+          driverID: this.carNumberAndDriverID.id,
         });
         await this.$store.dispatch("updateCatalogDriversDate");
         await this.$store.dispatch("setActualCatalogDrivers");
