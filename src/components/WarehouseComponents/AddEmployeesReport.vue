@@ -1,5 +1,5 @@
 <template>
-  <form class="employees__form">
+  <form class="employees__form" v-if="!extras">
     <h3>Загрузить отчет Планирование подарков</h3>
     <input type="file" id="file" @change="onChangeEmployeesReportData" />
     <xlsx-read :file="file">
@@ -37,5 +37,10 @@ export default {
       }
     },
   },
+  computed: {
+    extras() {
+      return this.$store.getters.getExtraStockShipment;
+    }
+  }
 };
 </script>

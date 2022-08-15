@@ -229,16 +229,16 @@ const routes = [
     component: () => import("../views/personal/Vacancies.vue"),
   },
   // WAREHOUSE ↓
-  {
-    path: "/stocks",
-    name: "Stocks",
-    meta: {
-      layout: "MainLayout",
-      auth: true,
-      permissions: ["admin", "warehouse"],
-    },
-    component: () => import("../views/warehouse/Stocks.vue"),
-  },
+  // {
+  //   path: "/stocks",
+  //   name: "Stocks",
+  //   meta: {
+  //     layout: "MainLayout",
+  //     auth: true,
+  //     permissions: ["admin", "warehouse"],
+  //   },
+  //   component: () => import("../views/warehouse/Stocks.vue"),
+  // },
   {
     path: "/stocks-new",
     name: "Stocks-new",

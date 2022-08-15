@@ -4,6 +4,17 @@
     <div class="settings-block">
       <AddEmployeesReport />
       <a :href="this.url.gs" target="_blank">Таблица Google Disc</a>
+      <xlsx-workbook>
+        <xlsx-sheet
+          :collection="sheet.data"
+          v-for="sheet in sheets"
+          :key="sheet.name"
+          :sheet-name="sheet.name"
+        />
+        <xlsx-download filename="Акция.xlsx">
+          <button @click.prevent="addSheets">Скачать XLSX</button>
+        </xlsx-download>
+      </xlsx-workbook>
     </div>
     <table v-if="shipment">
       <thead>
@@ -66,13 +77,22 @@
 
 <script>
 import AddEmployeesReport from "@/components/WarehouseComponents/AddEmployeesReport";
+import {
+  XlsxDownload,
+  XlsxSheet,
+  XlsxWorkbook,
+} from "vue-xlsx/dist/vue-xlsx.es";
 export default {
   components: {
     AddEmployeesReport,
+    XlsxDownload,
+    XlsxSheet,
+    XlsxWorkbook,
   },
   data() {
     return {
       // shipment: null,
+      sheets: [],
       url: {
         gs: "https://docs.google.com/spreadsheets/d/1lA0qg3ZEXmDn6EOGtcoiJHuFRPDCTdUzvuyBGdgvJxs/edit#gid=681451715",
         macros:
@@ -85,6 +105,14 @@ export default {
         },
       },
     };
+  },
+  methods: {
+    addSheets() {
+      this.sheets.push({
+        name: "Отгрузка к акции",
+        data: this.shipmentXLSX,
+      });
+    },
   },
   mounted: async function () {
     await this.$store.dispatch("setActualShops");
@@ -108,6 +136,49 @@ export default {
       });
   },
   computed: {
+    shipmentXLSX() {
+      if (!this.shipment) return;
+      const result = [];
+      for (let region in this.shipment.data) {
+        this.shipment.data[region].forEach((shop) => {
+          this.shipment.extra
+            ? this.shipment.extra[shop.shop]
+              ? result.push(
+                  Object.assign(
+                    { name: shop.shop },
+                    shop.shipment,
+                    this.shipment.extra[shop.shop]
+                  )
+                )
+              : result.push(Object.assign({ name: shop.shop }, shop.shipment))
+            : result.push(Object.assign({ name: shop.shop }, shop.shipment));
+        });
+      }
+      return result.map((o, i) => ({
+        "#": i + 1,
+        ФС: o.name,
+        Плакат: o.poster,
+        ВИП: o.vip,
+        Пакет: o.vipPack,
+        Кружка: o.cup,
+        Упак: o.cupPack,
+        Вино: o.vine,
+        "Шок. набор": o.chocoSet,
+        Развертка: o.chest,
+        "5гр": o.choco5,
+        Карамель: o.candy,
+        Листовка: o.leaflet,
+        Зеленый: o.greenBaloon,
+        Серый: o.grayBaloon,
+        Зажим: o.clamp,
+        Палочка: o.stick,
+        Взрослый: o.allAdultGifts,
+        Муж: o.maleGifts,
+        Жен: o.femaleGifts,
+        Дет: o.kidsGifts,
+        Газета: o.papers,
+      }));
+    },
     shipment() {
       const obj = this.$store.getters.getStockShipment;
       const extra = this.$store.getters.getExtraStockShipment;

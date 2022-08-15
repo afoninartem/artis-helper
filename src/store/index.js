@@ -230,17 +230,17 @@ export default new Vuex.Store({
         state: false,
         title: "Склад",
         services: [
-          {
-            name: "stocks",
-            link: "/stocks",
-            title: "Акции",
-            permissions: ["warehouse"],
-          },
+          // {
+          //   name: "stocks",
+          //   link: "/stocks",
+          //   title: "Акции",
+          //   permissions: ["warehouse"],
+          // },
           {
             name: "stocks-new",
             link: "/stocks-new",
-            title: "Акции new",
-            permissions: ["admin"],
+            title: "Акция",
+            permissions: ["admin", "warehouse"],
           },
           {
             name: "komus",
