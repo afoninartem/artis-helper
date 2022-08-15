@@ -314,12 +314,12 @@ export default new Vuex.Store({
             title: "Цвета",
             permissions: ["warehouse"],
           },
-          {
-            name: "positions",
-            link: "/positions",
-            title: "Должности",
-            permissions: ["warehouse"],
-          },
+          // {
+          //   name: "positions",
+          //   link: "/positions",
+          //   title: "Должности",
+          //   permissions: ["warehouse"],
+          // },
         ],
       },
       {

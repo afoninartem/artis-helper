@@ -369,16 +369,16 @@ const routes = [
     },
     component: () => import("../views/warehouse/Colors.vue"),
   },
-  {
-    path: "/positions",
-    name: "Positions",
-    meta: {
-      layout: "MainLayout",
-      auth: true,
-      permissions: ["admin", "warehouse"],
-    },
-    component: () => import("../views/warehouse/Positions.vue"),
-  },
+  // {
+  //   path: "/positions",
+  //   name: "Positions",
+  //   meta: {
+  //     layout: "MainLayout",
+  //     auth: true,
+  //     permissions: ["admin", "warehouse"],
+  //   },
+  //   component: () => import("../views/warehouse/Positions.vue"),
+  // },
   // FINANCE ↓
   {
     path: "/taxcom-check",
