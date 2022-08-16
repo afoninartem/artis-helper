@@ -26,6 +26,7 @@ import firstReportHandler from "./warehouse/incomes/firstReportHandler";
 import secondReportHandler from "./warehouse/incomes/secondReportHandler";
 import thirdReportHandler from "./warehouse/incomes/thirdReportHandler";
 import komusHandler from "./warehouse/komus/komusHandler";
+import markerHandler from "./warehouse/markers/markerHandler";
 import positionsHandler from "./warehouse/positions/positionsHandler";
 import hiringReportHandler from "./personal/hiringReportHandler";
 import timetrackingHandler from "./personal/timetrackingHandler";
@@ -314,6 +315,12 @@ export default new Vuex.Store({
             title: "Цвета",
             permissions: ["warehouse"],
           },
+          {
+            name: "markers",
+            link: "/markers",
+            title: "Маркировка",
+            permissions: ["warehouse"]
+          }
           // {
           //   name: "positions",
           //   link: "/positions",
@@ -517,6 +524,7 @@ export default new Vuex.Store({
     carDataPopupHandler,
     carCrewPopupHandler,
     shedulePopupHandler,
-    xml2json
+    xml2json,
+    markerHandler
   },
 });

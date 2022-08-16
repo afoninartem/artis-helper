@@ -369,6 +369,16 @@ const routes = [
     },
     component: () => import("../views/warehouse/Colors.vue"),
   },
+  {
+    path: "/markers",
+    name: "Markers",
+    meta: {
+      layout: "MainLayout",
+      auth: true,
+      permissions: ["admin", "warehouse"],
+    },
+    component: () => import("../views/warehouse/BgColorMarker.vue"),
+  },
   // {
   //   path: "/positions",
   //   name: "Positions",

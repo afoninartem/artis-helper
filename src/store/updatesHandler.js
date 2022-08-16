@@ -15,6 +15,7 @@ export default {
     actualCandidates: null,
     actualCatalogDrivers: null,
     actualCatalogCars: null,
+    actualMarkers: null,
 	},
 	mutations: {
 		setActualCatalogDrivers(state, payload) {
@@ -59,9 +60,18 @@ export default {
 		setActualCandidates(state, payload) {
 			state.actualCandidates = payload;
 		},
+    setActualMarkers(state, payload) {
+      state.actualMarkers = payload
+    }
 	},
 	actions: {
 		//set uptade date:
+    async updateMarkersDate() {
+			await db
+				.collection("dbUpdates")
+				.doc("markers")
+				.update({ lastUpdate: Date.now() });
+    },
 		async updateCandidatesDate() {
 			await db
 				.collection("dbUpdates")
@@ -147,6 +157,46 @@ export default {
 				.update({ lastUpdate: Date.now() });
 		},
 		//set actual data in state
+    async setActualMarkers(context) {
+			let markers = [];
+			let catalogMarkersLastUpdateDB;
+			await db
+				.collection("dbUpdates")
+				.doc("markers")
+				.get()
+				.then((querySnapshot) => {
+					catalogMarkersLastUpdateDB = querySnapshot.data().lastUpdate;
+				});
+
+			const catalogMarkersLastUpdateLS = localStorage.getItem(
+				"catalogMarkersLastUpdateLS"
+			)
+				? JSON.parse(localStorage.getItem("catalogMarkersLastUpdateLS"))
+				: 0;
+			if (catalogMarkersLastUpdateDB > catalogMarkersLastUpdateLS) {
+				localStorage.setItem(
+					"catalogMarkersLastUpdateLS",
+					JSON.stringify(catalogMarkersLastUpdateDB)
+				);
+
+				await db
+					.collection("warehouse/shipment/markers")
+					.get()
+					.then((querySnapshot) => {
+						querySnapshot.forEach((doc) => {
+							markers.push(doc.data());
+						});
+					});
+				localStorage.setItem("actualMarkers", JSON.stringify(markers));
+				console.log("СПИСОК МАРКИРОВОК ВЗЯТ ИЗ БД И ЗАПИСАН В ХРАНИЛИЩЕ");
+			} else {
+				markers = localStorage.getItem("actualMarkers")
+					? JSON.parse(localStorage.getItem("actualMarkers"))
+					: [];
+				console.log("СПИСОК МАРКИРОВОК ВЗЯТ ИЗ ХРАНИЛИЩА");
+			}
+			return await context.commit("setActualMarkers", markers);
+		},
     async setActualCatalogCars(context) {
 			let cars = [];
 			let catalogCarsLastUpdateDB;
@@ -736,6 +786,7 @@ export default {
 	getters: {
 		getActualStates: (state) => {
 			return {
+        markers: state.actualMarkers,
 				shops: state.actualShops,
 				colors: state.actualColors,
 				packages: state.actualPackages,

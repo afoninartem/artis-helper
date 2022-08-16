@@ -1,7 +1,6 @@
 <template>
   <section class="colors">
     <h2>Цвета для машин в отгрузочной таблице</h2>
-    <!-- {{ newColor }} -->
     <form>
       <div class="new-color" @click.prevent="changeColor">
         <span>Создай</span>
