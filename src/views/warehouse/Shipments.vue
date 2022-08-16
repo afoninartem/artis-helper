@@ -55,6 +55,7 @@
     </div>
     <button class="btn-print" v-if="activeRegion" @click="print">Печать</button>
     <div class="warning-container" style="width: 80%">
+      <AlienPositions />
       <LimitsWarning />
       <LeftoversWarning />
       <StopListWarning />
@@ -67,6 +68,7 @@
 
 <script>
 import AddLeftovers from "@/components/WarehouseComponents/AddLeftovers";
+import AlienPositions from "@/components/WarehouseComponents/AlienPositions";
 import AddShipments from "@/components/WarehouseComponents/AddShipments";
 import LeftoversWarning from "@/components/WarehouseComponents/LeftoversWarning";
 import OverrunWarning from "@/components/WarehouseComponents/OverrunWarning";
@@ -87,6 +89,7 @@ export default {
     UrgentOrderWarning,
     StopListWarning,
     LimitsWarning,
+    AlienPositions,
   },
   methods: {
     print() {

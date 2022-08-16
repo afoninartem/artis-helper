@@ -44,7 +44,7 @@
           <span class="yellow tablepart">
             {{
               shop.thinCatalog
-                ? shop.thinCatalog.quan + "\n" + shop.thinCatalog.region
+                ? shop.thinCatalog.quan + `\n` + shop.thinCatalog.region
                 : null
             }}</span
           >

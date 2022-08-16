@@ -1,5 +1,6 @@
 export default {
 	state: {
+    aliens: [],
 		rawShipment: null,
 		shopsDB: [],
 		colorsDB: [],
@@ -73,6 +74,7 @@ export default {
 			state.packages = payload;
 		},
 		shipmentSettings(state, payload) {
+      state.aliens = payload.aliens;
 			state.overrun = payload.overrun;
 			state.tableInfo.shipmentDate = payload.shipmentDate;
 			state.invalidQuans = payload.invalidQuans;
@@ -240,9 +242,8 @@ export default {
 				}
 			});
 
-			// const leftovers = JSON.parse(localStorage.getItem("leftovers"));
       const leftovers = getters.getLeftovers;
-      // console.log(leftovers)
+
 			//check if there are overrun
 			const overrun = [];
 			leftovers.forEach((item) => {
@@ -256,7 +257,8 @@ export default {
 					}
 				}
 			});
-			//check for incorrect quantities
+			//check for incorrect quantities and aliens =)
+      const aliens = [];
 			const invalidQuans = [];
 			let isThereAnyTowels = false;
 			carslist.forEach((car) => {
@@ -265,6 +267,8 @@ export default {
 					shop.materials.forEach((material) => {
 						const name = material.name.trim();
 						const quan = material.numQuan;
+            //check if there are alien materials =)
+            if (!leftovers.map(l => l.name).includes(name)) aliens.push({material: name, shop: shop.name})
 						//check if material in the stoplist ↓
 						const stop = getters.getActualStates.stoplist.map((el) => el.name);
 						if (stop.includes(name)) {
@@ -453,6 +457,7 @@ export default {
 			});
 
 			await dispatch("shipmentSettings", {
+        aliens,
 				overrun,
 				shipmentDate,
 				invalidQuans,
@@ -481,6 +486,9 @@ export default {
 		getcurrentTableRowToRender: (state) => {
 			return state.currentTableRowToRender;
 		},
+    getALiens: state => {
+      return state.aliens;
+    },
 		getRawShipment: (state) => {
 			return state.rawShipment;
 		},

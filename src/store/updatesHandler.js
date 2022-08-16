@@ -15,7 +15,7 @@ export default {
     actualCandidates: null,
     actualCatalogDrivers: null,
     actualCatalogCars: null,
-    actualMarkers: null,
+    actualMarkers: [],
 	},
 	mutations: {
 		setActualCatalogDrivers(state, payload) {
