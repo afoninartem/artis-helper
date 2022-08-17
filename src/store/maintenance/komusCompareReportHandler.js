@@ -10,17 +10,18 @@ export default {
   },
   actions: {
     async setKomusCompareActData(context, payload) {
-      console.log(payload)
-      const compareData = Array.from(payload).filter(
-        (d) =>
-          d["Наименование документа"] === "Универсальный передаточный документ" ||
-          d["Наименование документа"] === "Товарная накладная"
-      );
+      // console.log(payload)
+      const compareData = Array.from(payload).filter(item => item["Номер счет-фактуры"])
+      // .filter(
+      //   (d) =>
+      //     d["Наименование документа"] === "Универсальный передаточный документ" ||
+      //     d["Наименование документа"] === "Товарная накладная"
+      // );
       const unitedData = {};
       compareData.forEach((item) => {
         unitedData[item["№ заказа"]]
-          ? (unitedData[item["№ заказа"]] += item["Дебет"])
-          : (unitedData[item["№ заказа"]] = item["Дебет"]);
+          ? (unitedData[item["№ заказа"]] += Math.abs(item["Дебет"]))
+          : (unitedData[item["№ заказа"]] = Math.abs(item["Дебет"]));
       });
       const result = {};
       for (let i in unitedData) {
@@ -39,9 +40,13 @@ export default {
         canseled: {},
         deliveredBySum: {},
       };
+      // console.log()
+
+      // const orders = new Set(payload.filter(item => item["Статус заказа"]  !== "Отменен").map(item => item["Номер заказа"]))
+      // console.log(orders, [...orders].length)
       Array.from(payload).forEach((item) => {
         const order = item["Номер заказа"];
-        const sum = item["Сумма в руб."].split(",").join(".");
+        const sum = item["Сумма в руб."].toString().split(",").join(".");
         if (item["Статус заказа"] !== "Отменен") {
           if (!result.delivered[order]) result.delivered[order] = 0;
           result.delivered[order] = (+result.delivered[order] + +sum).toFixed(
@@ -64,6 +69,8 @@ export default {
         del[sum] ? del[sum].push(order) : (del[sum] = [order]);
         // result.deliveredBySum[result.delivered[i]] ? result.deliveredBySum[result.delivered[i]].push(result.delivered[i]) : result.deliveredBySum[result.delivered[i]] = []
       }
+      console.log(del)
+      console.log(Object.keys(del))
       return await context.commit("setKomusReportData", result);
     },
   },

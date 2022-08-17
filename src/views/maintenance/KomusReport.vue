@@ -78,6 +78,7 @@ export default {
   methods: {
     addSheets() {
       if (this.consolidationXLSXData.length) {
+        console.log(this.consolidationXLSXData)
         this.sheets.push({
           name: "Консолидация",
           data: this.consolidationXLSXData.map((item) => [
