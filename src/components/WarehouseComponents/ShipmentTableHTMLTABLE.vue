@@ -103,7 +103,9 @@
             :style="{
               color: mat.quan ? `#000` : `red`,
               fontWeight: mat.quan ? `normal` : `bold`,
-              background: markers.map(m => m.material).includes(mat.name) ? markers.filter(m => m.material === mat.name)[0].color : null
+              background: markers.map((m) => m.material).includes(mat.name)
+                ? markers.filter((m) => m.material === mat.name)[0].color
+                : null,
             }"
             v-for="(mat, i) in shop.otherMats"
             :key="i"
@@ -196,11 +198,11 @@ export default {
           if (currentSticker.stickers !== "") {
             thisInput.style.display = "none";
             await this.$store.dispatch("addSticker", currentSticker);
-            await this.$forceUpdate();
+            this.$forceUpdate();
           } else {
             thisInput.style.display = "none";
             await this.$store.dispatch("deleteSticker", currentSticker);
-            await this.$forceUpdate();
+            this.$forceUpdate();
           }
         });
       }
@@ -265,240 +267,49 @@ export default {
 <style lang="scss" >
 @import "@/scss/shipmentTable.scss";
 @include shipment-table;
-  
-  @media print {
-    body {
-      line-height: 1.2;
-      visibility: hidden;
-      font-size: 20pt;
-      background: #fff;
-    }
-    * {
-      color-adjust: exact;
-      -webkit-print-color-adjust: exact;
-      -moz-color-adjust: exact;
-    }
-    .other {
-      font-size: 20pt;
-    }
-    .table-info {
-      font-size: 20pt;
-    }
-    .print-area,
-    .print-area * {
-      visibility: visible;
-    }
-    .print-area {
-      position: absolute;
-      top: 50px;
-    }
-    html,
-    body,
-    .print-area {
-      float: none;
-      display: block;
-      // display: flex;
-      // flex-direction: column;
-      // justify-content: space-between;
-      // align-items: center;
+
+@media print {
+  body {
+    line-height: 1.2;
+    visibility: hidden;
+    font-size: 20pt;
+    background: #fff;
+  }
+  * {
+    color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+    -moz-color-adjust: exact;
+  }
+  .other {
+    font-size: 20pt;
+  }
+  .table-info {
+    font-size: 20pt;
+  }
+  .print-area,
+  .print-area * {
+    visibility: visible;
+  }
+  .print-area {
+    position: absolute;
+    top: 50px;
+  }
+  html,
+  body,
+  .print-area {
+    float: none;
+    display: block;
+    // display: flex;
+    // flex-direction: column;
+    // justify-content: space-between;
+    // align-items: center;
+    page-break-inside: avoid;
+    max-width: 3500px;
+    width: 100%;
+    padding: 20px;
+    tr {
       page-break-inside: avoid;
-      max-width: 3500px;
-      width: 100%;
-      padding: 20px;
-      tr {
-        page-break-inside: avoid;
-      }
     }
   }
-// .yellow {
-//   background: yellow;
-// }
-
-// .towels {
-//   background: yellow;
-//   border: 2px solid black;
-// }
-
-// .cell {
-//   border: 1px solid black;
-// }
-
-// .input-color {
-//   position: relative;
-//   width: 100%;
-//   height: 100%;
-//   opacity: 0;
-//   display: none;
-// }
-
-// .boxes {
-//   min-width: 50px;
-//   cursor: pointer;
-//   &__input {
-//     display: none;
-//     max-width: 50px;
-//   }
-// }
-
-// .tablepart {
-//   font-size: 24px;
-//   // font-weight: bold;
-// }
-
-// .other-mats {
-//   display: grid;
-//   grid-template-columns: repeat(2, 1fr);
-//   white-space: nowrap;
-//   min-height: 35px;
-//   p {
-//     margin: 5px;
-//     text-align: left;
-//   }
-// }
-
-// table {
-//   position: relative;
-//   font-size: 14px;
-//   overflow: hidden;
-//   border: 1px solid #d3d3d3;
-//   background: #fefefe;
-//   margin: 5% auto 0;
-//   margin-top: 0;
-//   max-width: 100vw;
-//   // transform: scale(0.88);
-//   -moz-border-radius: 5px; /* FF1+ */
-//   -webkit-border-radius: 5px; /* Saf3-4 */
-//   border-radius: 5px;
-//   // -moz-box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
-//   // -webkit-box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
-// }
-
-// th,
-// td {
-//   // padding: 18px 28px 18px;
-//   text-align: center;
-// }
-
-// th {
-//   padding: 5px;
-//   text-shadow: 1px 1px 1px #fff;
-//   background: #e8eaeb;
-// }
-
-// td {
-//   border-top: 1px solid #000;
-//   border-right: 1px solid #000;
-//   // border: 1px solid black;
-// }
-
-// tr.odd-row td {
-//   background: #f6f6f6;
-// }
-
-// td.first,
-// th.first {
-//   text-align: left;
-// }
-
-// td.last {
-//   border-right: none;
-// }
-
-// td {
-//   background: -moz-linear-gradient(100% 25% 90deg, #fefefe, #f9f9f9);
-//   background: -webkit-gradient(
-//     linear,
-//     0% 0%,
-//     0% 25%,
-//     from(#f9f9f9),
-//     to(#fefefe)
-//   );
-// }
-
-// tr.odd-row td {
-//   background: -moz-linear-gradient(100% 25% 90deg, #f6f6f6, #f1f1f1);
-//   background: -webkit-gradient(
-//     linear,
-//     0% 0%,
-//     0% 25%,
-//     from(#f1f1f1),
-//     to(#f6f6f6)
-//   );
-// }
-
-// th {
-//   background: -moz-linear-gradient(100% 20% 90deg, #e8eaeb, #ededed);
-//   background: -webkit-gradient(
-//     linear,
-//     0% 0%,
-//     0% 20%,
-//     from(#ededed),
-//     to(#e8eaeb)
-//   );
-// }
-
-// tr:first-child th.first {
-//   -moz-border-radius-topleft: 5px;
-//   // -webkit-border-top-left-radius:5px; /* Saf3-4 */
-// }
-
-// tr:first-child th.last {
-//   -moz-border-radius-topright: 5px;
-//   // -webkit-border-top-right-radius:5px; /* Saf3-4 */
-// }
-
-// tr:last-child td.first {
-//   -moz-border-radius-bottomleft: 5px;
-//   // -webkit-border-bottom-left-radius:5px; /* Saf3-4 */
-// }
-
-// tr:last-child td.last {
-//   -moz-border-radius-bottomright: 5px;
-//   // -webkit-border-bottom-right-radius:5px; /* Saf3-4 */
-// }
-
-// @media print {
-//   body {
-//     line-height: 1.2;
-//     visibility: hidden;
-//     font-size: 20pt;
-//     background: #fff;
-//   }
-//   * {
-//     color-adjust: exact;
-//     -webkit-print-color-adjust: exact;
-//     -moz-color-adjust: exact;
-//   }
-//   .other {
-//     font-size: 20pt;
-//   }
-//   .table-info {
-//     font-size: 20pt;
-//   }
-//   .print-area,
-//   .print-area * {
-//     visibility: visible;
-//   }
-//   .print-area {
-//     position: absolute;
-//     top: 50px;
-//   }
-//   html,
-//   body,
-//   .print-area {
-//     float: none;
-//     display: block;
-//     // display: flex;
-//     // flex-direction: column;
-//     // justify-content: space-between;
-//     // align-items: center;
-//     page-break-inside: avoid;
-//     max-width: 3500px;
-//     width: 100%;
-//     padding: 20px;
-//     tr {
-//       page-break-inside: avoid;
-//     }
-//   }
-// }
+}
 </style>

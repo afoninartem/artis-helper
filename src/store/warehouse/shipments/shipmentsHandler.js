@@ -1,6 +1,6 @@
 export default {
 	state: {
-    aliens: [],
+		aliens: [],
 		rawShipment: null,
 		shopsDB: [],
 		colorsDB: [],
@@ -74,7 +74,7 @@ export default {
 			state.packages = payload;
 		},
 		shipmentSettings(state, payload) {
-      state.aliens = payload.aliens;
+			state.aliens = payload.aliens;
 			state.overrun = payload.overrun;
 			state.tableInfo.shipmentDate = payload.shipmentDate;
 			state.invalidQuans = payload.invalidQuans;
@@ -135,7 +135,7 @@ export default {
 			const shopsDB = shopsAndColors.shops;
 			const colorsDB = shopsAndColors.colors;
 			const packages = shopsAndColors.packages;
-      // const limits = shopsAndColors.limits;
+			// const limits = shopsAndColors.limits;
 			const stoplist = [];
 			const carslist = [];
 			const materialsSummary = {};
@@ -164,21 +164,27 @@ export default {
 					prevQuan &&
 					!shopsDB.some((el) => el.name === name)
 				) {
-          let carName;
-          if (name.trim() != '') {
-            try {
-              carName = name.includes("Наем")
-             ? `Н.М. ${name.match(/\d+/g) ? name.match(/\d+/g)[0] : null}`.trim()
-             : name.match(/\d+/g)[0]
-           } catch (error) {
-             carName = name
-             console.log(row)
-           }
-          } else {
-            carName = "НЕ УКАЗАНО"
-            alert(`Проверь значение строки ${row.__rowNum__ + 1} в файле с отгрузкой.`)
-          }
-          
+					let carName;
+					if (name.trim() != "") {
+						try {
+							carName = name.includes("Наем")
+								? `Н.М. ${
+										name.match(/\d+/g) ? name.match(/\d+/g)[0] : null
+								  }`.trim()
+								: name.match(/\d+/g)[0];
+						} catch (error) {
+							carName = name;
+							console.log(row);
+						}
+					} else {
+						carName = "НЕ УКАЗАНО";
+						alert(
+							`Проверь значение строки ${
+								row.__rowNum__ + 1
+							} в файле с отгрузкой.`
+						);
+					}
+
 					carslist.push({
 						name: carName.trim(),
 						shopslist: [],
@@ -219,14 +225,14 @@ export default {
 					const lastOrder = lastShop.orders[lastShop.orders.length - 1];
 					lastOrder.comment = name;
 					if (name.includes("213 собран")) lastOrder.picked = true;
-          if (name.includes(". АФОНИН")) {
-            lastShop.materials.push({ name })
-          }
+					if (name.includes(". АФОНИН")) {
+						lastShop.materials.push({ name });
+					}
 				}
 				//looking for materials ↓
 				if (!name.includes("Анализ за период") && quan) {
-          //first of all - sort them by shops
-          const lastCar = carslist[carslist.length - 1];
+					//first of all - sort them by shops
+					const lastCar = carslist[carslist.length - 1];
 					const allShops = lastCar.shopslist;
 					const lastShop = allShops[allShops.length - 1];
 					const numQuan = +quan;
@@ -238,11 +244,15 @@ export default {
 						materialsSummary[name] += +quan;
 					}
 					//third - check for limits
-          dispatch("checkMaterial", {name, quan: numQuan, shop: lastShop.name})
+					dispatch("checkMaterial", {
+						name,
+						quan: numQuan,
+						shop: lastShop.name,
+					});
 				}
 			});
 
-      const leftovers = getters.getLeftovers;
+			const leftovers = getters.getLeftovers;
 
 			//check if there are overrun
 			const overrun = [];
@@ -258,7 +268,7 @@ export default {
 				}
 			});
 			//check for incorrect quantities and aliens =)
-      const aliens = [];
+			const aliens = [];
 			const invalidQuans = [];
 			let isThereAnyTowels = false;
 			carslist.forEach((car) => {
@@ -267,8 +277,9 @@ export default {
 					shop.materials.forEach((material) => {
 						const name = material.name.trim();
 						const quan = material.numQuan;
-            //check if there are alien materials =)
-            if (!leftovers.map(l => l.name).includes(name)) aliens.push({material: name, shop: shop.name})
+						//check if there are alien materials =)
+						if (!leftovers.map((l) => l.name).includes(name))
+							aliens.push({ material: name, shop: shop.name });
 						//check if material in the stoplist ↓
 						const stop = getters.getActualStates.stoplist.map((el) => el.name);
 						if (stop.includes(name)) {
@@ -296,7 +307,7 @@ export default {
 								? shop.samples.push({ name, quan })
 								: (shop.samples = [{ name, quan }]);
 						} else if (name.includes(`56 полос`)) {
-              shop.thickCatalog = quan
+							shop.thickCatalog = quan;
 							// name.includes(`(48 часов)`)
 							// 	? (shop.thickCatalog = { quan, region: "МСК" })
 							// 	: (shop.thickCatalog = { quan, region: "РЕГ" });
@@ -319,23 +330,33 @@ export default {
 							shop.towel = quan;
 							// } else {
 						} else if (name.includes("Арт")) {
-              let shortName = name.split(" ")[0] + " Арт. ";
-              name.includes("№") ? shortName += name.match(/\w+?\d+/)[0] : shortName += name.split(" ")[name.split(" ").indexOf("Арт.") + 1]
+							let shortName = name.split(" ")[0] + " Арт. ";
+							name.includes("№")
+								? (shortName += name.match(/\w+?\d+/)[0])
+								: (shortName +=
+										name.split(" ")[name.split(" ").indexOf("Арт.") + 1]);
 							shop.otherMats
 								? shop.otherMats.push({ name: shortName, quan })
 								: (shop.otherMats = [{ name: shortName, quan }]);
 						} else if (name.includes("Ценник круглый")) {
-              const shortName = name.includes("ОБРАЗЕЦ") ? "Ценник круглый ОБРАЗЕЦ" : "Ценник круглый СКИДКА";
-              shop.otherMats
-              ? shop.otherMats.push({ name: shortName, quan })
-              : (shop.otherMats = [{ name: shortName, quan }]);
-            } else if (name.includes("Лоскут")) {
-              const arrName = name.split(" ");
-              const shortName = [arrName[0], arrName[1], arrName[2], arrName[arrName.length - 2]].join(" ");
-              shop.otherMats
-              ? shop.otherMats.push({ name: shortName, quan })
-              : (shop.otherMats = [{ name: shortName, quan }]);
-            } else {
+							const shortName = name.includes("ОБРАЗЕЦ")
+								? "Ценник круглый ОБРАЗЕЦ"
+								: "Ценник круглый СКИДКА";
+							shop.otherMats
+								? shop.otherMats.push({ name: shortName, quan })
+								: (shop.otherMats = [{ name: shortName, quan }]);
+						} else if (name.includes("Лоскут")) {
+							const arrName = name.split(" ");
+							const shortName = [
+								arrName[0],
+								arrName[1],
+								arrName[2],
+								arrName[arrName.length - 2],
+							].join(" ");
+							shop.otherMats
+								? shop.otherMats.push({ name: shortName, quan })
+								: (shop.otherMats = [{ name: shortName, quan }]);
+						} else {
 							shop.otherMats
 								? shop.otherMats.push({ name, quan })
 								: (shop.otherMats = [{ name, quan }]);
@@ -406,7 +427,7 @@ export default {
 							(mat) =>
 								mat.name ===
 								"Упаковка бумаги А4 для принтера (1 упак = 500 листов)"
-					)[0].numQuan
+					  )[0].numQuan
 					: 0;
 			});
 			//reminder for client gifts
@@ -441,7 +462,7 @@ export default {
 							(mat) =>
 								mat.name ===
 								"Упаковка бумаги А4 для принтера (1 упак = 500 листов)"
-					)[0].numQuan
+					  )[0].numQuan
 					: 0;
 			});
 
@@ -457,7 +478,7 @@ export default {
 			});
 
 			await dispatch("shipmentSettings", {
-        aliens,
+				aliens,
 				overrun,
 				shipmentDate,
 				invalidQuans,
@@ -486,9 +507,9 @@ export default {
 		getcurrentTableRowToRender: (state) => {
 			return state.currentTableRowToRender;
 		},
-    getALiens: state => {
-      return state.aliens;
-    },
+		getALiens: (state) => {
+			return state.aliens;
+		},
 		getRawShipment: (state) => {
 			return state.rawShipment;
 		},

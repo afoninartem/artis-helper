@@ -184,7 +184,8 @@ export default {
     }:${date.getMinutes() > 9 ? date.getMinutes() : "0" + date.getMinutes()}`;
 
     this.$store.commit("setTableInfoDataIntoState", { today, time });
-
+    
+    await this.$store.dispatch("setActualMarkers");
     await this.$store.dispatch("setActualShops");
     await this.$store.dispatch("setActualColors");
     await this.$store.dispatch("setActualStorage");
