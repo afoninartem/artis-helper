@@ -47,6 +47,7 @@ export default {
           }
         });
         this.$store.dispatch("updateShopsDate");
+        this.$store.dispatch("setActualShops");
       }
     },
   },
