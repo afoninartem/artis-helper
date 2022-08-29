@@ -36,14 +36,12 @@ export default {
     setLGroupOfShops(data) {
       if (data) {
         Array.from(data).forEach((shop) => {
-          if (shop.email !== "null") {
-            const newShop = shop;
-            newShop.name = shop.name.split("  ").join(" ");
-            try {
-              this.$store.dispatch("createShop", newShop);
-            } catch (error) {
-              console.log(error.message);
-            }
+          const newShop = shop;
+          newShop.name = shop.name.split("  ").join(" ");
+          try {
+            this.$store.dispatch("createShop", newShop);
+          } catch (error) {
+            console.log(error.message);
           }
         });
         this.$store.dispatch("updateShopsDate");

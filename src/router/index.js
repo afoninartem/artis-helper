@@ -168,15 +168,25 @@ const routes = [
     },
     component: () => import("../views/personal/DriversTimeTracking.vue"),
   },
+  // {
+  //   path: "/hiring-report",
+  //   name: "HiringReport",
+  //   meta: {
+  //     layout: "MainLayout",
+  //     auth: true,
+  //     permissions: ["admin", "recruitment"],
+  //   },
+  //   component: () => import("../views/personal/HiringReport - deprecated.vue"),
+  // },
   {
-    path: "/hiring-report",
-    name: "HiringReport",
+    path: "/recruitment-testing",
+    name: "RecruitmentTesting",
     meta: {
       layout: "MainLayout",
       auth: true,
-      permissions: ["admin", "recruitment"],
+      permissions: ["admin", "recruitment"]
     },
-    component: () => import("../views/personal/HiringReport.vue"),
+    component: () => import("../views/personal/RecruitmentTesting.vue")
   },
   {
     path: "/weekly-reqruitment-report",
