@@ -68,6 +68,13 @@ const dateTime = (str) => {
 	return `${getFullDate(date)} ${time}`;
 };
 
+const localeStringToReadableFormat = (str) => {
+  const arr = str.split(" ");
+  const date = new Date(arr[0]).toLocaleDateString();
+  const time = arr[1].substring(0, 5)
+  return `${date} ${time}`
+}
+
 module.exports = {
 	convertFiscalDate,
 	// convertTaxcomDate,
@@ -75,5 +82,6 @@ module.exports = {
 	convertOnlineDate,
 	excelDateToJSDate,
 	dateTime,
-  getFullDate
+  getFullDate,
+  localeStringToReadableFormat // `2022-8-29 17:48:21` into `29.08.2022 17:48`
 };
