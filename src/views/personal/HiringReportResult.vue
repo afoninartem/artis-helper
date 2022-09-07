@@ -124,7 +124,14 @@ export default {
         .flat()
         .filter((s) => s.status === status)
         .filter((s) => s.updateDate > 0)
-        .map((s) => new Date(s.datetime).toISOString().substring(0, 10))
+        .map((s) => {
+          try {
+            return new Date(s.datetime).toISOString().substring(0, 10)
+          } catch (error) {
+            console.log(s)
+          }
+          
+        })
         .filter((s) => s >= start && s <= end).length;
 
       return result;
@@ -159,6 +166,10 @@ export default {
     },
   },
   computed: {
+    test() {
+      if (!this.candidates) return;
+      return this.candidates.filter(candidate => candidate.statuslist.filter(status => typeof status.datetime === "string" && status.datetime.length === 0).length);
+    },
     tableSummary() {
       const res = this.downloadXLSX[this.downloadXLSX.length - 1];
       delete res["Назначено собеседований"];
