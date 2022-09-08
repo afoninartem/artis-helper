@@ -20,13 +20,13 @@ export default {
 					shopsDB.some(
 						(shop) =>
 							shop.name.toLowerCase().trim() ===
-							report.shop.toLowerCase().trim()
+							report.shop.toLowerCase().trim() && shop.isOpen === "true"
 					)
 				) {
 					const shopData = shopsDB.filter(
 						(shop) =>
 							shop.name.toLowerCase().trim() ===
-							report.shop.toLowerCase().trim()
+							report.shop.toLowerCase().trim() 
 					)[0];
 					report.region = shopData.region;
 					report.status = shopData.status;

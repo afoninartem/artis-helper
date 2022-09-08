@@ -6,6 +6,10 @@
     <div class="stickers__gifts">
       <StickersGifts />
     </div>
+    <div class="stickers__custom">
+      <form action=""></form>
+    </div>
+    
   </section>
 </template>
 

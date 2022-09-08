@@ -226,6 +226,9 @@ export default {
       }
       return null;
     },
+    // extras() {
+    //   return this.$store.getters.getExtraStockShipment;
+    // },
   },
 };
 </script>
