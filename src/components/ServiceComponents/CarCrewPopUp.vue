@@ -2,20 +2,120 @@
   <div class="car-crew-popup" v-if="show" :key="componentKey">
     <div class="car-crew-popup__background">
       <div class="car-crew-popup__content">
-        <h1>{{ car.mark }} {{ car.number }}</h1>
+        <!-- <h1>{{ car.mark }} {{ car.number }}</h1> -->
         <div class="menu-block">
-          <button @click.prevent="prevMonth">{{ prevMonthTitle }}</button>
-          <h2>
-            {{
-              new Date(date.year, date.month)
-                .toLocaleString("default", {
-                  month: "long",
-                })
-                .toUpperCase()
-            }}
-          </h2>
-          <button @click.prevent="nextMonth">{{ nextMonthTitle }}</button>
+          <div class="menu-block__car">
+            {{ car.mark.toUpperCase() }} <br />
+            {{ car.number }}
+          </div>
+          <div class="menu-block__repair">
+            В ремонте с
+            <input
+              type="date"
+              name="repair-start"
+              id="repair-start"
+              v-model="repairStart"
+            />
+            по
+            <input
+              type="date"
+              name="repair-end"
+              id="repair-end"
+              v-model="repairEnd"
+            />
+          </div>
+          <div class="menu-block__crew">
+            <form action="" class="car-crew__form">
+              <button @click.prevent="showNewEmp = true" v-if="!showNewEmp">
+                Добавить сотрудника
+              </button>
+              <select
+                name="positions"
+                id="positions"
+                v-if="showNewEmp && !showChoiceButtons"
+                v-model="newEmp.position"
+              >
+                <!-- <option :value="newEmp.position"></option> -->
+                <option v-for="(position, p) in positions" :key="p">
+                  {{ position.toLowerCase() }}
+                </option>
+              </select>
+              <input
+                v-if="showNewEmp && !showChoiceButtons"
+                v-model="newEmp.name"
+                type="text"
+                name="name"
+                id="name"
+                @input="findDriver"
+                ref="findDriver"
+                placeholder="Введите ФИО сотрудника"
+              />
+              <div class="btn-block">
+                <button
+                  v-if="
+                    showNewEmp &&
+                    newEmp.position &&
+                    newEmp.name.split(` `).length > 1 &&
+                    !showChoiceButtons
+                  "
+                  @click.prevent="addToCrew(true)"
+                >
+                  Добавить в экипаж
+                </button>
+                <button
+                  v-if="
+                    showNewEmp &&
+                    newEmp.position &&
+                    newEmp.name.split(` `).length > 1 &&
+                    !showChoiceButtons
+                  "
+                  @click.prevent="addToCrew(false)"
+                >
+                  Добавить на замену
+                </button>
+              </div>
+
+              <!-- <button v-if="showChoiceButtons" @click.prevent="addToCrew(true)">
+                Основной экипаж
+              </button>
+              <button
+                v-if="showChoiceButtons"
+                @click.prevent="addToCrew(false)"
+              >
+                Замена / Подработка
+              </button> -->
+            </form>
+          </div>
+          <div class="menu-block__months">
+            <button @click.prevent="prevMonth">{{ prevMonthTitle }}</button>
+            <h2>
+              {{
+                new Date(date.year, date.month)
+                  .toLocaleString("default", {
+                    month: "long",
+                  })
+                  .toUpperCase()
+              }}
+            </h2>
+            <button @click.prevent="nextMonth">{{ nextMonthTitle }}</button>
+          </div>
         </div>
+
+        <ul>
+          <li
+            v-for="(tip, t) in tips"
+            :key="t"
+            class="tip"
+            @click.prevent="setDriver({ driver: tip, car })"
+          >
+            <p>
+              <span style="font-weight: bold">{{ tip.name }}</span
+              >, оформлен как
+              <span style="font-weight: bold">{{ tip.mainPosition }}</span>
+            </p>
+          </li>
+        </ul>
+
         <div class="actual-crew">
           <!-- <p v-if="car.crew.length">Действующий экипаж:</p> -->
           <p v-if="!car.crew.length">Экипаж не назначен</p>
@@ -138,66 +238,88 @@
                 ></td>
               </tr>
             </tbody>
+            <thead v-if="extraCrewData">
+              <tr>
+                <th
+                  :colspan="
+                    numberOfDays(date.year, date.month) +
+                    headerTemplate.length +
+                    1
+                  "
+                >
+                  Дополнительно: замены и подработки
+                </th>
+              </tr>
+            </thead>
+            <tbody v-if="extraCrewData">
+              <tr v-for="(extra, e) in extraCrewData" :key="e">
+                <td class="number-and-arrows">
+                  <span
+                    class="arrow-up"
+                    @click.prevent="move(e, `up`)"
+                    v-if="e > 0"
+                  ></span>
+                  <span
+                    v-if="e < crewData.length - 1"
+                    class="arrow-down"
+                    @click.prevent="move(e, `down`)"
+                  ></span>
+                  <span class="number">{{ e + 1 }}</span>
+                </td>
+                <td
+                  @click.prevent="openShedulePopup(extra.driverID)"
+                  class="car"
+                >
+                  {{ extra.name }}
+                </td>
+                <td
+                  @click.prevent="openShedulePopup(extra.driverID)"
+                  class="position"
+                >
+                  {{ extra.position }}
+                </td>
+                <td
+                  class="cell"
+                  v-for="(day, d) in header"
+                  :key="`date-${d}`"
+                  :style="
+                    dayStyles(
+                      new Date(date.year, date.month, d + 1),
+                      extra.extras,
+                      extra.carID
+                    )
+                  "
+                  @mousedown="startCollectSelectionCells(extra, day)"
+                  @mouseover="collectSelectionCells(extra, day)"
+                  @mouseup="stopCollectSelectionCells"
+                >
+                  {{
+                    extrasAndShedule(
+                      extra.sheduleStart,
+                      extra.sheduleType,
+                      extra.sheduleShift,
+                      new Date(date.year, date.month, day),
+                      extra.extras,
+                      extra.carID
+                    )
+                  }}
+                </td>
+                <td
+                  class="delete-btn"
+                  title="Удалять двойным кликом"
+                  colspan="2"
+                  @dblclick.prevent="
+                    removeDriverFromCar({
+                      driverID: extra.driverID,
+                      carID: car.carID,
+                    })
+                  "
+                ></td>
+              </tr>
+            </tbody>
           </table>
         </div>
-        <form action="" class="car-crew__form">
-          <button @click.prevent="showNewEmp = true" v-if="!showNewEmp">
-            Добавить сотрудника
-          </button>
-          <select
-            name="positions"
-            id="positions"
-            v-if="showNewEmp && !showChoiceButtons"
-            v-model="newEmp.position"
-          >
-            <!-- <option :value="newEmp.position"></option> -->
-            <option v-for="(position, p) in positions" :key="p">
-              {{ position.toLowerCase() }}
-            </option>
-          </select>
-          <input
-            v-if="showNewEmp && !showChoiceButtons"
-            v-model="newEmp.name"
-            type="text"
-            name="name"
-            id="name"
-            @input="findDriver"
-            ref="findDriver"
-            placeholder="Введите ФИО сотрудника"
-          />
-          <button
-            v-if="
-              showNewEmp &&
-              newEmp.position &&
-              newEmp.name.split(` `).length > 1 &&
-              !showChoiceButtons
-            "
-            @click.prevent="showChoice"
-          >
-            Добавить
-          </button>
-          <button v-if="showChoiceButtons" @click.prevent="addToCrew(true)">
-            Основной экипаж
-          </button>
-          <button v-if="showChoiceButtons" @click.prevent="addToCrew(false)">
-            Замена / Подработка
-          </button>
-        </form>
         <button class="close-btn" @click.prevent="close">Закрыть</button>
-        <ul>
-          <li
-            v-for="(tip, t) in tips"
-            :key="t"
-            class="tip"
-            @click.prevent="setDriver({ driver: tip, car })"
-          >
-            <p>
-              <span style="font-weight: bold">{{ tip.name }}</span
-              >, оформлен как
-              <span style="font-weight: bold">{{ tip.mainPosition }}</span>
-            </p>
-          </li>
-        </ul>
       </div>
     </div>
     <DriverExtraPopup />
@@ -212,7 +334,6 @@ export default {
   },
   data() {
     return {
-      // img: null,
       headerTemplate: ["#", "ФИО", "Должность"],
       tips: null,
       date: {
@@ -228,12 +349,15 @@ export default {
       },
       showChoiceButtons: false,
       crewData: null,
+      extraCrewData: null,
       componentKey: 0,
       mouseIsDown: false,
       selectedDriver: null,
       cellsCollection: [],
       cellsCollectionForStyling: [],
       carID: null,
+      repairStart: "",
+      repairEnd: "",
     };
   },
   watch: {
@@ -243,9 +367,23 @@ export default {
     },
   },
   methods: {
-    extrasAndShedule(sheduleStart, sheduleType, sheduleShift, currDate, extras, currCarID) {
+    extrasAndShedule(
+      sheduleStart,
+      sheduleType,
+      sheduleShift,
+      currDate,
+      extras,
+      currCarID
+    ) {
       const res = require("../../store/service/extrasAndShedule");
-      return res.default(sheduleStart, sheduleType, sheduleShift, currDate, extras, currCarID);
+      return res.default(
+        sheduleStart,
+        sheduleType,
+        sheduleShift,
+        currDate,
+        extras,
+        currCarID
+      );
     },
     async addToCrew(payload) {
       this.newEmp.mainCrew = payload;
@@ -265,12 +403,17 @@ export default {
           }. Пожалуйста, проверьте корректность заполнения графика.`
         );
       }
-
-      await this.$store.dispatch("updateCarCrew", {
-        driver: driver,
-        position: this.newEmp.position,
-        car: this.car,
-      });
+      this.newEmp.mainCrew
+        ? await this.$store.dispatch("updateCarCrew", {
+            driver: driver,
+            position: this.newEmp.position,
+            car: this.car,
+          })
+        : await this.$store.dispatch("updateExtraCrew", {
+            driver: driver,
+            position: this.newEmp.position,
+            car: this.car,
+          });
       this.showChoiceButtons = false;
       await this.$store.dispatch("updateCatalogCarsDate");
       await this.$store.dispatch("setActualCatalogCars");
@@ -328,7 +471,13 @@ export default {
     // },
     setCrewData(array) {
       this.crewData = array;
-      // this.componentKey += 1
+    },
+    setExtraCrewData(array) {
+      this.extraCrewData = array;
+    },
+    setRepair(car) {
+      if (!car) return;
+      this.repairStart;
     },
     move(index, arrow) {
       const swapIndex = arrow === "up" ? index - 1 : index + 1;
@@ -451,24 +600,21 @@ export default {
     },
     crew() {
       if (!this.car || !this.drivers) return;
-      const crew = this.car.crew.map(
-        (id) => {
-          const driver = this.drivers.filter((d) => d.driverID === id)[0];
-          // const extras = driver.extras ? driver.extras : [];
+      const crew = this.car.crew.map((id) => {
+        const driver = this.drivers.filter((d) => d.driverID === id)[0];
 
-          return driver.carslist
-            .filter((car) => car.carID === this.car.carID)
-            .map((cl) => {
-              // cl.extras = extras;
-              // cl.name = driver.name;
-              return cl;
-            });
-        }
-        // this.drivers
-        //   .filter((driver) => driver.driverID === id)[0]
-        //   .carslist.filter((car) => car.carID === this.car.carID)[0]
-      );
+        return driver.carslist
+          .filter((car) => car.carID === this.car.carID)
+          .map((cl) => {
+            return cl;
+          });
+      });
       this.setCrewData(crew.flat());
+      const extraCrew = this.car.extraCrew.map((id) => {
+        const driver = this.drivers.filter((d) => d.driverID === id)[0];
+        return driver;
+      });
+      this.setExtraCrewData(extraCrew);
       return this.crewData;
     },
     show() {
@@ -500,7 +646,9 @@ export default {
       const cars = this.$store.getters.getActualStates.catalogCars
         ? this.$store.getters.getActualStates.catalogCars
         : null;
-      return id && cars ? cars.filter((car) => car.carID === id)[0] : null;
+      const car = id && cars ? cars.filter((car) => car.carID === id)[0] : null;
+      this.setRepair(car);
+      return car;
     },
     positions() {
       return this.$store.getters.getDriversPositions;
@@ -602,15 +750,81 @@ p {
     display: grid;
     place-items: center;
     background: rgb(63, 145, 97);
+    // background: #fff;
     .car-crew-popup__content {
       // transform: scale(1.2);
+      height: 100%;
       display: grid;
       .menu-block {
+        padding: 0 10px;
         display: flex;
+        justify-content: space-between;
         align-items: center;
-        justify-content: center;
-        align-items: center;
+        border-bottom-left-radius: 5px;
+        border-bottom-right-radius: 5px;
         gap: 20px;
+        background: -moz-linear-gradient(100% 20% 90deg, #e8eaeb, #ededed);
+        background: -webkit-gradient(
+          linear,
+          0% 0%,
+          0% 20%,
+          from(#ededed),
+          to(#e8eaeb)
+        );
+        height: 100px;
+        &__car {
+          font-size: 24px;
+          font-weight: bold;
+        }
+        &__months {
+          display: flex;
+          align-items: center;
+          gap: 20px;
+        }
+        &__crew {
+          align-self: center;
+          .car-crew__form {
+            display: grid;
+            padding: 20px;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            width: max-content;
+            margin: 0 auto;
+            .btn-block {
+              grid-column: 1/3;
+              display: flex;
+              // width: 100%;
+              justify-content: space-between;
+              button {
+                width: 100%;
+                text-align: center;
+              }
+            }
+            button {
+              font-weight: bold;
+              text-align: center;
+              grid-column: 1/3;
+            }
+
+            label {
+              text-align: right;
+              // vertical-align: middle;
+              // display: grid;
+              // place-content: center;
+            }
+            input {
+              // width: max-content;
+              text-align: center;
+              width: 200px;
+            }
+            input::-webkit-outer-spin-button,
+            input::-webkit-inner-spin-button {
+              -webkit-appearance: none;
+              -moz-appearance: none; // не работает в FF почему-то
+              margin: 0;
+            }
+          }
+        }
         button {
           border: none;
           padding: 5px;
@@ -637,32 +851,7 @@ p {
           }
         }
       }
-      .car-crew__form__form {
-        display: grid;
-        padding: 20px;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 20px;
-        width: max-content;
-        margin: 0 auto;
 
-        label {
-          text-align: right;
-          // vertical-align: middle;
-          // display: grid;
-          // place-content: center;
-        }
-        input {
-          // width: max-content;
-          text-align: center;
-          width: 200px;
-        }
-        input::-webkit-outer-spin-button,
-        input::-webkit-inner-spin-button {
-          -webkit-appearance: none;
-          -moz-appearance: none; // не работает в FF почему-то
-          margin: 0;
-        }
-      }
       .close-btn {
         width: 20%;
         margin: 0 auto;
@@ -670,6 +859,8 @@ p {
       ul {
         list-style: none;
         // margin: 0 auto;
+        padding: 0;
+        margin: 0;
         display: flex;
         flex-direction: column;
         gap: 2px;

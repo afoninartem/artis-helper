@@ -375,6 +375,17 @@ export default {
       const handledDate = dateHandler.getFullDate(date);
       return handledArrayOfDates.includes(handledDate);
     },
+    extraCrew(car) {
+      if (!car.extraCrew || (car.extraCrew && !car.extraCrew.length)) return [];
+      const extraCrew = car.extraCrew.map(id => {
+        const driver = this.drivers.filter(d => d.driverID === id)[0];
+        // console.log(driver)
+        const result = driver.extras?.filter(e => e.carID === car.carID);
+        // console.log(result)
+        return result || [];
+      })
+      return extraCrew;
+    },
     crew(car) {
       const driverlist = car.crew;
       const crew = [];
@@ -457,6 +468,7 @@ export default {
             .map((car) =>
               Object.assign(car, {
                 crewDetails: this.crew(car),
+                extraCrewDetails: this.extraCrew(car),
               })
             )
         : null;

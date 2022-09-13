@@ -30,11 +30,11 @@ export default {
 			return await context.commit("closeDriverExtraPopup");
 		},
 		async updateExtras({ getters }, payload) {
-			// console.log(`payload from ExtraJS: `, payload);
+			console.log(`payload from ExtraJS: `, payload);
 			const driver0 = getters.getActualStates.catalogDrivers.filter(
 				(d) => d.driverID === payload.driverID
 			)[0];
-			const driver = { ...driver0 }; // может дело не в этом, надо проверить все записи водителей в БД и все чтения их из БД
+			const driver = { ...driver0 }; 
 			driver.extras
 				? Array.from(payload.days).forEach((day) => {
 						driver.extras.map((e) => e.day).includes(day.day)

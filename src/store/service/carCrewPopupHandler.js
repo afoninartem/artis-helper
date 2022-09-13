@@ -27,11 +27,26 @@ export default {
 				.doc(payload.carID)
 				.update({ crew: payload.crewNewOrder });
 		},
+		async updateExtraCrew(context, payload) {
+			console.log(payload);
+			const newExtraCrew = payload.car.extraCrew ? payload.car.extraCrew : [];
+			if (!newExtraCrew.length) {
+				await db
+					.collection("service/catalog/cars")
+					.doc(payload.car.carID)
+					.set({ extraCrew: newExtraCrew }, { merge: true });
+			}
+			newExtraCrew.includes(payload.driver.driverID)
+				? null
+				: newExtraCrew.push(payload.driver.driverID);
+			await db
+				.collection("service/catalog/cars")
+				.doc(payload.car.carID)
+				.update({ extraCrew: newExtraCrew });
+		},
 		async updateCarCrew(context, payload) {
 			console.log(payload);
 			const newCrew = payload.car.crew;
-			// console.log(newCrew, typeof newCrew)
-			// newCrew.push(payload.driver.driverID);
 			newCrew.includes(payload.driver.driverID)
 				? null
 				: newCrew.push(payload.driver.driverID);
@@ -39,9 +54,9 @@ export default {
 			carslist.push({
 				car: payload.car.number,
 				carID: payload.car.carID,
-        driverID: payload.driver.driverID,
-        name: payload.driver.name,
-        position: payload.position,
+				driverID: payload.driver.driverID,
+				name: payload.driver.name,
+				position: payload.position,
 				sheduleStart: null,
 				sheduleType: null,
 				sheduleShift: null,
@@ -55,7 +70,7 @@ export default {
 				.doc(payload.driver.driverID)
 				// .update({ carslist: carslist }).then(() => console.log("Список машин добавлен в объект водителя")).catch((error) => console.log(error));
 				// .set({ carslist: carslist }, { merge: true });
-				.update({json: JSON.stringify(payload.driver)})
+				.update({ json: JSON.stringify(payload.driver) });
 		},
 		async removeDriverFromCar({ getters }, payload) {
 			// console.log(`payload: `, payload);
@@ -75,7 +90,7 @@ export default {
 				.collection("service/catalog/drivers_JSON")
 				.doc(payload.driverID)
 				// .update({ carslist: newCarslist });
-				.update({json: JSON.stringify(driver)})
+				.update({ json: JSON.stringify(driver) });
 
 			await db
 				.collection("service/catalog/cars")
