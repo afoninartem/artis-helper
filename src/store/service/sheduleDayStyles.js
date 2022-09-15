@@ -1,7 +1,7 @@
 
 export default function (date, extras = [], currCarID) {
 	//styles will be store in other place
-	// console.log(date, extras)
+
 	const weekendStyle = "background: rgba(225, 100, 100, 0.3)";
 	const todayStyle = "border: 2px solid blue";
 	// if (extras) console.log(extras);
@@ -20,9 +20,10 @@ export default function (date, extras = [], currCarID) {
     if (e.cut === `Р` && e.carID !== currCarID) return false;
     return true
   }).forEach((extra) => {
-		if (new Date(date).toISOString() == extra.day) {
+		if (new Date(date).toLocaleDateString() == extra.day) {
 			stylesArray.push(`background: ${extra.bgColor}`);
 		}
 	});
+  console.log(stylesArray)
 	return stylesArray.join(styleDivider);
 }

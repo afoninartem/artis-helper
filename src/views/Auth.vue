@@ -3,6 +3,7 @@
     <h1>Пожалуйста, авторизуйтесь</h1>
     <form class="auth__form" @submit.prevent="onSubmit">
       <input
+        autofocus
         type="email"
         name="email"
         id="email"

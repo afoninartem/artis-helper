@@ -28,7 +28,7 @@ export default {
 				.update({ crew: payload.crewNewOrder });
 		},
 		async updateExtraCrew(context, payload) {
-			console.log(payload);
+			// console.log(payload);
 			const newExtraCrew = payload.car.extraCrew ? payload.car.extraCrew : [];
 			if (!newExtraCrew.length) {
 				await db
@@ -36,9 +36,12 @@ export default {
 					.doc(payload.car.carID)
 					.set({ extraCrew: newExtraCrew }, { merge: true });
 			}
-			newExtraCrew.includes(payload.driver.driverID)
+			newExtraCrew.map((d) => d.driverID).includes(payload.driver.driverID)
 				? null
-				: newExtraCrew.push(payload.driver.driverID);
+				: newExtraCrew.push({
+						driverID: payload.driver.driverID,
+						position: payload.position,
+				  });
 			await db
 				.collection("service/catalog/cars")
 				.doc(payload.car.carID)
@@ -71,6 +74,25 @@ export default {
 				// .update({ carslist: carslist }).then(() => console.log("Список машин добавлен в объект водителя")).catch((error) => console.log(error));
 				// .set({ carslist: carslist }, { merge: true });
 				.update({ json: JSON.stringify(payload.driver) });
+		},
+		async removeExtraFromCar({ getters }, payload) {
+			const car = getters.getActualStates.catalogCars.filter(
+				(car) => car.carID === payload.carID
+			)[0];
+			const driver = getters.getActualStates.catalogDrivers.filter(
+				(driver) => driver.driverID === payload.driverID
+			)[0];
+      console.log(car)
+			const newExtraCrew = car.extraCrew.filter(
+				(extra) => extra.driverID !== driver.driverID
+			);
+
+			const newExtras = driver.extras.filter(
+				(extra) => extra.carID !== car.carID
+			);
+			driver.extras = newExtras;
+      await db.collection("service/catalog/drivers_JSON").doc(driver.driverID).update({json: JSON.stringify(driver)});
+      await db.collection("service/catalog/cars").doc(car.carID).update({extraCrew: newExtraCrew})
 		},
 		async removeDriverFromCar({ getters }, payload) {
 			// console.log(`payload: `, payload);

@@ -14,10 +14,10 @@ export default (
 		  })
 		: null;
 	return filterdExtras
-		? filterdExtras.filter((e) => e.day == new Date(currDate).toISOString())
+		? filterdExtras.filter((e) => e.day == new Date(currDate).toLocaleDateString())
 				.length
 			? filterdExtras.filter(
-					(e) => e.day == new Date(currDate).toISOString()
+					(e) => e.day == new Date(currDate).toLocaleDateString()
 			  )[0].cut
 			: sheduleCounter(sheduleStart, sheduleType, sheduleShift, currDate)
 		: sheduleCounter(sheduleStart, sheduleType, sheduleShift, currDate);

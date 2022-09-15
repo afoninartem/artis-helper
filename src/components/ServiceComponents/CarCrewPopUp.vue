@@ -207,7 +207,7 @@
                     dayStyles(
                       new Date(date.year, date.month, d + 1),
                       driver.extras,
-                      driver.carID
+                      carID
                     )
                   "
                   @mousedown="startCollectSelectionCells(driver, day)"
@@ -238,7 +238,7 @@
                 ></td>
               </tr>
             </tbody>
-            <thead v-if="extraCrewData">
+            <thead v-if="extraCrewData.length">
               <tr>
                 <th
                   :colspan="
@@ -251,7 +251,7 @@
                 </th>
               </tr>
             </thead>
-            <tbody v-if="extraCrewData">
+            <tbody v-if="extraCrewData.length">
               <tr v-for="(extra, e) in extraCrewData" :key="e">
                 <td class="number-and-arrows">
                   <span
@@ -286,7 +286,7 @@
                     dayStyles(
                       new Date(date.year, date.month, d + 1),
                       extra.extras,
-                      extra.carID
+                      carID
                     )
                   "
                   @mousedown="startCollectSelectionCells(extra, day)"
@@ -309,9 +309,9 @@
                   title="Удалять двойным кликом"
                   colspan="2"
                   @dblclick.prevent="
-                    removeDriverFromCar({
+                    removeExtraFromCar({
                       driverID: extra.driverID,
-                      carID: car.carID,
+                      carID,
                     })
                   "
                 ></td>
@@ -446,6 +446,7 @@ export default {
       await this.$store.dispatch("openDriverExtraPopup", {
         driver: this.selectedDriver,
         days,
+        carID: this.carID,
       });
       this.selectedDriver = null;
       this.cellsCollectionForStyling = [];
@@ -475,8 +476,12 @@ export default {
     setExtraCrewData(array) {
       this.extraCrewData = array;
     },
+    setCarID(carID) {
+      this.carID = carID;
+    },
     setRepair(car) {
       if (!car) return;
+
       this.repairStart;
     },
     move(index, arrow) {
@@ -563,7 +568,17 @@ export default {
         this.tips = null;
       }
     },
+    async removeExtraFromCar(payload) {
+      console.log(payload);
+      await this.$store.dispatch("removeExtraFromCar", payload);
+      await this.$store.dispatch("updateCatalogCarsDate");
+      await this.$store.dispatch("updateCatalogDriversDate");
+      await this.$store.dispatch("setActualCatalogDrivers");
+      await this.$store.dispatch("setActualCatalogCars");
+    },
+
     async removeDriverFromCar(payload) {
+      console.log(payload);
       await this.$store.dispatch("removeDriverFromCar", payload);
       await this.$store.dispatch("updateCatalogCarsDate");
       await this.$store.dispatch("updateCatalogDriversDate");
@@ -600,9 +615,9 @@ export default {
     },
     crew() {
       if (!this.car || !this.drivers) return;
+
       const crew = this.car.crew.map((id) => {
         const driver = this.drivers.filter((d) => d.driverID === id)[0];
-
         return driver.carslist
           .filter((car) => car.carID === this.car.carID)
           .map((cl) => {
@@ -610,10 +625,16 @@ export default {
           });
       });
       this.setCrewData(crew.flat());
-      const extraCrew = this.car.extraCrew.map((id) => {
-        const driver = this.drivers.filter((d) => d.driverID === id)[0];
-        return driver;
-      });
+
+      const extraCrew = this.car.extraCrew
+        ? this.car.extraCrew.map((extra) => {
+            const driver = this.drivers.filter(
+              (d) => d.driverID === extra.driverID
+            )[0];
+            driver.position = extra.position;
+            return driver;
+          })
+        : [];
       this.setExtraCrewData(extraCrew);
       return this.crewData;
     },
@@ -647,6 +668,7 @@ export default {
         ? this.$store.getters.getActualStates.catalogCars
         : null;
       const car = id && cars ? cars.filter((car) => car.carID === id)[0] : null;
+      this.setCarID(car.carID);
       this.setRepair(car);
       return car;
     },

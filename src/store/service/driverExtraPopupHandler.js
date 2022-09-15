@@ -12,7 +12,7 @@ export default {
 			state.show = true;
 			state.driver = payload.driver;
 			state.days = payload.days;
-			state.carID = payload.driver.carID;
+			state.carID = payload.carID;
 		},
 		closeDriverExtraPopup(state) {
 			state.show = false;
@@ -23,7 +23,7 @@ export default {
 	},
 	actions: {
 		async openDriverExtraPopup(context, payload) {
-			// console.log(payload)
+			console.log(payload)
 			return await context.commit("openDriverExtraPopup", payload);
 		},
 		async closeDriverExtraPopup(context) {
@@ -65,7 +65,7 @@ export default {
 			return state.show;
 		},
 		getDriverExtraPopupDetails: (state) => {
-			return { driver: state.driver, days: state.days };
+			return { driver: state.driver, days: state.days, carID: state.carID };
 		},
 	},
 };
