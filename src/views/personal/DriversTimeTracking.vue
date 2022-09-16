@@ -391,6 +391,7 @@ export default {
       const crew = [];
       Array.from(driverlist).forEach((id) => {
         const driver = this.drivers.filter((d) => d.driverID === id)[0];
+        if (!driver) return;
         const result = driver.carslist
           .filter((cl) => cl.carID === car.carID)
           .map((cl) => {

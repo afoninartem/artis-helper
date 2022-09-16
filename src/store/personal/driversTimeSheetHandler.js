@@ -69,13 +69,18 @@ export default {
 		},
 		async addDriverToCatalog(context, payload) {
 			let initID = Date.now().toString();
-			await db.collection("service/catalog/drivers").doc(initID).set({
-				driverID: initID,
-				name: payload.name,
-				mainPosition: payload.position.toLowerCase(),
-				// position: position,
-				carslist: [],
-			});
+			console.log(initID, payload.name);
+			await db
+				.collection("service/catalog/drivers_JSON")
+				.doc(initID)
+				.set({
+					json: JSON.stringify({
+						driverID: initID,
+						name: payload.name,
+						mainPosition: payload.position.toLowerCase(),
+						carslist: [],
+					}),
+				});
 		},
 		// async openAddPositionPopup(context) {
 		// 	return await context.commit("openAddPositionPopup");
@@ -111,7 +116,7 @@ export default {
 						driverID = drivers.filter(
 							(d) =>
 								d.name === item.__EMPTY_1 &&
-								d.position === item["Должность"].toLowerCase()
+								d.mainPosition === item["Должность"].toLowerCase()
 						)[0].driverID;
 					} catch (error) {
 						console.log(
@@ -171,8 +176,8 @@ export default {
 			return state.info1C8_DP;
 		},
 
-		getAddDriverPopupVisibility: (state) => {
-			return state.addDriverPopupVisibility;
-		},
+		// getAddDriverPopupVisibility: (state) => {
+		// 	return state.addDriverPopupVisibility;
+		// },
 	},
 };

@@ -16,8 +16,6 @@ export default {
 		addDriverPopupVisibility: false,
 	},
 	mutations: {
-
-
 		openAddDriverPopup(state) {
 			state.addDriverPopupVisibility = true;
 		},
@@ -34,10 +32,16 @@ export default {
 				.doc(payload.carID)
 				.set(payload);
 		},
+		async openAddDriverPopup(context) {
+			return await context.commit("openAddDriverPopup");
+		},
 	},
 	getters: {
 		getDriversPositions: (state) => {
 			return state.positions;
+		},
+		getAddDriverPopupVisibility: (state) => {
+			return state.addDriverPopupVisibility;
 		},
 	},
 };

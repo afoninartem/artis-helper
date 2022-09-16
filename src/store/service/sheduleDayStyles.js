@@ -24,6 +24,5 @@ export default function (date, extras = [], currCarID) {
 			stylesArray.push(`background: ${extra.bgColor}`);
 		}
 	});
-  console.log(stylesArray)
 	return stylesArray.join(styleDivider);
 }
