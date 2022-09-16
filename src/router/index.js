@@ -437,7 +437,7 @@ const routes = [
     meta: {
       layout: "MainLayout",
       auth: true,
-      permissions: ["admin", "service"],
+      permissions: ["admin", "service", "personal"],
     },
     component: () => import("../views/service/DriversAndCarsCatalog.vue"),
   },
