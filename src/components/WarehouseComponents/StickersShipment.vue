@@ -34,7 +34,7 @@
         :enable-download="true"
         :preview-modal="false"
         :paginate-elements-by-height="1400"
-        filename="Стикеры"
+        :filename="filename"
         :pdf-quality="2"
         :manual-pagination="false"
         pdf-format="a4"
@@ -60,11 +60,11 @@
 </template>
 
 <script>
-import VueHtml2pdf from "vue-html2pdf";
+// import VueHtml2pdf from "vue-html2pdf";
 export default {
-  components: {
-    VueHtml2pdf,
-  },
+  // components: {
+  //   VueHtml2pdf,
+  // },
   data() {
     return {
       terms: {
@@ -75,6 +75,7 @@ export default {
       },
       activeStickers: null,
       shopToPrint: [],
+      filename: "",
     };
   },
   methods: {
@@ -90,6 +91,7 @@ export default {
       for (let i = 0; i < stickerList[payload].stickers; i += 1) {
         await this.shopToPrint.push(stickerList[payload]);
       }
+      this.filename = this.shopToPrint[0].shop
       this.generateReport();
     },
   },

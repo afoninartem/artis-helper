@@ -8,8 +8,8 @@ export default function workDayOrNot(
   const conditionalStartDate = "2022-04-01T00:00"
 	// if (sheduleStart && sheduleType && currDate) {
 	if ((sheduleType, currDate)) {
+    // console.log(`currDate - ${currDate} or ${new Date(currDate).toLocaleDateString()}}`)
 		const currYear = new Date(currDate).getFullYear().toString();
-
 		const currMonth =
 			Number(new Date(currDate).getMonth()) + 1 < 10
 				? `0${Number(new Date(currDate).getMonth()) + 1}`

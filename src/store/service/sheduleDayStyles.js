@@ -20,7 +20,7 @@ export default function (date, extras = [], currCarID) {
     if (e.cut === `Р` && e.carID !== currCarID) return false;
     return true
   }).forEach((extra) => {
-		if (new Date(date).toLocaleDateString() == extra.day) {
+		if (new Date(date).toLocaleDateString() == new Date(extra.day).toLocaleDateString()) {
 			stylesArray.push(`background: ${extra.bgColor}`);
 		}
 	});

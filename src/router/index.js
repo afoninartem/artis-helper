@@ -432,6 +432,16 @@ const routes = [
     component: () => import("../views/service/TodayWorkingService.vue"),
   },
   {
+    path: "/service-print-form",
+    name: "ServicePrintForm",
+    meta: {
+      layout: "MainLayout",
+      auth: true,
+      permissions: ["admin", "service"],
+    },
+    component: () => import("../views/service/ServicePrintForm.vue"),
+  },
+  {
     path: "/drivers-cars-catalog",
     name: "DriversCarsCatalog",
     meta: {

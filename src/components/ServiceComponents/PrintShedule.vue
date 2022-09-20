@@ -1,127 +1,71 @@
 <template>
-  <div class="print-shedule">
-    <!-- <table>
-      <tbody v-for="(car, c) in cars" :key="`car-${c}`">
-        <thead>
-          <tr>
-            <th
-            class="car"
-              :colspan="
-                numberOfDays(date.year, date.month) + headerTemplate.length
-              "
-            >
-              {{ car.mark.toUpperCase() }}
-              {{ car.number.toUpperCase() }}
-            </th>
-          </tr>
-          <tr>
-            <th
-              v-for="(ht, t) in headerTemplate"
-              :key="`template-${t}`"
-              rowspan="2"
-            >
-              {{ ht }}
-            </th>
-            <th
-              v-for="(dayInfo, wd) in daySpec(date.month, date.year)"
-              :key="`weekday-${wd}`"
-              :style="weekendColor(dayInfo)"
-            >
-              {{ dayInfo.weekday }}
-            </th>
-          </tr>
-          <tr>
-            <th
-              v-for="(dayInfo, md) in daySpec(date.month, date.year)"
-              :key="`day-of-month-${md}`"
-              :style="weekendColor(dayInfo)"
-            >
-              {{ dayInfo.dayOfMonth }}
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="driver, d in crew(car)" :key="`${car.id}-${d}`">
-            <td>
-              {{d + 1}}
-            </td>
-            <td ref="driverName">{{driver.name}}</td>
-            <td>{{driver.position}}</td>
-            <td
-              v-for="(day, d) in daySpec(date.month, date.year)"
-              :key="`date-${d}`"
-              :style="weekendColor(day)"
-            >
-              {{
-                count(
-                  driver.sheduleStart,
-                  driver.sheduleType,
-                  driver.sheduleShift,
-                  new Date(date.year, date.month, day.dayOfMonth)
-                )
-              }}
-            </td>
-          </tr>
-        </tbody>
-      </tbody>
-    </table> -->
-    <vue-html2pdf
-      :show-layout="false"
-      :float-layout="false"
-      :enable-download="true"
-      :preview-modal="true"
-      :paginate-elements-by-height="1400"
-      filename="Расписание"
-      :pdf-quality="2"
-      :manual-pagination="false"
-      pdf-format="a4"
-      pdf-orientation="portrait"
-      pdf-content-width="800px"
-      ref="html2Pdf"
+  <div
+    class="print-shedule"
+    v-if="cars"
+  >
+    <div class="btn-info-block">
+      <button @click.prevent="toPDF">Скачать PDF</button>
+      <p v-if="showHint">Скачивание началось, подождите.</p>
+      <!-- <meter
+        min="0"
+        max="100"
+        :value="progress"
+      ></meter> -->
+    </div>
+    <div
+      class="table-preview-block"
+      ref="table"
+      style="overflow-x:auto;"
     >
-      <section slot="pdf-content">
-        <table>
-      <tbody v-for="(car, c) in cars" :key="`car-${c}`">
-        <thead>
-          <tr>
-            <th
-            class="car"
-              :colspan="
+
+      <table>
+        <tbody
+          v-for="(car, c) in cars"
+          :key="`car-${c}`"
+        >
+          <thead>
+            <tr>
+              <th
+                class="car"
+                :colspan="
                 numberOfDays(date.year, date.month) + headerTemplate.length
               "
-            >
-              {{ car.mark.toUpperCase() }}
-              {{ car.number.toUpperCase() }}
-            </th>
-          </tr>
-          <tr>
-            <th
-              v-for="(ht, t) in headerTemplate"
-              :key="`template-${t}`"
-              rowspan="2"
-            >
-              {{ ht }}
-            </th>
-            <th
-              v-for="(dayInfo, wd) in daySpec(date.month, date.year)"
-              :key="`weekday-${wd}`"
-              :style="weekendColor(dayInfo)"
-            >
-              {{ dayInfo.weekday }}
-            </th>
-          </tr>
-          <tr>
-            <th
-              v-for="(dayInfo, md) in daySpec(date.month, date.year)"
-              :key="`day-of-month-${md}`"
-              :style="weekendColor(dayInfo)"
-            >
-              {{ dayInfo.dayOfMonth }}
-            </th>
-          </tr>
-        </thead>
+              >
+                {{ car.mark.toUpperCase() }}
+                {{ car.number.toUpperCase() }}
+              </th>
+            </tr>
+            <tr>
+              <th
+                v-for="(ht, t) in headerTemplate"
+                :key="`template-${t}`"
+                rowspan="2"
+              >
+                {{ ht }}
+              </th>
+              <th
+                v-for="(dayInfo, wd) in daySpec(date.month, date.year)"
+                :key="`weekday-${wd}`"
+                :style="weekendColor(dayInfo)"
+              >
+                {{ dayInfo.weekday }}
+              </th>
+            </tr>
+            <tr>
+              <th
+                v-for="(dayInfo, md) in daySpec(date.month, date.year)"
+                :key="`day-of-month-${md}`"
+                :style="weekendColor(dayInfo)"
+              >
+                {{ dayInfo.dayOfMonth }}
+              </th>
+            </tr>
+          </thead>
         <tbody>
-          <tr v-for="driver, d in crew(car)" :key="`${car.id}-${d}`">
+          <tr
+            v-for="driver, d in crew(car)"
+            :key="`${car.id}-${d}`"
+          >
             <td>
               {{d + 1}}
             </td>
@@ -143,20 +87,16 @@
             </td>
           </tr>
         </tbody>
-      </tbody>
-    </table>
-      </section>
-    </vue-html2pdf>
-    <button @click.prevent="print">Печать</button>
+        </tbody>
+      </table>
+
+    </div>
   </div>
 </template>
 
 <script>
-import VueHtml2pdf from "vue-html2pdf";
+import html2pdf from "html2pdf.js";
 export default {
-  components: {
-    VueHtml2pdf,
-  },
   data() {
     return {
       headerTemplate: ["#", "ФИО", "Должность"],
@@ -165,11 +105,27 @@ export default {
         year: null,
       },
       driverCellWidth: null,
+      progress: 0,
+      showHint: false,
     };
   },
   methods: {
-    print() {
-      this.$refs.html2Pdf.generatePdf();
+    toPDF() {
+      this.showHint = true;
+      const element = this.$refs.table;
+      const options = {
+        margin: 0,
+        filename: "График",
+        image: { type: "jpeg", quality: 0.98 },
+        html2canvas: { dpi: 192, letterRendering: true },
+        pagebreak: { mode: ["avoid-all", "css", "legacy"] },
+        jsPDF: { unit: "mm", format: "a4", orientation: "l" },
+      };
+      html2pdf().set(options).from(element).save();
+    },
+    onProgress(event) {
+      // console.log(event);
+      this.progress = event;
     },
     count(sheduleStart, sheduleType, sheduleShift, currDate) {
       const count = require("../../store/service/sheduleCounter");
@@ -188,6 +144,14 @@ export default {
             `DriverID ${driverID} не существует. Машина ${car.number}`
           );
         crew.push(driver.carslist.filter((cl) => cl.carID === car.carID)[0]);
+      });
+      crew.forEach((cm) => {
+        cm.name = cm.name.split(" ")[0];
+        cm.position = cm.position.includes(`ночной`)
+          ? `ночной`
+          : cm.position.includes(`на своем`)
+          ? `на своем`
+          : cm.position;
       });
       return crew;
     },
@@ -266,9 +230,13 @@ export default {
 <style lang="scss" scoped>
 @import "@/scss/personalTable.scss";
 @include personal-table;
-
-.car {
-  height: 50px;
-  font-size: 36px;
+table {
+  font-family: "Roboto", sans-serif;
+  font-size: 14px;
+  // width: 800px;
+  .car {
+    height: 50px;
+    font-size: 36px;
+  }
 }
 </style>

@@ -89,6 +89,12 @@ export default new Vuex.Store({
             permissions: ["service"],
           },
           {
+            name: "service-print-form",
+            link: "/service-print-form",
+            title: "Печать",
+            permissions: ["personal"],
+          },
+          {
             name: "drivers-cars-catalog",
             link: "/drivers-cars-catalog",
             title: "Справочник ОС",
