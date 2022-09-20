@@ -74,22 +74,29 @@
             <td
               v-for="(day, d) in daySpec(date.month, date.year)"
               :key="`date-${d}`"
-              :style="weekendColor(day)"
+              :style="
+                    dayStyles(
+                      new Date(date.year, date.month, d + 1),
+                      driver.extras,
+                      driver.carID
+                    )
+                  "
             >
               {{
-                count(
-                  driver.sheduleStart,
-                  driver.sheduleType,
-                  driver.sheduleShift,
-                  new Date(date.year, date.month, day.dayOfMonth)
-                )
+                    extrasAndShedule(
+                      driver.sheduleStart,
+                      driver.sheduleType,
+                      driver.sheduleShift,
+                      new Date(date.year, date.month, d + 1),
+                      driver.extras,
+                      driver.carID
+                    )
               }}
             </td>
           </tr>
         </tbody>
         </tbody>
       </table>
-
     </div>
   </div>
 </template>
@@ -110,6 +117,29 @@ export default {
     };
   },
   methods: {
+    dayStyles(extras, date, currCarID) {
+      const styles = require("../../store/service/sheduleDayStyles");
+      return styles.default(extras, date, currCarID);
+    },
+    extrasAndShedule(
+      sheduleStart,
+      sheduleType,
+      sheduleShift,
+      currDate,
+      extras,
+      currCarID
+    ) {
+      // console.log(...arguments)
+      const res = require("../../store/service/extrasAndShedule");
+      return res.default(
+        sheduleStart,
+        sheduleType,
+        sheduleShift,
+        currDate,
+        extras,
+        currCarID
+      );
+    },
     toPDF() {
       this.showHint = true;
       const element = this.$refs.table;
@@ -117,9 +147,9 @@ export default {
         margin: 0,
         filename: "График",
         image: { type: "jpeg", quality: 0.98 },
-        html2canvas: { dpi: 192, letterRendering: true },
+        html2canvas: { dpi: 192, letterRendering: true, width: "1266" },
         pagebreak: { mode: ["avoid-all", "css", "legacy"] },
-        jsPDF: { unit: "mm", format: "a4", orientation: "l" },
+        jsPDF: { unit: "px", format: "a4", orientation: "p" },
       };
       html2pdf().set(options).from(element).save();
     },
@@ -152,7 +182,9 @@ export default {
           : cm.position.includes(`на своем`)
           ? `на своем`
           : cm.position;
+        // console.log(cm);
       });
+
       return crew;
     },
     numberOfDays(month, year) {
@@ -237,6 +269,9 @@ table {
   .car {
     height: 50px;
     font-size: 36px;
+  }
+  tbody tr td {
+    width: 32px;
   }
 }
 </style>
