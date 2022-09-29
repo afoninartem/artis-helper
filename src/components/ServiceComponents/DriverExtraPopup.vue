@@ -68,7 +68,8 @@ export default {
       dates.style.background = item.color;
       this.result = {
         days: Array.from(this.info.days).map((day) => ({
-          day: new Date(day).toLocaleDateString(),
+          // day: new Date(day).toLocaleDateString(),
+          day: new Date(day).toISOString(),
           cut: item.cut,
           bgColor: item.color,
           carID: this.info.carID

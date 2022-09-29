@@ -1,5 +1,9 @@
 <template>
-  <div class="car-crew-popup" v-if="show" :key="componentKey">
+  <div
+    class="car-crew-popup"
+    v-if="show"
+    :key="componentKey"
+  >
     <div class="car-crew-popup__background">
       <div class="car-crew-popup__content">
         <!-- <h1>{{ car.mark }} {{ car.number }}</h1> -->
@@ -25,8 +29,14 @@
             />
           </div>
           <div class="menu-block__crew">
-            <form action="" class="car-crew__form">
-              <button @click.prevent="showNewEmp = true" v-if="!showNewEmp">
+            <form
+              action=""
+              class="car-crew__form"
+            >
+              <button
+                @click.prevent="showNewEmp = true"
+                v-if="!showNewEmp"
+              >
                 Добавить сотрудника
               </button>
               <select
@@ -36,7 +46,10 @@
                 v-model="newEmp.position"
               >
                 <!-- <option :value="newEmp.position"></option> -->
-                <option v-for="(position, p) in positions" :key="p">
+                <option
+                  v-for="(position, p) in positions"
+                  :key="p"
+                >
                   {{ position.toLowerCase() }}
                 </option>
               </select>
@@ -109,8 +122,7 @@
             @click.prevent="setDriver({ driver: tip, car })"
           >
             <p>
-              <span style="font-weight: bold">{{ tip.name }}</span
-              >, оформлен как
+              <span style="font-weight: bold">{{ tip.name }}</span>, оформлен как
               <span style="font-weight: bold">{{ tip.mainPosition }}</span>
             </p>
           </li>
@@ -122,21 +134,20 @@
           <table v-if="crew.length">
             <thead>
               <tr>
-                <th
-                  :colspan="
+                <th :colspan="
                     numberOfDays(date.year, date.month) + headerTemplate.length
-                  "
-                >
+                  ">
                   {{ car.mark.toUpperCase() }} {{ car.number }}
                 </th>
-                <th rowspan="4" class="delete">Удалить</th>
+                <th
+                  rowspan="4"
+                  class="delete"
+                >Удалить</th>
               </tr>
               <tr>
-                <th
-                  :colspan="
+                <th :colspan="
                     numberOfDays(date.year, date.month) + headerTemplate.length
-                  "
-                >
+                  ">
                   {{
                     new Date(date.year, date.month)
                       .toLocaleString("default", {
@@ -173,7 +184,10 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(driver, d) in crew" :key="`driver-${d}`">
+              <tr
+                v-for="(driver, d) in crew"
+                :key="`driver-${d}`"
+              >
                 <td class="number-and-arrows">
                   <span
                     class="arrow-up"
@@ -240,19 +254,20 @@
             </tbody>
             <thead v-if="extraCrewData.length">
               <tr>
-                <th
-                  :colspan="
+                <th :colspan="
                     numberOfDays(date.year, date.month) +
                     headerTemplate.length +
                     1
-                  "
-                >
+                  ">
                   Дополнительно: замены и подработки
                 </th>
               </tr>
             </thead>
             <tbody v-if="extraCrewData.length">
-              <tr v-for="(extra, e) in extraCrewData" :key="e">
+              <tr
+                v-for="(extra, e) in extraCrewData"
+                :key="e"
+              >
                 <td class="number-and-arrows">
                   <span
                     class="arrow-up"
@@ -319,7 +334,10 @@
             </tbody>
           </table>
         </div>
-        <button class="close-btn" @click.prevent="close">Закрыть</button>
+        <button
+          class="close-btn"
+          @click.prevent="close"
+        >Закрыть</button>
       </div>
     </div>
     <DriverExtraPopup />
