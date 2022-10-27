@@ -1,5 +1,6 @@
 <template>
   <div class="print-form">
+    <!-- <button @click.prevent="print">Печать</button> -->
     <PrintShedule />
   </div>
 </template>
@@ -10,12 +11,21 @@ export default {
   components: {
     PrintShedule,
   },
+  methods: {
+    // print() {
+    //   return window.print();
+    // },
+  },
 };
 </script>
 
 <style lang="scss" scoped>
 .print-form {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  // justify-content: center;
+  align-content: center;
+  width: max-content;
+  margin: 0 auto;
 }
 </style>

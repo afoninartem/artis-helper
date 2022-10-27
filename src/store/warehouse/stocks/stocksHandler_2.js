@@ -20,13 +20,13 @@ export default {
 					shopsDB.some(
 						(shop) =>
 							shop.name.toLowerCase().trim() ===
-							report.shop.toLowerCase().trim() && shop.isOpen === "true"
+								report.shop.toLowerCase().trim() && shop.isOpen === "true"
 					)
 				) {
 					const shopData = shopsDB.filter(
 						(shop) =>
 							shop.name.toLowerCase().trim() ===
-							report.shop.toLowerCase().trim() 
+							report.shop.toLowerCase().trim()
 					)[0];
 					report.region = shopData.region;
 					report.status = shopData.status;
@@ -136,16 +136,23 @@ export default {
 					report.shipment.stick =
 						report.status === "top"
 							? report.f_Stick
-							: report.l_Stick < 80 && report.f_Stick < 80
+							: report.l_Stick > 80
+							? 0
+							: report.f_Stick < 80
 							? report.f_Stick || 0
 							: 40;
+					// : report.l_Stick < 80 && report.f_Stick < 80
+					// ? report.f_Stick || 0
+					// : 40;
 
 					report.shipment.clamp =
 						report.status === "top"
-							? report.f_Clamp
-							: report.l_Clamp < 80 && report.f_Clamp < 80
-							? report.f_Clamp || 0
-							: 40;
+            ? report.f_Clamp
+            : report.l_Clamp > 80
+            ? 0
+            : report.f_Clamp < 80
+            ? report.f_Clamp || 0
+            : 40;
 
 					shipment[report.region]
 						? shipment[report.region].push(report)

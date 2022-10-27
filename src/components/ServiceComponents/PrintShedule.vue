@@ -4,17 +4,22 @@
     v-if="cars"
   >
     <div class="btn-info-block">
-      <button @click.prevent="toPDF">Скачать PDF</button>
-      <p v-if="showHint">Скачивание началось, подождите.</p>
-      <!-- <meter
-        min="0"
-        max="100"
-        :value="progress"
-      ></meter> -->
+      <xlsx-workbook>
+        <xlsx-sheet
+          :collection="sheet.data"
+          v-for="sheet in sheets"
+          :key="sheet.name"
+          :sheet-name="sheet.name"
+        />
+        <xlsx-download :filename="`График.xlsx`">
+          <button class="download-btn">Скачать</button>
+        </xlsx-download>
+      </xlsx-workbook>
     </div>
     <div
       class="table-preview-block"
       ref="table"
+      id="table"
       style="overflow-x:auto;"
     >
 
@@ -102,8 +107,18 @@
 </template>
 
 <script>
-import html2pdf from "html2pdf.js";
+import {
+  XlsxDownload,
+  XlsxSheet,
+  XlsxWorkbook,
+} from "vue-xlsx/dist/vue-xlsx.es";
+// import html2pdf from "html2pdf.js";
 export default {
+  components: {
+    XlsxDownload,
+    XlsxSheet,
+    XlsxWorkbook,
+  },
   data() {
     return {
       headerTemplate: ["#", "ФИО", "Должность"],
@@ -139,19 +154,6 @@ export default {
         extras,
         currCarID
       );
-    },
-    toPDF() {
-      this.showHint = true;
-      const element = this.$refs.table;
-      const options = {
-        margin: 0,
-        filename: "График",
-        image: { type: "jpeg", quality: 0.98 },
-        html2canvas: { dpi: 192, letterRendering: true, width: "1266" },
-        pagebreak: { mode: ["avoid-all", "css", "legacy"] },
-        jsPDF: { unit: "px", format: "a4", orientation: "p" },
-      };
-      html2pdf().set(options).from(element).save();
     },
     onProgress(event) {
       // console.log(event);
@@ -221,6 +223,21 @@ export default {
     },
   },
   computed: {
+    sheets() {
+      return {
+        sheets: {
+          name: new Date(this.date.year, this.date.month).toLocaleString(
+            "default",
+            { month: "long" }
+          ),
+          data: this.cars,
+        },
+      };
+    },
+    xlsxData() {
+      if (!this.cars) return;
+      return null
+    },
     drivers() {
       return this.$store.getters.getActualStates.catalogDrivers
         ? Array.from(this.$store.getters.getActualStates.catalogDrivers)
@@ -265,13 +282,5 @@ export default {
 table {
   font-family: "Roboto", sans-serif;
   font-size: 14px;
-  // width: 800px;
-  .car {
-    height: 50px;
-    font-size: 36px;
-  }
-  tbody tr td {
-    width: 32px;
-  }
 }
 </style>
