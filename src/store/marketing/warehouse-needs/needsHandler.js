@@ -63,15 +63,9 @@ export default {
 				});
 		},
 		async convertDate(context, payload) {
-			const date = new Date(payload);
-			const day =
-				date.getDate() > 10 ? date.getDate().toString() : `0${date.getDate()}`;
-			const month =
-				date.getMonth > 8
-					? (date.getMonth() + 1).toString()
-					: `0${date.getMonth() + 1}`;
-			const year = date.getFullYear();
-			return `${day}.${month}.${year}`;
+      const dh = require("../../dateHandler");
+      return dh.getFullDate(new Date(payload))
+
 		},
 	},
 	getters: {
