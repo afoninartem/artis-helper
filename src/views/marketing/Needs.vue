@@ -25,6 +25,14 @@
         id="reserve"
         v-model.trim="newRequest.reserve"
       />
+      <label for="leftover">Остаток на день заказа:</label>
+      <input
+        type="text"
+        name="leftover"
+        id="leftover"
+        placeholder="В штуках"
+        v-model.trim="newRequest.leftover"
+      />
       <label for="urgent">Срочно?</label>
       <input
         type="checkbox"
@@ -51,6 +59,7 @@
               </h4>
               <h4 v-if="user !== `admin`">{{ req.name }}</h4>
               <p>Заявка от {{ req.created }}</p>
+              <p v-if="req.leftover">Остаток на день заказа {{req.leftover}}</p>
               <p>Заказано: {{ req.ordered ? req.ordered : `Нет` }}</p>
               <p>
                 Заказать: {{ Number(req.quantity).toLocaleString("ru-Ru") }}
@@ -87,6 +96,7 @@
               <h4>{{ ord.name }}</h4>
               <p>Заявка от {{ ord.created }}</p>
               <p>Заказано: {{ ord.ordered }}</p>
+              <p v-if="ord.leftover">Остаток на день заказа {{ord.leftover}}</p>
               <p>
                 Заказать: {{ Number(ord.quantity).toLocaleString("ru-Ru") }}
               </p>
@@ -128,6 +138,7 @@ export default {
         name: null,
         quantity: null,
         reserve: null,
+        leftover: null,
         urgent: false,
         inProgress: false,
         created: null,
