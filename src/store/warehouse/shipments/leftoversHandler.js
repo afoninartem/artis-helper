@@ -55,14 +55,14 @@ export default {
 									: el["Остаток на конец"],
 						};
 					});
-
+          // console.log(handledLeftovers.filter(m => m.name.includes("50х50")))
 					const invalidLeftovers = handledLeftovers.filter(
 						(material) => material.left < 0
 					);
 					const minimalLeftovers = JSON.parse(
 						localStorage.getItem("actualLeftovers")
 					);
-					// console.log(minimalLeftovers)
+					// console.log(minimalLeftovers.filter(m => m.name.includes("50х50")))
 					const urgentToOrder = [];
 					handledLeftovers.forEach((material) => {
 						if (

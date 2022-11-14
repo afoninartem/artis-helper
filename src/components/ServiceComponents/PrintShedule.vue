@@ -4,6 +4,8 @@
     v-if="cars"
   >
     <div class="btn-info-block">
+      <button></button>
+      <button @click.prevent="sendJSON">JSON</button>
       <xlsx-workbook>
         <xlsx-sheet
           :collection="sheet.data"
@@ -77,6 +79,7 @@
             <td ref="driverName">{{driver.name}}</td>
             <td>{{driver.position}}</td>
             <td
+              class="cell"
               v-for="(day, d) in daySpec(date.month, date.year)"
               :key="`date-${d}`"
               :style="
@@ -132,6 +135,19 @@ export default {
     };
   },
   methods: {
+    sendJSON() {
+      const data = this.cars.map(car => Object.assign(car, {crewDetails: this.crew(car)}))
+      data.forEach(async d => {
+        await fetch("http://localhost:8080/api/v1/post-drivers-shedule", {
+          method: "POST",
+          headers: {
+            "Content-Type": 'application/json'
+          },
+          body: JSON.stringify(d)
+        })
+      })
+      // return JSON.stringify(data)
+    },
     dayStyles(extras, date, currCarID) {
       const styles = require("../../store/service/sheduleDayStyles");
       return styles.default(extras, date, currCarID);
@@ -186,7 +202,7 @@ export default {
           : cm.position;
         // console.log(cm);
       });
-
+      // console.log(crew)
       return crew;
     },
     numberOfDays(month, year) {
@@ -230,13 +246,14 @@ export default {
             "default",
             { month: "long" }
           ),
-          data: this.cars,
+          data: this.xlsxData
         },
       };
     },
     xlsxData() {
       if (!this.cars) return;
-      return null
+      
+      return null;
     },
     drivers() {
       return this.$store.getters.getActualStates.catalogDrivers
@@ -282,5 +299,9 @@ export default {
 table {
   font-family: "Roboto", sans-serif;
   font-size: 14px;
+  .cell {
+    width: 32px;
+    height: 32px;
+  }
 }
 </style>

@@ -122,16 +122,22 @@ export default {
 					report.shipment.greenBaloon =
 						report.status === "top"
 							? report.f_GreenBaloon
-							: report.l_GreenBaloon < 40 && report.f_GreenBaloon < 40
-							? report.f_GreenBaloon || 0
-							: 20;
+							// : report.l_GreenBaloon < 40 && report.f_GreenBaloon < 40
+							// ? report.f_GreenBaloon || 0
+							// : 20;
+              : report.l_GreenBaloon > 80
+                ? 0
+                : report.f_GreenBaloon
 
 					report.shipment.grayBaloon =
 						report.status === "top"
 							? report.f_GrayBaloon
-							: report.l_GrayBaloon < 40 && report.f_GrayBaloon < 40
-							? report.f_GrayBaloon || 0
-							: 20;
+							// : report.l_GrayBaloon < 40 && report.f_GrayBaloon < 40
+							// ? report.f_GrayBaloon || 0
+							// : 20;
+              : report.l_GreenBaloon > 80
+                ? 0
+                : report.f_GrayBaloon
 
 					report.shipment.stick =
 						report.status === "top"
