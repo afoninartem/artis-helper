@@ -1,14 +1,18 @@
 <template>
-  <section class="shipment-table" v-if="shipment">
+  <section
+    class="shipment-table"
+    v-if="shipment"
+  >
     <TableInfo />
     <table>
       <TableHeader />
-      <tr v-for="(shop, i) in shipment" :key="i">
-        <td
-          :style="{
+      <tr
+        v-for="(shop, i) in shipment"
+        :key="i"
+      >
+        <td :style="{
             background: shop.name.includes('РЕКЛАМАЦИИ') ? shop.shopBG : '#fff',
-          }"
-        >
+          }">
           {{ i + 1 }}
         </td>
         <td
@@ -27,55 +31,66 @@
         <td :style="{ fontWeight: 'bold', background: shop.shopBG }">
           {{ shop.name }}
         </td>
-        <td
-          :style="{
+        <td :style="{
             background: shop.name.includes('РЕКЛАМАЦИИ') ? shop.shopBG : '#fff',
-          }"
-        >
+          }">
           <span class="yellow tablepart">
             {{ shop.thickCatalog ? shop.thickCatalog : null }}
           </span>
         </td>
-        <td
-          :style="{
+        <td :style="{
             background: shop.name.includes('РЕКЛАМАЦИИ') ? shop.shopBG : '#fff',
-          }"
-        >
+          }">
           <span class="yellow tablepart">
             {{
               shop.thinCatalog
                 ? shop.thinCatalog.quan + `\n` + shop.thinCatalog.region
                 : null
-            }}</span
-          >
+            }}</span>
         </td>
-        <td
-          :style="{
+        <td :style="{
             background: shop.name.includes('РЕКЛАМАЦИИ') ? shop.shopBG : '#fff',
-          }"
-        >
+          }">
           <span class="yellow tablepart">{{ shop.notebook }}</span>
+          <br>
+          <span
+            class="yellow tablepart"
+            style="font-size: 12px"
+            v-if="shop.notebook"
+          >блокноты</span>
         </td>
-        <td
-          :style="{
+        <td :style="{
             background: shop.name.includes('РЕКЛАМАЦИИ') ? shop.shopBG : '#fff',
-          }"
-        >
+          }">
           <span class="yellow tablepart">{{ shop.cup }}</span>
+          <br>
+          <span
+            class="yellow tablepart"
+            style="font-size: 12px"
+            v-if="shop.cup"
+          >кружки</span>
         </td>
-        <td
-          :style="{
+        <td :style="{
             background: shop.name.includes('РЕКЛАМАЦИИ') ? shop.shopBG : '#fff',
-          }"
-        >
+          }">
           <span class="yellow tablepart">{{ shop.pack }}</span>
+          <br>
+          <span
+            class="yellow tablepart"
+            style="font-size: 12px"
+            v-if="shop.pack"
+          >упак.</span>
         </td>
-        <td
-          :style="{
+        <td :style="{
             background: shop.name.includes('РЕКЛАМАЦИИ') ? shop.shopBG : '#fff',
-          }"
-        >
+          }">
           <span class="yellow tablepart">{{ shop.folder }}</span>
+          <br>
+          <span
+            class="yellow tablepart"
+            style="font-size: 12px"
+            v-if="shop.folder"
+          >папки</span>
         </td>
         <td
           v-if="towels"
@@ -84,13 +99,23 @@
           }"
         >
           <span class="yellow tablepart">{{ shop.towel }}</span>
+          <br>
+          <span
+            class="yellow tablepart"
+            style="font-size: 12px"
+            v-if="shop.towel"
+          >полотенца</span>
         </td>
-        <td
-          :style="{
+        <td :style="{
             background: shop.name.includes('РЕКЛАМАЦИИ') ? shop.shopBG : '#fff',
-          }"
-        >
+          }">
           <span class="yellow tablepart">{{ shop.vine }}</span>
+          <br>
+          <span
+            class="yellow tablepart"
+            style="font-size: 12px"
+            v-if="shop.vine"
+          >шампанское</span>
         </td>
 
         <td
@@ -146,12 +171,13 @@
             }}
           </p>
         </td>
-        <td
-          :style="{
+        <td :style="{
             background: shop.name.includes('РЕКЛАМАЦИИ') ? shop.shopBG : '#fff',
-          }"
-        >
-          <div v-for="order in shop.orders" :key="order.name">
+          }">
+          <div
+            v-for="order in shop.orders"
+            :key="order.name"
+          >
             <p
               v-if="order.comment && order.picked"
               :style="{ background: `#53DF00` }"

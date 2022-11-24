@@ -127,7 +127,7 @@ export default {
 							// : 20;
               : report.l_GreenBaloon > 80
                 ? 0
-                : report.f_GreenBaloon
+                : report.f_GreenBaloon || 0
 
 					report.shipment.grayBaloon =
 						report.status === "top"
@@ -137,7 +137,7 @@ export default {
 							// : 20;
               : report.l_GreenBaloon > 80
                 ? 0
-                : report.f_GrayBaloon
+                : report.f_GrayBaloon || 0
 
 					report.shipment.stick =
 						report.status === "top"
