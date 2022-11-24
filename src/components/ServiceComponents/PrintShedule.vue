@@ -138,7 +138,10 @@ export default {
     sendJSON() {
       const data = this.cars.map(car => Object.assign(car, {crewDetails: this.crew(car)}))
       data.forEach(async d => {
-        await fetch("http://localhost:8080/api/v1/post-drivers-shedule", {
+
+        //replace null and other funny staff with default type values
+
+        await fetch("http://localhost:3000/api/v1/post-drivers-shedule", {
           method: "POST",
           headers: {
             "Content-Type": 'application/json'
