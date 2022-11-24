@@ -1,6 +1,7 @@
 <template>
   <form class="xml-sales-report">
-    <label for="xml-sales-report">Загрузить xml</label>
+    <!-- <label for="xml-sales-report">Загрузить xml</label> -->
+    <h3>Загрузить xml c реализациями</h3>
     <input
       type="file"
       name="xml-sales-report"
