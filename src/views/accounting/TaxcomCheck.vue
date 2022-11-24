@@ -5,11 +5,15 @@
     <div class="taxcom__upload">
       <AddTaxcomReport v-if="!rawTaxcom" />
       <AddFiscalReport v-if="rawTaxcom && !rawFiscal" />
+      <AddXmlSalesReport v-if="rawTaxcom && !rawSellingData" />
       <AddOnlineShopReport v-if="rawTaxcom && rawFiscal && !rawOnline" />
       <AddPayLinksReport v-if="rawTaxcom && rawFiscal && !rawPaylink" />
     </div>
 
-    <button v-if="rawTaxcom && rawFiscal" @click.prevent="compare">
+    <button
+      v-if="rawTaxcom && (rawFiscal || rawSellingData)"
+      @click.prevent="compare"
+    >
       Сравнить
     </button>
 
@@ -17,6 +21,7 @@
       <FiscalResult />
       <OnlineShopResult />
       <PaylinksResult />
+      <XmlSellingsResult />
     </div>
   </div>
 </template>
@@ -24,11 +29,13 @@
 <script>
 import AddTaxcomReport from "@/components/AccountingComponents/UploadFileComponents/AddTaxcomReport";
 import AddFiscalReport from "@/components/AccountingComponents/UploadFileComponents/AddFiscalReport";
+import AddXmlSalesReport from "@/components/AccountingComponents/UploadFileComponents/AddXmlSalesReport";
 import AddOnlineShopReport from "@/components/AccountingComponents/UploadFileComponents/AddOnlineShopReport";
 import AddPayLinksReport from "@/components/AccountingComponents/UploadFileComponents/AddPayLinksReport";
 import FiscalResult from "@/components/AccountingComponents/ResultComponents/FiscalResult";
 import OnlineShopResult from "@/components/AccountingComponents/ResultComponents/OnlineShopResult";
 import PaylinksResult from "@/components/AccountingComponents/ResultComponents/PaylinksResult";
+import XmlSellingsResult from "@/components/AccountingComponents/ResultComponents/XmlSellingsResult";
 
 export default {
   components: {
@@ -36,9 +43,11 @@ export default {
     AddFiscalReport,
     AddOnlineShopReport,
     AddPayLinksReport,
+    AddXmlSalesReport,
     FiscalResult,
     OnlineShopResult,
-    PaylinksResult
+    PaylinksResult,
+    XmlSellingsResult,
   },
   computed: {
     rawTaxcom() {
@@ -52,6 +61,9 @@ export default {
     },
     rawPaylink() {
       return this.$store.getters.getPayLinks;
+    },
+    rawSellingData() {
+      return this.$store.getters.getSellingData;
     },
     // RESULTS
     // onlineResult() {
@@ -76,7 +88,8 @@ export default {
 // @import "@/scss/personalTable.scss";
 // @include personal-table;
 .taxcom {
-  .taxcom__upload, .result-cards {
+  .taxcom__upload,
+  .result-cards {
     display: flex;
     justify-content: space-evenly;
     gap: 30px;

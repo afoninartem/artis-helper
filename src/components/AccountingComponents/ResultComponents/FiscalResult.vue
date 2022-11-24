@@ -1,5 +1,5 @@
 <template>
-  <div class="card" v-if="fiscalResult">
+  <div class="card" v-if="fiscalResult && fiscal">
     <h3>Итог по фискальному регистру из 1С</h3>
     <div class="content">
       <ul>
@@ -152,6 +152,9 @@ export default {
     fiscalResult() {
       return this.$store.getters.getFiscalResult;
     },
+    fiscal() {
+      return this.$store.getters.getFiscalData;
+    }
   },
   methods: {
     casesHandler(num, word) {

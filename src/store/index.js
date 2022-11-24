@@ -40,6 +40,7 @@ import fiscalHandler from "./accounting/fiscalHandler";
 import onlineShopHandler from "./accounting/onlineShopHandler";
 import payLinksHandler from "./accounting/payLinksHandler";
 import xml2json from "./accounting/xml/xml2json";
+import sellingXmlHandler from "./accounting/xml/sellingXmlHandler";
 import needsHandler from "./marketing/warehouse-needs/needsHandler";
 import vacanciesHandler from "./personal/vacanciesHandler";
 import catalogPersonalHandler from "./personal/catalogPersonalHandler";
@@ -537,6 +538,7 @@ export default new Vuex.Store({
     carCrewPopupHandler,
     shedulePopupHandler,
     xml2json,
-    markerHandler
+    markerHandler,
+    sellingXmlHandler
   },
 });

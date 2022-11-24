@@ -12,12 +12,14 @@ export default {
 			"0004787386036331", // Офис НН (БУМ НН)
 			"0004751203041690", // Склад СПб
 		],
+		xmlSellings: null,
 	},
 	mutations: {
 		setTaxcomData(state, payload) {
 			state.taxcomData = payload;
 		},
 		setComparedData(state, payload) {
+			state.xmlSellings = payload.sellsXmlFromTaxcom;
 			state.onlineResult = payload.onlineShopFromTaxcom;
 			state.paylinksResult = payload.paymentLinksFromTaxcom;
 			state.fiscalResult = {
@@ -76,6 +78,12 @@ export default {
 					extrasFromTaxcom: [],
 					extrasFromCredit: [],
 				},
+				sellsXmlFromTaxcom: {
+					extrasXML: [],
+					extrasTaxcom: [],
+					xmlAmount: "",
+					taxcomAmount: "",
+				},
 			};
 			//TAXCOM
 			const taxcom = getters.getTaxcomData.filter(
@@ -91,31 +99,11 @@ export default {
 				// t["Дата для сравнения"] = dateConverter.convertTaxcomDate(t["Дата и время"]);
 			});
 			//FISCAL REGISTRY
-			const fiscal = getters.getFiscalData.filter(
-				(f) => f["Тип документа"] === "Кассовый чек"
-			);
-			fiscal.forEach((r) => {
-				// r["Дата для сравнения"] = dateConverter.excelDateToJSDate(r["Дата"]);
-				r["Дата для сравнения"] = dateConverter.convertFiscalDate(r["Дата"]);
-				//set fpd
-				if (!r["Фискальный признак"]) {
-					r["Фискальный признак"] = null;
-				} else {
-					if (r["Фискальный признак"].length < 10) {
-						r["Фискальный признак"] =
-							"0".repeat(10 - r["Фискальный признак"].length) +
-							r["Фискальный признак"].toString();
-					}
-				}
-				if (!taxcom.some((t) => t["ФПД"] === r["Фискальный признак"])) {
-					dataStorage.noSuchFPDInTaxcom.documents.push(r);
-					r["Тип расчета"].includes("Приход")
-						? ((dataStorage.noSuchFPDInTaxcom.totalSum += r["Сумма"]),
-						  (dataStorage.noSuchFPDInTaxcom.successfullSells += 1))
-						: ((dataStorage.noSuchFPDInTaxcom.refundSum += r["Сумма"]),
-						  (dataStorage.noSuchFPDInTaxcom.refundsQuantity += 1));
-				}
-			});
+			const fiscal = getters.getFiscalData
+				? getters.getFiscalData.filter(
+						(f) => f["Тип документа"] === "Кассовый чек"
+				  )
+				: null;
 
 			//ONLINESHOP FROM CREDITEUROPE
 			const online = getters.getOnlineShopData;
@@ -125,114 +113,145 @@ export default {
 				(l) => l["Состояние"] === "Завершён"
 			);
 
+			//SELLINGS FROM XML
+			const sellsXml = getters.getSellingData;
+
 			//get exceptions of checkbox
 			const exceptKKT = getters.getExceptionsKKT;
 
-			taxcom.forEach((tax) => {
-				//set data for empty cells
-				if (!tax["Наличными"]) tax["Наличными"] = 0;
-				if (!tax["Безналичными"]) tax["Безналичными"] = 0;
-				if (!tax["Аванс"]) tax["Аванс"] = 0;
-				if (!tax["В кредит"]) tax["В кредит"] = 0;
-
-				//check if fpd
-				if (fiscal.some((r) => r["Фискальный признак"] === tax["ФПД"])) {
-					const transaction = fiscal.filter(
-						(r) => r["Фискальный признак"] === tax["ФПД"]
-					)[0];
-					// check if this bill should or not to have checkbox
-					if (!exceptKKT.includes(transaction["Регистрационный номер ККТ"])) {
-						transaction[
-							"Операция с денежными средствами без передачи товаров"
-						] === "Нет"
-							? dataStorage.incorrectCheckbox.push(transaction)
-							: !transaction[
-									"Операция с денежными средствами без передачи товаров"
-							  ]
-							? dataStorage.incorrectCheckbox.push(transaction)
-							: null;
-					}
-					if (Math.abs(transaction["Сумма"]) !== Math.abs(tax["Сумма"])) {
-						dataStorage.notEqualSumsByFPD.push({
-							fpd: tax["ФПД"],
-							sumFromTaxcom: tax["Сумма"],
-							sumFrom1C8: transaction["Сумма"],
-							delta: someMath.deltaABS(tax["Сумма"], transaction["Сумма"]),
-						});
+			if (fiscal) {
+				fiscal.forEach((r) => {
+					// r["Дата для сравнения"] = dateConverter.excelDateToJSDate(r["Дата"]);
+					r["Дата для сравнения"] = dateConverter.convertFiscalDate(r["Дата"]);
+					//set fpd
+					if (!r["Фискальный признак"]) {
+						r["Фискальный признак"] = null;
 					} else {
-						if (
-							Math.abs(tax["Наличными"]) !==
-								Math.abs(transaction["Наличные"]) ||
-							Math.abs(tax["Безналичными"]) !==
-								Math.abs(transaction["Платежная карта"]) ||
-							Math.abs(tax["Аванс"]) != Math.abs(transaction["Зачет аванса"]) ||
-							Math.abs(tax["В кредит"]) !=
-								Math.abs(transaction["Оплата в рассрочку"])
-						) {
-							dataStorage.notEqualDetailsByFPD.push({
-								fpd: tax["ФПД"],
-								cash: {
-									taxcom: tax["Наличными"],
-									fiscal: transaction["Наличные"],
-									delta: someMath.deltaABS(
-										tax["Наличными"],
-										transaction["Наличные"]
-									),
-								},
-								card: {
-									taxcom: tax["Безналичными"],
-									fiscal: transaction["Платежная карта"],
-									delta: someMath.deltaABS(
-										tax["Безналичными"],
-										transaction["Платежная карта"]
-									),
-								},
-								advance: {
-									taxcom: tax["Аванс"],
-									fiscal: transaction["Зачет аванса"],
-									delta: someMath.deltaABS(
-										tax["Аванс"],
-										transaction["Зачет аванса"]
-									),
-								},
-								credit: {
-									taxcom: tax["В кредит"],
-									fiscal: transaction["Оплата в рассрочку"],
-									delta: someMath.deltaABS(
-										tax["В кредит"],
-										transaction["Оплата в рассрочку"]
-									),
-								},
-							});
+						if (r["Фискальный признак"].length < 10) {
+							r["Фискальный признак"] =
+								"0".repeat(10 - r["Фискальный признак"].length) +
+								r["Фискальный признак"].toString();
 						}
 					}
-				} else {
-					if (tax["Рег. № ККТ"] === "0002599902020128") {
-						dataStorage.onlineShopFromTaxcom.documents.push(tax);
-						tax["Сумма"] > 0
-							? ((dataStorage.onlineShopFromTaxcom.totalSum += tax["Сумма"]),
-							  (dataStorage.onlineShopFromTaxcom.successfullSells += 1))
-							: ((dataStorage.onlineShopFromTaxcom.refundSum += tax["Сумма"]),
-							  (dataStorage.onlineShopFromTaxcom.refundsQuantity += 1));
-					} else if (tax["Рег. № ККТ"] === "0004800423045335") {
-						dataStorage.paymentLinksFromTaxcom.documents.push(tax);
-						tax["Сумма"] > 0
-							? ((dataStorage.paymentLinksFromTaxcom.totalSum += tax["Сумма"]),
-							  (dataStorage.paymentLinksFromTaxcom.successfullSells += 1))
-							: ((dataStorage.paymentLinksFromTaxcom.refundSum += tax["Сумма"]),
-							  (dataStorage.paymentLinksFromTaxcom.refundsQuantity += 1));
-					} else {
-						dataStorage.unidentifyedByFPDFromTaxcom.documents.push(tax);
-						tax["Сумма"] > 0
-							? ((dataStorage.unidentifyedByFPDFromTaxcom.totalSum +=
-									tax["Сумма"]),
-							  (dataStorage.unidentifyedByFPDFromTaxcom.successfullSells += 1))
-							: ((dataStorage.unidentifyedByFPDFromTaxcom.refundSum +=
-									tax["Сумма"]),
-							  (dataStorage.unidentifyedByFPDFromTaxcom.refundsQuantity += 1));
+					if (!taxcom.some((t) => t["ФПД"] === r["Фискальный признак"])) {
+						dataStorage.noSuchFPDInTaxcom.documents.push(r);
+						r["Тип расчета"].includes("Приход")
+							? ((dataStorage.noSuchFPDInTaxcom.totalSum += r["Сумма"]),
+							  (dataStorage.noSuchFPDInTaxcom.successfullSells += 1))
+							: ((dataStorage.noSuchFPDInTaxcom.refundSum += r["Сумма"]),
+							  (dataStorage.noSuchFPDInTaxcom.refundsQuantity += 1));
 					}
-				}
-			});
+				});
+
+				taxcom.forEach((tax) => {
+					//set data for empty cells
+					if (!tax["Наличными"]) tax["Наличными"] = 0;
+					if (!tax["Безналичными"]) tax["Безналичными"] = 0;
+					if (!tax["Аванс"]) tax["Аванс"] = 0;
+					if (!tax["В кредит"]) tax["В кредит"] = 0;
+
+					//check if fpd
+					if (fiscal.some((r) => r["Фискальный признак"] === tax["ФПД"])) {
+						const transaction = fiscal.filter(
+							(r) => r["Фискальный признак"] === tax["ФПД"]
+						)[0];
+						// check if this bill should or not to have checkbox
+						if (!exceptKKT.includes(transaction["Регистрационный номер ККТ"])) {
+							transaction[
+								"Операция с денежными средствами без передачи товаров"
+							] === "Нет"
+								? dataStorage.incorrectCheckbox.push(transaction)
+								: !transaction[
+										"Операция с денежными средствами без передачи товаров"
+								  ]
+								? dataStorage.incorrectCheckbox.push(transaction)
+								: null;
+						}
+						if (Math.abs(transaction["Сумма"]) !== Math.abs(tax["Сумма"])) {
+							dataStorage.notEqualSumsByFPD.push({
+								fpd: tax["ФПД"],
+								sumFromTaxcom: tax["Сумма"],
+								sumFrom1C8: transaction["Сумма"],
+								delta: someMath.deltaABS(tax["Сумма"], transaction["Сумма"]),
+							});
+						} else {
+							if (
+								Math.abs(tax["Наличными"]) !==
+									Math.abs(transaction["Наличные"]) ||
+								Math.abs(tax["Безналичными"]) !==
+									Math.abs(transaction["Платежная карта"]) ||
+								Math.abs(tax["Аванс"]) !=
+									Math.abs(transaction["Зачет аванса"]) ||
+								Math.abs(tax["В кредит"]) !=
+									Math.abs(transaction["Оплата в рассрочку"])
+							) {
+								dataStorage.notEqualDetailsByFPD.push({
+									fpd: tax["ФПД"],
+									cash: {
+										taxcom: tax["Наличными"],
+										fiscal: transaction["Наличные"],
+										delta: someMath.deltaABS(
+											tax["Наличными"],
+											transaction["Наличные"]
+										),
+									},
+									card: {
+										taxcom: tax["Безналичными"],
+										fiscal: transaction["Платежная карта"],
+										delta: someMath.deltaABS(
+											tax["Безналичными"],
+											transaction["Платежная карта"]
+										),
+									},
+									advance: {
+										taxcom: tax["Аванс"],
+										fiscal: transaction["Зачет аванса"],
+										delta: someMath.deltaABS(
+											tax["Аванс"],
+											transaction["Зачет аванса"]
+										),
+									},
+									credit: {
+										taxcom: tax["В кредит"],
+										fiscal: transaction["Оплата в рассрочку"],
+										delta: someMath.deltaABS(
+											tax["В кредит"],
+											transaction["Оплата в рассрочку"]
+										),
+									},
+								});
+							}
+						}
+					} else {
+						if (tax["Рег. № ККТ"] === "0002599902020128") {
+							dataStorage.onlineShopFromTaxcom.documents.push(tax);
+							tax["Сумма"] > 0
+								? ((dataStorage.onlineShopFromTaxcom.totalSum += tax["Сумма"]),
+								  (dataStorage.onlineShopFromTaxcom.successfullSells += 1))
+								: ((dataStorage.onlineShopFromTaxcom.refundSum += tax["Сумма"]),
+								  (dataStorage.onlineShopFromTaxcom.refundsQuantity += 1));
+						} else if (tax["Рег. № ККТ"] === "0004800423045335") {
+							dataStorage.paymentLinksFromTaxcom.documents.push(tax);
+							tax["Сумма"] > 0
+								? ((dataStorage.paymentLinksFromTaxcom.totalSum +=
+										tax["Сумма"]),
+								  (dataStorage.paymentLinksFromTaxcom.successfullSells += 1))
+								: ((dataStorage.paymentLinksFromTaxcom.refundSum +=
+										tax["Сумма"]),
+								  (dataStorage.paymentLinksFromTaxcom.refundsQuantity += 1));
+						} else {
+							dataStorage.unidentifyedByFPDFromTaxcom.documents.push(tax);
+							tax["Сумма"] > 0
+								? ((dataStorage.unidentifyedByFPDFromTaxcom.totalSum +=
+										tax["Сумма"]),
+								  (dataStorage.unidentifyedByFPDFromTaxcom.successfullSells += 1))
+								: ((dataStorage.unidentifyedByFPDFromTaxcom.refundSum +=
+										tax["Сумма"]),
+								  (dataStorage.unidentifyedByFPDFromTaxcom.refundsQuantity += 1));
+						}
+					}
+				});
+			}
 
 			//GO THROUGH ONLINE
 			if (online) {
@@ -337,9 +356,54 @@ export default {
 					});
 			}
 
+			if (sellsXml) {
+				const taxcomVAT20 = taxcom.filter(
+					(t) => t["НДС 20%"] && t["Тип операции"] === "Приход"
+				);
+				// console.log(taxcomVAT20);
+				const sellsResult = sellsXml.map((xml) => ({
+					sum: xml.summ,
+					client: xml.clientName,
+					docNum: xml.docNum,
+					xmlEntries: sellsXml
+						.filter((x) => +x.summ == +xml.summ)
+						.length.toString(),
+					taxcomEntries: taxcomVAT20
+						.filter((t) => t["Сумма"] == +xml.summ)
+						.length.toString(),
+				}));
+				sellsResult.forEach((item) => {
+					if (item.xmlEntries !== item.taxcomEntries) {
+						dataStorage.sellsXmlFromTaxcom.extrasXML.push(item);
+					}
+				});
+				taxcomVAT20.forEach((item) => {
+					const suchSumsTaxcomQuantity = taxcomVAT20
+						.filter((t) => t["Сумма"] == item["Сумма"])
+						.length.toString();
+					const suchSumsXMLQuantity = sellsXml
+						.filter((x) => +x.summ == item["Сумма"])
+						.length.toString();
+					if (suchSumsTaxcomQuantity != suchSumsXMLQuantity) {
+						dataStorage.sellsXmlFromTaxcom.extrasTaxcom.push(
+							Object.assign(item, {
+								taxcomEntries: suchSumsTaxcomQuantity,
+								xmlEntries: suchSumsXMLQuantity,
+							})
+						);
+					}
+				});
+				// console.log(sellsResult);
+				dataStorage.sellsXmlFromTaxcom.taxcomAmount =
+					taxcomVAT20.length.toString();
+				dataStorage.sellsXmlFromTaxcom.xmlAmount =
+					sellsResult.length.toString();
+          dataStorage.sellsXmlFromTaxcom.sellsListFromXML = sellsXml
+			}
+
 			//FORMATTING DATA
-			dataStorage.noSuchFPDInTaxcom.xlsx = dataStorage.noSuchFPDInTaxcom.documents.map(
-				(el) => {
+			dataStorage.noSuchFPDInTaxcom.xlsx =
+				dataStorage.noSuchFPDInTaxcom.documents.map((el) => {
 					return {
 						Дата: el["Дата для сравнения"],
 						"Торговый объект": el["Торговый объект"],
@@ -353,10 +417,9 @@ export default {
 						"Номер смены ККМ": el["Номер смены ККМ"],
 						"Номер чека ККМ": el["Номер чека ККМ"],
 					};
-				}
-			);
-			dataStorage.unidentifyedByFPDFromTaxcom.xlsx = dataStorage.unidentifyedByFPDFromTaxcom.documents.map(
-				(el) => {
+				});
+			dataStorage.unidentifyedByFPDFromTaxcom.xlsx =
+				dataStorage.unidentifyedByFPDFromTaxcom.documents.map((el) => {
 					return {
 						Дата: el["Дата для сравнения"],
 						"№ смены": el["№ смены"],
@@ -379,10 +442,9 @@ export default {
 					// el["Дата"] = el["Дата для сравнения"];
 					// delete el["Дата для сравнения"];
 					// delete el["Дата и время"]
-				}
-			);
-			dataStorage.onlineShopFromTaxcom.extrasFromTaxcomXLS = dataStorage.onlineShopFromTaxcom.extrasFromTaxcom.map(
-				(el) => {
+				});
+			dataStorage.onlineShopFromTaxcom.extrasFromTaxcomXLS =
+				dataStorage.onlineShopFromTaxcom.extrasFromTaxcom.map((el) => {
 					return {
 						Дата: el["Дата для сравнения"],
 						"№ смены": el["№ смены"],
@@ -402,10 +464,9 @@ export default {
 						"Рег. № ККТ": el["Рег. № ККТ"],
 						"Зав. № ФН": el["Зав. № ФН"],
 					};
-				}
-			);
-			dataStorage.onlineShopFromTaxcom.extrasFromCreditXLS = dataStorage.onlineShopFromTaxcom.extrasFromCredit.map(
-				(el) => {
+				});
+			dataStorage.onlineShopFromTaxcom.extrasFromCreditXLS =
+				dataStorage.onlineShopFromTaxcom.extrasFromCredit.map((el) => {
 					return {
 						Дата: el["Дата"],
 						"Номер транзакции": el["Номер транзакции"],
@@ -413,20 +474,23 @@ export default {
 						"ссылка №": el["ссылка №"],
 						"Payment ID (STAN)": el["Payment ID (STAN)"],
 					};
-				}
-			);
-			dataStorage.onlineShopFromTaxcom.extrasFromCreditTotalSum = dataStorage.onlineShopFromTaxcom.extrasFromCreditXLS
-				.map((el) => el["Сумма"])
-				.reduce((a, b) => a + b, 0);
-			dataStorage.onlineShopFromTaxcom.extrasFromTaxcomTotalSum = dataStorage.onlineShopFromTaxcom.extrasFromTaxcomXLS
-				.map((el) => el["Сумма"])
-				.reduce((a, b) => a + b, 0);
-			dataStorage.paymentLinksFromTaxcom.extrasFromCreditTotalSum = dataStorage.paymentLinksFromTaxcom.extrasFromCredit
-				.map((el) => el["Сумма"])
-				.reduce((a, b) => a + b, 0);
-			dataStorage.paymentLinksFromTaxcom.extrasFromTaxcomTotalSum = dataStorage.paymentLinksFromTaxcom.extrasFromTaxcom
-				.map((el) => el["Сумма"])
-				.reduce((a, b) => a + b, 0);
+				});
+			dataStorage.onlineShopFromTaxcom.extrasFromCreditTotalSum =
+				dataStorage.onlineShopFromTaxcom.extrasFromCreditXLS
+					.map((el) => el["Сумма"])
+					.reduce((a, b) => a + b, 0);
+			dataStorage.onlineShopFromTaxcom.extrasFromTaxcomTotalSum =
+				dataStorage.onlineShopFromTaxcom.extrasFromTaxcomXLS
+					.map((el) => el["Сумма"])
+					.reduce((a, b) => a + b, 0);
+			dataStorage.paymentLinksFromTaxcom.extrasFromCreditTotalSum =
+				dataStorage.paymentLinksFromTaxcom.extrasFromCredit
+					.map((el) => el["Сумма"])
+					.reduce((a, b) => a + b, 0);
+			dataStorage.paymentLinksFromTaxcom.extrasFromTaxcomTotalSum =
+				dataStorage.paymentLinksFromTaxcom.extrasFromTaxcom
+					.map((el) => el["Сумма"])
+					.reduce((a, b) => a + b, 0);
 			//FINAL COMMIT
 			return await commit("setComparedData", dataStorage);
 		},
@@ -446,6 +510,9 @@ export default {
 		},
 		getExceptionsKKT: (state) => {
 			return state.exceptKKT;
+		},
+		getXmlSellings: (state) => {
+			return state.xmlSellings;
 		},
 	},
 };
