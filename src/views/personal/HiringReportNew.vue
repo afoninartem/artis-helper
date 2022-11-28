@@ -1,23 +1,42 @@
 <template>
-  <div class="hiring-report" v-if="candidates">
+  <div
+    class="hiring-report"
+    v-if="candidates"
+  >
     <h1>Сводка по кандидатам</h1>
     <div class="options">
       <form class="options__item calendar">
-        <input type="date" name="start" id="start" v-model="dates.minDate" />
-        <input type="date" name="end" id="end" v-model="dates.maxDate" />
+        <input
+          type="date"
+          name="start"
+          id="start"
+          v-model="dates.minDate"
+        />
+        <input
+          type="date"
+          name="end"
+          id="end"
+          v-model="dates.maxDate"
+        />
         <button @click.prevent="defaultDates">Сбросить</button>
       </form>
     </div>
     <table>
       <thead>
         <tr>
-          <th v-for="(head, h) in header" :key="h">
+          <th
+            v-for="(head, h) in header"
+            :key="h"
+          >
             {{ head }}
           </th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="(candidate, c) in datesFilter()" :key="c">
+        <tr
+          v-for="(candidate, c) in datesFilter()"
+          :key="c"
+        >
           <td>{{ c + 1 }}</td>
           <td>{{ datetimeConverter(candidate.datetime) }}</td>
           <!-- <td>
@@ -211,10 +230,14 @@ export default {
           .substring(0, 10);
         const end = new Date(this.dates.maxDate).toISOString().substring(0, 10);
         return this.candidates.filter((candidate) => {
-          const date_time = new Date(candidate.datetime)
-            .toISOString()
-            .substring(0, 10);
-          return date_time >= start && date_time <= end;
+          try {
+            const date_time = new Date(candidate.datetime)
+              .toISOString()
+              .substring(0, 10);
+            return date_time >= start && date_time <= end;
+          } catch (error) {
+            console.log(candidate.name, candidate.datetime);
+          }
         });
       }
       return null;

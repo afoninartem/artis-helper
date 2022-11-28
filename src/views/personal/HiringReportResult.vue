@@ -1,10 +1,23 @@
 <template>
-  <div class="hiring-report-result" v-if="vacancies">
+  <div
+    class="hiring-report-result"
+    v-if="vacancies"
+  >
     <h1>Сводка по вакансиям</h1>
     <div class="options">
       <form class="filters__item calendar">
-        <input type="date" name="start" id="start" v-model="dates.minDate" />
-        <input type="date" name="end" id="end" v-model="dates.maxDate" />
+        <input
+          type="date"
+          name="start"
+          id="start"
+          v-model="dates.minDate"
+        />
+        <input
+          type="date"
+          name="end"
+          id="end"
+          v-model="dates.maxDate"
+        />
         <button @click.prevent="defaultDates">Сбросить</button>
       </form>
       <xlsx-workbook>
@@ -26,21 +39,33 @@
     <table>
       <thead>
         <tr>
-          <th v-for="(head, h) in header" :key="h">{{ head }}</th>
+          <th
+            v-for="(head, h) in header"
+            :key="h"
+          >{{ head }}</th>
         </tr>
         <tr>
-          <th v-for="(summary, s) in tableSummary" :key="s">{{ summary }}</th>
+          <th
+            v-for="(summary, s) in tableSummary"
+            :key="s"
+          >{{ summary }}</th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="(vacancy, v) in vacancies" :key="v">
+        <tr
+          v-for="(vacancy, v) in vacancies"
+          :key="v"
+        >
           <td>{{ v + 1 }}</td>
           <td>{{ vacancy.title }}</td>
           <td>{{ leftToHire(vacancy.id) }}</td>
           <td>{{ vacancy.supervisor }}</td>
           <td>{{ vacancy.department }}</td>
           <td>{{ vacancy.status }}</td>
-          <td v-for="(status, s) in statuses" :key="s">
+          <td
+            v-for="(status, s) in statuses"
+            :key="s"
+          >
             {{ detailedDatesAndStatusFilter(status.status, vacancy.id) }}
           </td>
         </tr>
@@ -85,17 +110,21 @@ export default {
       this.dates.maxDate = this.dates.defaultMaxDate;
     },
     setMinMaxDate(date) {
-      const truedate = new Date(date).toISOString().substring(0, 10);
-      const mindate = new Date(this.dates.minDate)
-        .toISOString()
-        .substring(0, 10);
-      const maxdate = new Date(this.dates.maxDate)
-        .toISOString()
-        .substring(0, 10);
-      mindate >= truedate ? (this.dates.minDate = truedate) : null;
-      maxdate <= truedate ? (this.dates.maxDate = truedate) : null;
-      this.dates.defaultMinDate = mindate;
-      this.dates.defaultMaxDate = maxdate;
+      try {
+        const truedate = new Date(date).toISOString().substring(0, 10);
+        const mindate = new Date(this.dates.minDate)
+          .toISOString()
+          .substring(0, 10);
+        const maxdate = new Date(this.dates.maxDate)
+          .toISOString()
+          .substring(0, 10);
+        mindate >= truedate ? (this.dates.minDate = truedate) : null;
+        maxdate <= truedate ? (this.dates.maxDate = truedate) : null;
+        this.dates.defaultMinDate = mindate;
+        this.dates.defaultMaxDate = maxdate;
+      } catch (error) {
+        console.log(`date: ${date}`);
+      }
     },
     datesFilter() {
       if (this.candidates) {
@@ -104,10 +133,15 @@ export default {
           .substring(0, 10);
         const end = new Date(this.dates.maxDate).toISOString().substring(0, 10);
         return this.candidates.filter((candidate) => {
-          const date_time = new Date(candidate.datetime)
+          try {
+                      const date_time = new Date(candidate.datetime)
             .toISOString()
             .substring(0, 10);
           return date_time >= start && date_time <= end;
+          } catch (error) {
+            console.log(`error: ${candidate.name} - date: ${candidate.datetime}`)
+          }
+
         });
       }
       return null;
@@ -126,11 +160,10 @@ export default {
         .filter((s) => s.updateDate > 0)
         .map((s) => {
           try {
-            return new Date(s.datetime).toISOString().substring(0, 10)
+            return new Date(s.datetime).toISOString().substring(0, 10);
           } catch (error) {
-            console.log(s)
+            console.log(s);
           }
-          
         })
         .filter((s) => s >= start && s <= end).length;
 
@@ -168,7 +201,14 @@ export default {
   computed: {
     test() {
       if (!this.candidates) return;
-      return this.candidates.filter(candidate => candidate.statuslist.filter(status => typeof status.datetime === "string" && status.datetime.length === 0).length);
+      return this.candidates.filter(
+        (candidate) =>
+          candidate.statuslist.filter(
+            (status) =>
+              typeof status.datetime === "string" &&
+              status.datetime.length === 0
+          ).length
+      );
     },
     tableSummary() {
       const res = this.downloadXLSX[this.downloadXLSX.length - 1];
