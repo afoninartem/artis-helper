@@ -7,11 +7,11 @@ const switchCases = (num, word) => {
       case 1:
         result = word;
         break;
-      case 2:
-      case 3:
-      case 4:
-        result = "файлов";
-        break;
+      // case 2:
+      // case 3:
+      // case 4:
+      //   result = "файла";
+      //   break;
       default:
         result = "файла";
     }
@@ -29,6 +29,21 @@ const switchCases = (num, word) => {
         break;
       default:
         result = "раз";
+    }
+  }
+  if (word === "несоответствие") {
+    if (num >= 11 && num <= 15) return "несоответствий"
+    switch (thisCase) {
+      case 1:
+        result = word;
+        break;
+      case 2:
+      case 3:
+      case 4:
+        result = "несоответствия";
+        break;
+      default:
+        result = "несоответствий";
     }
   }
   if (word === "продажа") {

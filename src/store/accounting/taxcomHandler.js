@@ -365,6 +365,7 @@ export default {
 					sum: xml.summ,
 					client: xml.clientName,
 					docNum: xml.docNum,
+          clientInn: xml.clientInn,
 					xmlEntries: sellsXml
 						.filter((x) => +x.summ == +xml.summ)
 						.length.toString(),

@@ -5,7 +5,6 @@
   >
     <h3>Итог по реализациям</h3>
     <div class="content">
-      <!-- {{sellingXMLResult}} -->
       <ul>
         <li
           v-if="xmlOk"
@@ -19,7 +18,10 @@
         >
           Документов в xml: {{amountDiff.xml}}. Документов в Taxcom: {{amountDiff.tax}}.
         </li>
-        <div
+        <li class="bad">
+          Найдено {{xlsx.xml.length + xlsx.tax.length}} {{casesHandler(xlsx.xml.length + xlsx.tax.length, "несоответствие")}}.
+        </li>
+        <!-- <div
           class="extras-xml"
           v-if="sellingXMLResult.extrasXML.length"
         >
@@ -30,8 +32,8 @@
           >
             Сумма {{Number(extra.sum).toLocaleString("ru-Ru")}} встречается в файле XML {{extra.xmlEntries}} раз, в Taxcom {{extra.taxcomEntries}} раз.
           </li>
-        </div>
-        <div
+        </div> -->
+        <!-- <div
           class="extras-taxcom"
           v-if="sellingXMLResult.extrasTaxcom.length"
         >
@@ -42,7 +44,7 @@
           >
             Сумма {{Number(extra["Сумма"]).toLocaleString("ru-Ru")}} встречается в Taxcom {{extra.taxcomEntries}} раз, в файле XML {{extra.xmlEntries}} раз.
           </li>
-        </div>
+        </div> -->
       </ul>
     </div>
     <xlsx-workbook>
@@ -97,19 +99,23 @@ export default {
         this.sellingXMLResult.extrasTaxcom.length === 0
       );
     },
-    xls() {
+    xlsx() {
       return {
-        xml: this.sellingXMLResult.extrasXML.map(x => ({
+        xml: this.sellingXMLResult.extrasXML.map((x) => ({
           "Номер документа": x.docNum,
-          "Клиент": x.client,
-          "Сумма": x.sum,
+          Клиент: x.client,
+          "ИНН/КПП": x.clientInn,
+          Сумма: x.sum,
         })),
-        tax: this.sellingXMLResult.extrasTaxcom.map(t => ({
-          "ФПД": t["ФПД"],
-          "Сумма": t["Сумма"]
-        }))
-      }
-    }
+        tax: this.sellingXMLResult.extrasTaxcom.map((t) => ({
+          ФПД: t["ФПД"],
+          Сумма: t["Сумма"],
+        })),
+        firms: this.sellingXMLResult.sellsListFromXML.filter(
+          (x) => x.clientInn.length
+        ),
+      };
+    },
   },
   methods: {
     casesHandler(num, word) {
@@ -117,29 +123,42 @@ export default {
       return ch(num, word);
     },
     addSheets() {
-      if (this.xls.tax.length) {
+      if (this.xlsx.tax.length) {
         this.sheets.push({
           name: "Есть в Taxcom, нет в XML",
-          data: this.xls.tax
+          data: this.xlsx.tax,
         });
       }
-      if (this.xls.xml.length) {
+      if (this.xlsx.xml.length) {
         this.sheets.push({
           name: "Есть в XML, нет в Taxcom",
-          data: this.xls.xml,
+          data: this.xlsx.xml.filter((x) => x.clientInn === ""),
         });
       }
       if (this.sellingXMLResult.sellsListFromXML) {
         this.sheets.push({
           name: "Список продаж из XML",
-          data: this.sellingXMLResult.sellsListFromXML.map(x => ({
+          data: this.sellingXMLResult.sellsListFromXML.map((x) => ({
             Дата: x.date,
             Номер: x.docNum,
             Код: x.clientCode,
             Клиент: x.clientName,
             Сумма: x.summ,
-          }))
-        })
+          })),
+        });
+      }
+      if (this.xlsx.firms.length) {
+        this.sheets.push({
+          name: "Юрлица",
+          data: this.xlsx.firms.map((x) => ({
+            Дата: x.date,
+            Номер: x.docNum,
+            Код: x.clientCode,
+            Клиент: x.clientName,
+            "ИНН/КПП": x.clientInn,
+            Сумма: x.summ,
+          })),
+        });
       }
     },
   },
