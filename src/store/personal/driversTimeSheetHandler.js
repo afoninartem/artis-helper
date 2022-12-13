@@ -107,16 +107,23 @@ export default {
 
 		async add1C7info({ getters, commit }, payload) {
 			const drivers = getters.getActualStates.catalogDrivers;
+			console.log(
+				drivers.map((d) => ({
+					name: d.name,
+					mainPosition: d.mainPosition,
+					ID: d.driverID,
+				}))
+			);
 			const positions = getters.getDriversPositions;
 			const info1C7 = payload
-				.filter((f) => positions.includes(f["Должность"]))
+				.filter((f) => positions.includes(f["Должность"].split("  ").join(" ").toLowerCase()))
 				.map((item) => {
 					let driverID;
 					try {
 						driverID = drivers.filter(
 							(d) =>
-								d.name === item.__EMPTY_1 &&
-								d.mainPosition === item["Должность"].toLowerCase()
+								d.name.split("  ").join(" ").toLowerCase() === item.__EMPTY_1.split("  ").join(" ").toLowerCase() &&
+								d.mainPosition.split("  ").join(" ").toLowerCase() === item["Должность"].split("  ").join(" ").toLowerCase()
 						)[0].driverID;
 					} catch (error) {
 						console.log(
@@ -125,6 +132,7 @@ export default {
 							" - ",
 							item["Должность"]
 						);
+						console.log(item);
 					}
 					const workDays = Object.keys(item)
 						.filter((i) => i !== "Должность" && !i.includes("__EMPTY"))

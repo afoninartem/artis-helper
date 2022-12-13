@@ -17,6 +17,18 @@ export default {
 			const employeesDetails = getters.getEmployeesDetails;
 			const artisEmployeesNames = employeesDetails.map((e) => e.name);
 			console.log(rawData);
+			//golang backend experiment
+			// const todayDate = new Date().toLocaleDateString("ru-Ru");
+			// rawData.forEach( async (row) => {
+			// 	const senesysMarkObject = {
+			// 		todaydate: todayDate,
+			// 		date: row.__EMPTY_1,
+			// 		datetime: row.__EMPTY_3,
+			// 		name: row.__EMPTY_7.split("  ").join(" "),
+			// 		company: row.__EMPTY_10,
+			// 	};
+      //   // await fetch("")
+			// });
 			rawData.forEach((row) => {
 				row.__EMPTY_7 = row.__EMPTY_7.split("  ").join(" ");
 
