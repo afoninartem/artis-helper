@@ -107,14 +107,15 @@ export default {
 
 		async add1C7info({ getters, commit }, payload) {
 			const drivers = getters.getActualStates.catalogDrivers;
-			console.log(
-				drivers.map((d) => ({
-					name: d.name,
-					mainPosition: d.mainPosition,
-					ID: d.driverID,
-				}))
-			);
-			const positions = getters.getDriversPositions;
+			// console.log(
+			// 	drivers.map((d) => ({
+			// 		name: d.name,
+			// 		mainPosition: d.mainPosition,
+			// 		ID: d.driverID,
+			// 	}))
+			// );
+			const positions = getters.getDriversPositions.map(p => p.split("  ").join(" ").toLowerCase())
+      console.log(positions)
 			const info1C7 = payload
 				.filter((f) => positions.includes(f["Должность"].split("  ").join(" ").toLowerCase()))
 				.map((item) => {
