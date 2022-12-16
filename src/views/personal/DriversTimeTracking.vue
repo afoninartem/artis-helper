@@ -10,13 +10,19 @@
 
     <!-- <hr /> -->
     <div class="menu">
-      <div class="conventions" v-if="showConventions">
+      <div
+        class="conventions"
+        v-if="showConventions"
+      >
         <div
           class="conventions__item"
           v-for="(item, i) in conventions"
           :key="`convention-${i}`"
         >
-          <div class="color-plate" :style="item.color"></div>
+          <div
+            class="color-plate"
+            :style="item.color"
+          ></div>
           <p>{{ item.description }}</p>
         </div>
       </div>
@@ -27,17 +33,83 @@
       </div>
     </div>
 
-    <div class="car" v-for="(car, c) in cars" :key="c">
+    <div
+      class="extra-drivers-from-1c"
+      v-if="extras != null && extras != `allgood`"
+    >
+      <h3>Отсутсвуют в справочнике отдела сервиса:</h3>
+      <div class="lists">
+        <div
+          class="lists__item from1c7"
+          v-if="extras.from1C7"
+        >
+          <h4>Сотрудники из 1С7</h4>
+          <ol class="lists__item-list">
+            <li
+              v-for="driver, d in extras.from1C7"
+              :key="`d1c7-${d}`"
+            >{{capitalizeName(driver)}}</li>
+          </ol>
+        </div>
+        <div
+          class="lists__item from1c8a21"
+          v-if="extras.from1C8_A21"
+        >
+          <h4>Сотрудники из 1С8_A21</h4>
+          <ol class="lists__item-list">
+            <li
+              v-for="driver, d in extras.from1C8_A21"
+              :key="`d1c8-a21-${d}`"
+            >{{capitalizeName(driver)}}</li>
+          </ol>
+        </div>
+        <div
+          class="lists__item from1c8ap"
+          v-if="extras.from1C8_AP"
+        >
+          <h4>Сотрудники из 1С8_AП</h4>
+          <ol class="lists__item-list">
+            <li
+              v-for="driver, d in extras.from1C8_AP"
+              :key="`d1c8-ap-${d}`"
+            >{{capitalizeName(driver)}}</li>
+          </ol>
+        </div>
+        <div
+          class="lists__item from1c8dp"
+          v-if="extras.from1C8_DP"
+        >
+          <h4>Сотрудники из 1С8_ДП</h4>
+          <ol>
+            <li
+              v-for="driver, d in extras.from1C8_DP"
+              :key="`d1c8-dp-${d}`"
+            >{{capitalizeName(driver)}}</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+    <div
+      class="no-extra-drivers-from-1c"
+      style="background: rgb(40, 199, 101)"
+      v-if="extras === `allgood`"
+    >
+      Все водители из 1С присутствуют в справочнике отдела сервиса.
+    </div>
+
+    <div
+      class="car"
+      v-for="(car, c) in cars"
+      :key="c"
+    >
       <!-- <div class="car-crew-info" v-if="car.crew.length">some summary</div> -->
 
       <table v-if="car.crew.length">
         <thead>
           <tr>
-            <th
-              :colspan="
+            <th :colspan="
                 numberOfDays(date.year, date.month) + headerTemplate.length
-              "
-            >
+              ">
               {{ car.mark.toUpperCase() }} {{ car.number }}
             </th>
           </tr>
@@ -81,10 +153,16 @@
             </th>
           </tr>
         </thead>
-        <tbody v-for="(driver, d) in car.crewDetails" :key="`driver-info-${d}`">
+        <tbody
+          v-for="(driver, d) in car.crewDetails"
+          :key="`driver-info-${d}`"
+        >
           <tr>
             <td :rowspan="driver.rowspan">{{ d + 1 }}</td>
-            <td :rowspan="driver.rowspan" ref="name">{{ driver.name }}</td>
+            <td
+              :rowspan="driver.rowspan"
+              ref="name"
+            >{{ driver.name }}</td>
             <td>Отдел сервиса</td>
             <td
               v-for="(day, d) in daySpec(date.month, date.year)"
@@ -267,6 +345,14 @@ export default {
     };
   },
   methods: {
+    capitalizeName(str) {
+      return str
+        .split(" ")
+        .map((item) => {
+          return item.charAt(0).toUpperCase() + item.slice(1);
+        })
+        .join(" ");
+    },
     prevMonth() {
       this.date.month === 0
         ? ((this.date.month = 11), (this.date.year -= 1))
@@ -377,13 +463,13 @@ export default {
     },
     extraCrew(car) {
       if (!car.extraCrew || (car.extraCrew && !car.extraCrew.length)) return [];
-      const extraCrew = car.extraCrew.map(id => {
-        const driver = this.drivers.filter(d => d.driverID === id)[0];
+      const extraCrew = car.extraCrew.map((id) => {
+        const driver = this.drivers.filter((d) => d.driverID === id)[0];
         // console.log(driver)
-        const result = driver.extras?.filter(e => e.carID === car.carID);
+        const result = driver.extras?.filter((e) => e.carID === car.carID);
         // console.log(result)
         return result || [];
-      })
+      });
       return extraCrew;
     },
     crew(car) {
@@ -426,9 +512,9 @@ export default {
             .map((o) => Object.entries(o))
             .flat()
             .filter((k) => k[1][0] !== "В");
-          // console.log(result.info1C8)
           // .filter((k) => parseInt(k[0]))
           // .filter((k) => k[1].length > 1);
+          // console.log(result.info1C8)
         }
         crew.push(result);
       });
@@ -436,6 +522,26 @@ export default {
     },
   },
   computed: {
+    extras() {
+      if (
+        !this.extraDriversFrom1C.from1C7 &&
+        !this.extraDriversFrom1C.from1C8_A21 &&
+        !this.extraDriversFrom1C.from1C8_AP &&
+        !this.extraDriversFrom1C.from1C8_DP
+      )
+        return null;
+      let allExtras = [];
+      for (let e in this.extraDriversFrom1C) {
+        if (this.extraDriversFrom1C[e] && this.extraDriversFrom1C[e].length) {
+          allExtras = allExtras.concat(this.extraDriversFrom1C[e]);
+        }
+      }
+      if (!allExtras.length) return "allgood";
+      return this.extraDriversFrom1C;
+    },
+    extraDriversFrom1C() {
+      return this.$store.getters.getExtraDriversFrom1C;
+    },
     prevMonthTitle() {
       return this.date.month === 0
         ? new Date(this.date.year - 1, 11)
@@ -559,6 +665,21 @@ tbody:nth-child(2n + 1) > tr > td {
         border: 1px solid black;
       }
     }
+  }
+}
+.extra-drivers-from-1c {
+  background: salmon;
+  padding: 15px 0 15px 0;
+  .lists {
+    display: flex;
+    justify-content: space-evenly;
+    &__item {
+      text-align: left;
+    }
+    ol {
+      padding: 0
+    }
+
   }
 }
 </style>
