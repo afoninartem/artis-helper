@@ -5,6 +5,9 @@ export default {
 		info1C8_A21: null,
 		info1C8_AP: null,
 		info1C8_DP: null,
+		shedule1C8_A21: null,
+		shedule1C8_AP: null,
+		shedule1C8_DP: null,
 		extras: {
 			// fromOS: [],
 			from1C7: null,
@@ -14,6 +17,15 @@ export default {
 		},
 	},
 	mutations: {
+		add1C8Shedule_A21(state, payload) {
+			state.shedule1C8_A21 = payload;
+		},
+		add1C8Shedule_AP(state, payload) {
+			state.shedule1C8_AP = payload;
+		},
+		add1C8Shedule_DP(state, payload) {
+			state.shedule1C8_DP = payload;
+		},
 		add1C7info(state, payload) {
 			state.info1C7 = payload;
 		},
@@ -88,6 +100,7 @@ export default {
 		},
 
 		compareDriversIn1CAndOsDB({ getters, commit }, payload) {
+			console.log(payload);
 			const dataSource = payload.dataSource;
 			const osDrivers = getters.getActualStates.catalogDrivers.map((os) =>
 				os.name.split("  ").join(" ").toLowerCase()
@@ -108,20 +121,24 @@ export default {
 					})
 				)
 			);
-			const extraFrom1C = [],
-				extraFromOS = [];
+			console.log(excelDrivers);
+			const extraFrom1C = [];
+			const extraFromOS = [];
+			const cutName = require("../stringsHandler").nameCutter;
 			// check os
 			osDrivers.forEach((os) => {
-				if (!excelDrivers.filter((x) => x === os).length) extraFromOS.push(os);
+				if (!excelDrivers.filter((x) => cutName(x) === cutName(os)).length)
+					extraFromOS.push(os);
 			});
 			// check excel
 			excelDrivers.forEach((ex) => {
-				if (!osDrivers.filter((x) => x === ex).length) extraFrom1C.push(ex);
+				if (!osDrivers.filter((x) => cutName(x) === cutName(ex)).length)
+					extraFrom1C.push(ex);
 			});
 
 			extraFromOS.sort();
 			extraFrom1C.sort();
-
+			console.log(extraFrom1C);
 			switch (dataSource) {
 				case "1C7":
 					commit("setExtras1C7", {
@@ -129,16 +146,19 @@ export default {
 					});
 					break;
 				case "1C8_A21":
+					console.log(`case 1C8_A21`);
 					commit("setExtras1C_A21", {
 						from1C: extraFrom1C,
 					});
 					break;
 				case "1C8_AP":
+					console.log(`case 1C8_AP`);
 					commit("setExtras1C_AP", {
 						from1C: extraFrom1C,
 					});
 					break;
 				case "1C8_DP":
+					console.log(`case 1C8_DP`);
 					commit("setExtras1C_DP", {
 						from1C: extraFrom1C,
 					});
@@ -203,6 +223,101 @@ export default {
 				payload.filter((o) => Object.keys(o).length !== 3)
 			);
 		},
+		async add1C8Shedule(context, payload) {
+			// get object with dates
+			const dateCell = payload.data.filter((p) =>
+				Object.values(p).includes("ТАБЕЛЬ  ")
+			)[0];
+			const ruDate = dateCell.__EMPTY_50.split(".");
+			const month = new Date(
+				`${ruDate[1]}.${ruDate[0]}.${ruDate[2]}`
+			).getMonth();
+			const year = new Date(
+				`${ruDate[1]}.${ruDate[0]}.${ruDate[2]}`
+			).getFullYear();
+			const dateKeysTemp = payload.data
+				.filter(
+					(x) =>
+						Object.values(x).includes("половину\nмесяца\n(I, II)") ||
+						Object.values(x).includes("дни")
+				)
+				.slice(0, 2);
+			const dateKeys = {};
+			dateKeysTemp.forEach((dk, index) => {
+				for (let key in dk) {
+					if (dk[key] === "X" || !Number.isNaN(+dk[key])) {
+						dateKeys[key]
+							? (dateKeys[key][index] = dk[key])
+							: (dateKeys[key] = { [index]: dk[key] });
+					}
+				}
+			});
+			// get drivers shedules
+			const driversShedules = [];
+			payload.data.forEach((p, i) => {
+				if (Object.values(p).some((s) => s.match(/\d+-\d+/))) {
+					const driverInfo = payload.data.slice(i, i + 4);
+					const driver = {
+						name: driverInfo[0].__EMPTY_2.split("\n")[0],
+						position:
+							driverInfo[0].__EMPTY_2.split("\n")[1] ===
+							"(Водитель-экспедитор )"
+								? "водитель"
+								: driverInfo[0].__EMPTY_2.split("\n")[1] ===
+								  "(Менеджер-экспедитор)"
+								? "экспедитор"
+								: driverInfo[0].__EMPTY_2.split("\n")[1],
+						personnelNumber: driverInfo[0].__EMPTY_4,
+						shedule: {},
+					};
+					driverInfo.forEach((info, i) => {
+						let day, hours, mark;
+						for (let infoKey in info) {
+							if (Object.keys(dateKeys).includes(infoKey)) {
+								if (i === 0 || i === 2) {
+									day = i === 0 ? dateKeys[infoKey][0] : dateKeys[infoKey][1];
+									mark = info[infoKey];
+									hours = driverInfo[i + 1][infoKey]
+										? driverInfo[i + 1][infoKey]
+										: "0";
+								}
+								const date =
+									day != "X" && day != undefined
+										? new Date(year, month, day).toLocaleDateString("ru-Ru")
+										: null;
+								const daysLimit = new Date(year, month + 1, 0).getDate();
+								date && day <= daysLimit
+									? (driver.shedule[date] = { hours, mark })
+									: null;
+							}
+						}
+					});
+					if (
+						driver.position === "водитель" ||
+						driver.position === "экспедитор"
+					) {
+						driversShedules.push(driver);
+					}
+				}
+			});
+			payload.company === "A21"
+				? (context.commit("add1C8Shedule_A21", driversShedules),
+				  context.dispatch("compareDriversIn1CAndOsDB", {
+						excelDrivers: driversShedules,
+						dataSource: "1C8_A21",
+				  }))
+				: payload.company === "AP"
+				? (context.commit("add1C8Shedule_AP", driversShedules),
+				  context.dispatch("compareDriversIn1CAndOsDB", {
+						excelDrivers: driversShedules,
+						dataSource: "1C8_AP",
+				  }))
+				: (context.commit("add1C8Shedule_DP", driversShedules),
+				  context.dispatch("compareDriversIn1CAndOsDB", {
+						excelDrivers: driversShedules,
+						dataSource: "1C8_DP",
+				  }));
+		},
 		async add1C8info_AP({ dispatch, commit }, payload) {
 			dispatch("compareDriversIn1CAndOsDB", {
 				// osDrivers: drivers,
@@ -227,10 +342,6 @@ export default {
 		},
 	},
 	getters: {
-		// getAddPositionPopupVisibility: (state) => {
-		// 	return state.addPositionPopup;
-		// },
-
 		get1C7info: (state) => {
 			return state.info1C7;
 		},
@@ -245,6 +356,15 @@ export default {
 		},
 		getExtraDriversFrom1C: (state) => {
 			return state.extras;
+		},
+		getShedule1C8_A21: (state) => {
+			return state.shedule1C8_A21;
+		},
+		getShedule1C8_AP: (state) => {
+			return state.shedule1C8_AP;
+		},
+		getShedule1C8_DP: (state) => {
+			return state.shedule1C8_DP;
 		},
 
 		// getAddDriverPopupVisibility: (state) => {

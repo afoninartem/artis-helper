@@ -3,9 +3,12 @@
     <h1>Водители</h1>
     <div class="add-block">
       <AddDriversTimeSheet1C7 v-if="!info1C7" />
-      <AddDriversTimeSheet1C8A21 v-if="!info1C8_A21" />
-      <AddDriversTimeSheet1C8AP v-if="!info1C8_AP" />
-      <AddDriversTimeSheet1C8DP v-if="!info1C8_DP" />
+      <AddDriversShedule1C8A21 v-if="!shedule1C8_A21" />
+      <AddDriversShedule1C8AP v-if="!shedule1C8_AP" />
+      <AddDriversShedule1C8DP v-if="!shedule1C8_DP" />
+      <!-- <AddDriversTimeSheet1C8A21 v-if="!info1C8_A21" /> -->
+      <!-- <AddDriversTimeSheet1C8AP v-if="!info1C8_AP" /> -->
+      <!-- <AddDriversTimeSheet1C8DP v-if="!info1C8_DP" /> -->
     </div>
 
     <!-- <hr /> -->
@@ -41,7 +44,7 @@
       <div class="lists">
         <div
           class="lists__item from1c7"
-          v-if="extras.from1C7"
+          v-if="extras.from1C7 && extras.from1C7.length"
         >
           <h4>Сотрудники из 1С7</h4>
           <ol class="lists__item-list">
@@ -53,9 +56,9 @@
         </div>
         <div
           class="lists__item from1c8a21"
-          v-if="extras.from1C8_A21"
+          v-if="extras.from1C8_A21 && extras.from1C8_A21.length"
         >
-          <h4>Сотрудники из 1С8_A21</h4>
+          <h4>Сотрудники из 1С8 A21</h4>
           <ol class="lists__item-list">
             <li
               v-for="driver, d in extras.from1C8_A21"
@@ -65,9 +68,9 @@
         </div>
         <div
           class="lists__item from1c8ap"
-          v-if="extras.from1C8_AP"
+          v-if="extras.from1C8_AP && extras.from1C8_AP.length"
         >
-          <h4>Сотрудники из 1С8_AП</h4>
+          <h4>Сотрудники из 1С8 AП</h4>
           <ol class="lists__item-list">
             <li
               v-for="driver, d in extras.from1C8_AP"
@@ -77,9 +80,9 @@
         </div>
         <div
           class="lists__item from1c8dp"
-          v-if="extras.from1C8_DP"
+          v-if="extras.from1C8_DP && extras.from1C8_DP.length"
         >
-          <h4>Сотрудники из 1С8_ДП</h4>
+          <h4>Сотрудники из 1С8 ДП</h4>
           <ol>
             <li
               v-for="driver, d in extras.from1C8_DP"
@@ -233,7 +236,29 @@
               }}
             </td>
           </tr>
-          <tr v-if="driver.info1C8">
+          <tr v-if="driver.shedule1C8">
+            <td>1C8</td>
+            <td
+              v-for="(day, d) in daySpec(date.month, date.year)"
+              :key="`curr-date-${d}`"
+              :style="
+                setStyle(
+                  new Date(date.year, date.month, day.dayOfMonth),
+                  driver,
+                  day
+                )
+              "
+            >
+              {{
+              Object.keys(driver.shedule1C8.shedule).includes(new Date(date.year, date.month, day.dayOfMonth).toLocaleDateString("ru-Ru")) 
+                ? driver.shedule1C8.shedule[new Date(date.year, date.month, day.dayOfMonth).toLocaleDateString("ru-Ru")].mark === "Я" 
+                ? "X"
+                : null
+             : null
+            }}
+            </td>
+          </tr>
+          <!-- <tr v-if="driver.info1C8">
             <td>1C8</td>
             <td
               v-for="(day, d) in daySpec(date.month, date.year)"
@@ -270,7 +295,7 @@
                   : null
               }}
             </td>
-          </tr>
+          </tr> -->
           <tr v-if="driver.info1C7">
             <td>1C7 (факт)</td>
             <td
@@ -304,15 +329,22 @@
 <script>
 // import AddDriversCatalog from "@/components/PersonalComponents/AddDriversCatalog";
 import AddDriversTimeSheet1C7 from "@/components/PersonalComponents/AddDriversTimeSheet1C7";
-import AddDriversTimeSheet1C8A21 from "@/components/PersonalComponents/AddDriversTimeSheet1C8_A21";
-import AddDriversTimeSheet1C8AP from "@/components/PersonalComponents/AddDriversTimeSheet1C8_AP";
-import AddDriversTimeSheet1C8DP from "@/components/PersonalComponents/AddDriversTimeSheet1C8_DP";
+// import AddDriversTimeSheet1C8A21 from "@/components/PersonalComponents/AddDriversTimeSheet1C8_A21";
+// import AddDriversTimeSheet1C8AP from "@/components/PersonalComponents/AddDriversTimeSheet1C8_AP";
+// import AddDriversTimeSheet1C8DP from "@/components/PersonalComponents/AddDriversTimeSheet1C8_DP";
+//test ↓
+import AddDriversShedule1C8A21 from "@/components/PersonalComponents/AddDriversShedule1C8_A21";
+import AddDriversShedule1C8AP from "@/components/PersonalComponents/AddDriversShedule1C8_AP";
+import AddDriversShedule1C8DP from "@/components/PersonalComponents/AddDriversShedule1C8_DP";
 export default {
   components: {
     AddDriversTimeSheet1C7,
-    AddDriversTimeSheet1C8A21,
-    AddDriversTimeSheet1C8AP,
-    AddDriversTimeSheet1C8DP,
+    // AddDriversTimeSheet1C8A21,
+    // AddDriversTimeSheet1C8AP,
+    // AddDriversTimeSheet1C8DP,
+    AddDriversShedule1C8A21,
+    AddDriversShedule1C8AP,
+    AddDriversShedule1C8DP,
     // AddDriversCatalog,
   },
   data() {
@@ -346,12 +378,12 @@ export default {
   },
   methods: {
     capitalizeName(str) {
-      return str
-        .split(" ")
-        .map((item) => {
-          return item.charAt(0).toUpperCase() + item.slice(1);
-        })
-        .join(" ");
+      const cap = require("../../store/stringsHandler").capitalizeName
+      return cap(str)
+    },
+    cutName(str) {
+      const cut = require("../../store/stringsHandler").nameCutter
+      return cut(str)
     },
     prevMonth() {
       this.date.month === 0
@@ -368,7 +400,7 @@ export default {
     },
     setStyle(date, driver, day) {
       // console.log(date, driver)
-      if (!driver.info1C7 || !driver.info1C8) return;
+      if (!driver.info1C7 || !driver.shedule1C8) return;
       const redBGredColor =
         "background: rgba(225, 50, 50, 0.9); color: red; font-weight: bold";
       const greenBG = "background: rgb(0, 128, 0)";
@@ -384,20 +416,35 @@ export default {
         ? this.compareDates(driver.info1C7, date)
         : null;
       const info1C8 =
-        driver.info1C8 &&
-        driver.info1C8.some(
-          (k) =>
-            k[0].split(" ")[0] === day.dayOfMonth.toString() &&
-            k[0].split(" ")[1].toLowerCase() === day.weekday
+        driver.shedule1C8 &&
+        Object.keys(driver.shedule1C8.shedule).includes(
+          new Date(date.year, date.month, day.dayOfMonth).toLocaleDateString(
+            "ru-Ru"
+          )
         )
-          ? driver.info1C8
-              .filter(
-                (k) =>
-                  k[0].split(" ")[0] === day.dayOfMonth.toString() &&
-                  k[0].split(" ")[1].toLowerCase() === day.weekday
-              )[0][1]
-              .split(" ")[0]
+          ? driver.shedule1C8.shedule[
+              new Date(
+                date.year,
+                date.month,
+                day.dayOfMonth
+              ).toLocaleDateString("ru-Ru")
+            ].mark
           : null;
+      // const info1C8 =
+      //   driver.info1C8 &&
+      //   driver.info1C8.some(
+      //     (k) =>
+      //       k[0].split(" ")[0] === day.dayOfMonth.toString() &&
+      //       k[0].split(" ")[1].toLowerCase() === day.weekday
+      //   )
+      //     ? driver.info1C8
+      //         .filter(
+      //           (k) =>
+      //             k[0].split(" ")[0] === day.dayOfMonth.toString() &&
+      //             k[0].split(" ")[1].toLowerCase() === day.weekday
+      //         )[0][1]
+      //         .split(" ")[0]
+      //     : null;
 
       //white BG
       const noData = !service && !info1C7 && !info1C8;
@@ -441,7 +488,8 @@ export default {
           weekday: new Date(year, month, day).toLocaleString("default", {
             weekday: "short",
           }),
-          dayOfMonth: new Date(year, month, day).getDate(),
+          // dayOfMonth: new Date(year, month, day).getDate(),
+          dayOfMonth: day,
         });
       }
       return result;
@@ -501,6 +549,7 @@ export default {
                 })
             : null;
         }
+        // old 1C8 data
         if (this.info1C8.length) {
           result.rowspan += 1;
           result.info1C8 = Array.from(this.info1C8)
@@ -515,6 +564,14 @@ export default {
           // .filter((k) => parseInt(k[0]))
           // .filter((k) => k[1].length > 1);
           // console.log(result.info1C8)
+        }
+        //new 1C8 data from shedule
+        if (this.shedule1C8.length) {
+          result.rowspan += 1;
+          result.shedule1C8 = Array.from(this.shedule1C8).filter((i) => {
+            const shortName = this.cutName(result.name)
+            return i.name === shortName;
+          })[0];
         }
         crew.push(result);
       });
@@ -606,6 +663,21 @@ export default {
     info1C8_DP() {
       return this.$store.getters.get1C8info_DP;
     },
+    //test drivers shedule from 1C8
+    shedule1C8() {
+      return []
+        .concat(this.shedule1C8_A21, this.shedule1C8_AP, this.shedule1C8_DP)
+        .filter((d) => d !== null);
+    },
+    shedule1C8_A21() {
+      return this.$store.getters.getShedule1C8_A21;
+    },
+    shedule1C8_AP() {
+      return this.$store.getters.getShedule1C8_AP;
+    },
+    shedule1C8_DP() {
+      return this.$store.getters.getShedule1C8_DP;
+    },
   },
   mounted: async function () {
     await this.$store.dispatch("setActualCatalogDrivers");
@@ -677,9 +749,8 @@ tbody:nth-child(2n + 1) > tr > td {
       text-align: left;
     }
     ol {
-      padding: 0
+      padding: 0;
     }
-
   }
 }
 </style>
