@@ -21,30 +21,6 @@
         <li class="bad">
           Найдено {{xlsx.xml.length + xlsx.tax.length}} {{casesHandler(xlsx.xml.length + xlsx.tax.length, "несоответствие")}}.
         </li>
-        <!-- <div
-          class="extras-xml"
-          v-if="sellingXMLResult.extrasXML.length"
-        >
-          <li
-            class="bad"
-            v-for="extra, e in sellingXMLResult.extrasXML"
-            :key="`xml-${e}`"
-          >
-            Сумма {{Number(extra.sum).toLocaleString("ru-Ru")}} встречается в файле XML {{extra.xmlEntries}} раз, в Taxcom {{extra.taxcomEntries}} раз.
-          </li>
-        </div> -->
-        <!-- <div
-          class="extras-taxcom"
-          v-if="sellingXMLResult.extrasTaxcom.length"
-        >
-          <li
-            class="bad"
-            v-for="extra, e in sellingXMLResult.extrasTaxcom"
-            :key="`tax-${e}`"
-          >
-            Сумма {{Number(extra["Сумма"]).toLocaleString("ru-Ru")}} встречается в Taxcom {{extra.taxcomEntries}} раз, в файле XML {{extra.xmlEntries}} раз.
-          </li>
-        </div> -->
       </ul>
     </div>
     <xlsx-workbook>
@@ -112,7 +88,7 @@ export default {
           Сумма: t["Сумма"],
         })),
         firms: this.sellingXMLResult.sellsListFromXML.filter(
-          (x) => x.clientInn.length
+          (x) => x.clientInn && x.clientInn.length
         ),
       };
     },
@@ -136,27 +112,40 @@ export default {
         });
       }
       if (this.sellingXMLResult.sellsListFromXML) {
+        const xlsData = Array.from(this.sellingXMLResult.sellsListFromXML);
+        xlsData.push({
+          clientName: "ИТОГО",
+          summ: this.sellingXMLResult.sellsListFromXML.reduce(
+            (a, b) => a + Number(b.summ),
+            0
+          ),
+        });
         this.sheets.push({
           name: "Список продаж из XML",
-          data: this.sellingXMLResult.sellsListFromXML.map((x) => ({
+          data: xlsData.map((x) => ({
             Дата: x.date,
             Номер: x.docNum,
             Код: x.clientCode,
             Клиент: x.clientName,
-            Сумма: x.summ,
+            Сумма: +x.summ,
           })),
         });
       }
       if (this.xlsx.firms.length) {
+        const xlsData = Array.from(this.xlsx.firms);
+        xlsData.push({
+          clientInn: "ИТОГО",
+          summ: this.xlsx.firms.reduce((a, b) => a + Number(b.summ), 0),
+        });
         this.sheets.push({
           name: "Юрлица",
-          data: this.xlsx.firms.map((x) => ({
+          data: xlsData.map((x) => ({
             Дата: x.date,
             Номер: x.docNum,
             Код: x.clientCode,
             Клиент: x.clientName,
             "ИНН/КПП": x.clientInn,
-            Сумма: x.summ,
+            Сумма: +x.summ,
           })),
         });
       }
