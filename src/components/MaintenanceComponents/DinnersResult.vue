@@ -1,5 +1,20 @@
 <template>
   <div class="dinners__result">
+    <!-- <button class="big-btn" @click.prevent="saveByDate">Скачать итого по датам</button> -->
+    <xlsx-workbook
+      class="download"
+      v-if="byDates"
+    >
+      <xlsx-sheet
+        :collection="sheet.data"
+        v-for="sheet in dateSheets"
+        :key="sheet.name"
+        :sheet-name="sheet.name"
+      />
+      <xlsx-download :filename="`Обеды по датам.xls`">
+        <button @click.prevent="addSheets">Скачать итого по датам</button>
+      </xlsx-download>
+    </xlsx-workbook>
     <div class="btn-block companies">
       <button
         v-for="(company, i) in dinners"
@@ -9,7 +24,10 @@
         {{ company.name }}
       </button>
     </div>
-    <div class="btn-block service-btn" v-if="currentCompanyDinners">
+    <div
+      class="btn-block service-btn"
+      v-if="currentCompanyDinners"
+    >
       <xlsx-workbook class="download">
         <xlsx-sheet
           :collection="sheet.data"
@@ -23,7 +41,7 @@
       </xlsx-workbook>
     </div>
     <div class="output-block">
-      <h3>{{ activeCompany }}</h3>
+      <h3>{{ activeCompany }} <span v-if="activeCompany === 'Артис'">({{currentCompanyDinners.departments.reduce((a, b) => a + b.total, 0)}})</span> <span v-if="activeCompany != 'Артис' && currentCompanyDinners">({{currentCompanyDinners.employees.reduce((a,b) => a + b.markList.length, 0)}})</span> </h3>
       <ul v-if="activeCompany === 'Артис'">
         <li
           v-for="(department, i) in currentCompanyDinners.departments"
@@ -112,6 +130,7 @@ export default {
   data() {
     return {
       activeCompany: null,
+      dateSheets: [],
     };
   },
   computed: {
@@ -134,9 +153,9 @@ export default {
           });
         });
       } else {
-        this.currentCompanyDinners.employees.forEach(e => {
-          handledResult.push({employee: e.name, total: e.markList.length})
-        })
+        this.currentCompanyDinners.employees.forEach((e) => {
+          handledResult.push({ employee: e.name, total: e.markList.length });
+        });
       }
       return handledResult;
     },
@@ -148,10 +167,36 @@ export default {
         },
       };
     },
+    byDates() {
+      return this.$store.getters.getTotalByDate;
+    },
+    dateSheetsData() {
+      return this.$store.getters.getDateSheets;
+    }
+    // totalByDates() {
+    //   return {
+    //     sheets: {
+    //       name: "По датам",
+    //       data: this.byDates
+    //     }
+    //   }
+    // }
   },
   methods: {
     getCompanyData(company) {
       this.activeCompany = company;
+    },
+    addSheets() {
+      this.dateSheets.push({
+        name: `${this.byDates[0]["Дата"]} - ${this.byDates[this.byDates.length - 1]["Дата"]}`,
+        data: this.byDates,
+      });
+      this.dateSheetsData.forEach(d => {
+        this.dateSheets.push({
+          name: d.sheetName,
+          data: d.sheetHandledData
+        })
+      })
     },
   },
 };

@@ -39,22 +39,22 @@ export default {
 			state.info1C8_DP = payload;
 		},
 		setExtras1C7(state, payload) {
-			console.log(payload);
+			// console.log(payload);
 			state.extras.from1C7 = payload.from1C;
 			// state.extras.fromOS = state.extras.fromOS.concat(payload.fromOS);
 		},
 		setExtras1C_A21(state, payload) {
-			console.log(payload);
+			// console.log(payload);
 			state.extras.from1C8_A21 = payload.from1C;
 			// state.extras.fromOS = state.extras.fromOS.concat(payload.fromOS);
 		},
 		setExtras1C_AP(state, payload) {
-			console.log(payload);
+			// console.log(payload);
 			state.extras.from1C8_AP = payload.from1C;
 			// state.extras.fromOS = state.extras.fromOS.concat(payload.fromOS);
 		},
 		setExtras1C_DP(state, payload) {
-			console.log(payload);
+			// console.log(payload);
 			state.extras.from1C8_DP = payload.from1C;
 			// state.extras.fromOS = state.extras.fromOS.concat(payload.fromOS);
 		},
@@ -68,7 +68,7 @@ export default {
 		},
 		async addDriverToCatalog(context, payload) {
 			let initID = Date.now().toString();
-			console.log(initID, payload.name);
+			// console.log(initID, payload.name);
 			await db
 				.collection("service/catalog/drivers_JSON")
 				.doc(initID)
@@ -100,7 +100,7 @@ export default {
 		},
 
 		compareDriversIn1CAndOsDB({ getters, commit }, payload) {
-			console.log(payload);
+			// console.log(payload);
 			const dataSource = payload.dataSource;
 			const osDrivers = getters.getActualStates.catalogDrivers.map((os) =>
 				os.name.split("  ").join(" ").toLowerCase()
@@ -121,7 +121,7 @@ export default {
 					})
 				)
 			);
-			console.log(excelDrivers);
+			// console.log(excelDrivers);
 			const extraFrom1C = [];
 			const extraFromOS = [];
 			const cutName = require("../stringsHandler").nameCutter;
@@ -138,7 +138,7 @@ export default {
 
 			extraFromOS.sort();
 			extraFrom1C.sort();
-			console.log(extraFrom1C);
+			// console.log(extraFrom1C);
 			switch (dataSource) {
 				case "1C7":
 					commit("setExtras1C7", {
@@ -146,19 +146,19 @@ export default {
 					});
 					break;
 				case "1C8_A21":
-					console.log(`case 1C8_A21`);
+					// console.log(`case 1C8_A21`);
 					commit("setExtras1C_A21", {
 						from1C: extraFrom1C,
 					});
 					break;
 				case "1C8_AP":
-					console.log(`case 1C8_AP`);
+					// console.log(`case 1C8_AP`);
 					commit("setExtras1C_AP", {
 						from1C: extraFrom1C,
 					});
 					break;
 				case "1C8_DP":
-					console.log(`case 1C8_DP`);
+					// console.log(`case 1C8_DP`);
 					commit("setExtras1C_DP", {
 						from1C: extraFrom1C,
 					});
@@ -254,9 +254,11 @@ export default {
 			});
 			// get drivers shedules
 			const driversShedules = [];
+      console.log(payload.data)
 			payload.data.forEach((p, i) => {
 				if (Object.values(p).some((s) => s.match(/\d+-\d+/))) {
 					const driverInfo = payload.data.slice(i, i + 4);
+          // console.log(driverInfo[0])
 					const driver = {
 						name: driverInfo[0].__EMPTY_2.split("\n")[0],
 						position:

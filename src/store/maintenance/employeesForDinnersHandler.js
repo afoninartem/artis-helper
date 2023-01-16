@@ -10,7 +10,7 @@ export default {
 	},
 	actions: {
 		async setEmployeesDetails(context, payload) {
-      console.log(payload)
+      // console.log(payload)
 			const data = [];
 			payload.forEach((row) => {
 				if (row["ФИО сотрудника"] && row["Подразделение"]) {
@@ -26,7 +26,7 @@ export default {
 					});
 				}
 			});
-      console.log(data)
+      // console.log(data)
 			return await context.commit("setEmployeesDetails", data);
 		},
 	},

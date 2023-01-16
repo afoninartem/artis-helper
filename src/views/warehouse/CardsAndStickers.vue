@@ -23,7 +23,10 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="(shop, i) in table.data" :key="i">
+        <tr
+          v-for="(shop, i) in table.data"
+          :key="i"
+        >
           <td>{{ i + 1 }}</td>
           <td>{{ shop.name }}</td>
           <td>{{ shop.email }}</td>

@@ -1,22 +1,37 @@
 export default {
 	state: {
 		senesys: null,
+		totalByDate: null,
+		dateSheets: null,
 	},
 	mutations: {
 		addSenesysData(state, payload) {
 			state.senesys = payload;
 		},
+		addTotalByDate(state, payload) {
+			state.totalByDate = payload;
+		},
+		addDateSheets(state, payload) {
+			state.dateSheets = payload;
+		},
 	},
 	actions: {
 		async addSenesysData({ commit, getters }, payload) {
-			// console.log(payload)
-			const rawData = payload.filter((e) => e.__EMPTY_7);
+			const rawHeader = Object.entries(payload[1]);
+			// console.log(rawHeader);
+			const dateKey = rawHeader.filter((x) => x[1] === "Дата")[0][0];
+			const nameKey = rawHeader.filter((x) => x[1] === "ФИО")[0][0];
+			const companyKey = rawHeader.filter((x) => x[1] === "Компания")[0][0];
+			const datetimeKey = rawHeader.filter((x) => x[1] === "Вход")[0][0];
+			const tableAlert = rawHeader.filter((x) => x[1] === "Выход")[0][0];
+			const rawData = payload.filter((e) => e[nameKey]);
 			const companies = [];
 			rawData.shift();
 			const freeEaters = getters.getActualStates.dinners.map((f) => f.name);
 			const employeesDetails = getters.getEmployeesDetails;
 			const artisEmployeesNames = employeesDetails.map((e) => e.name);
-			console.log(rawData);
+			// console.log(rawData);
+
 			//golang backend experiment
 			// const todayDate = new Date().toLocaleDateString("ru-Ru");
 			// rawData.forEach( async (row) => {
@@ -27,54 +42,66 @@ export default {
 			// 		name: row.__EMPTY_7.split("  ").join(" "),
 			// 		company: row.__EMPTY_10,
 			// 	};
-      //   // await fetch("")
+			//   // await fetch("")
 			// });
+
+			const totalByDate = [];
+			const dateSheets = [];
+
 			rawData.forEach((row) => {
-				row.__EMPTY_7 = row.__EMPTY_7.split("  ").join(" ");
+				if (row[tableAlert])
+					return alert(
+						"При выгрузке данных из Senesys надо убрать обе галочки над таблицей."
+					);
 
-				if (!freeEaters.includes(row.__EMPTY_7)) {
-					row.__EMPTY_10 === "Арс Холдинг" || row.__EMPTY_10 === "Артис-XXI век"
-						? (row.__EMPTY_10 = "Артис")
+				row[nameKey] = row[nameKey].split("  ").join(" ");
+
+				if (!freeEaters.includes(row[nameKey])) {
+					row[companyKey] === "Арс Холдинг" ||
+					row[companyKey] === "Артис-XXI век"
+						? (row[companyKey] = "Артис")
 						: null;
-					row.__EMPTY_10 === "Эмульсии" ? (row.__EMPTY_10 = "Эмульком") : null;
+					row[companyKey] === "Эмульсии"
+						? (row[companyKey] = "Эмульком")
+						: null;
 
-					if (companies.some((company) => company.name === row.__EMPTY_10)) {
+					// totalByDate calculation ↓
+					totalByDate.some((x) => x["Дата"] === row[dateKey])
+						? (totalByDate.filter((x) => x["Дата"] === row[dateKey])[0][
+								row[companyKey]
+						  ] += 1)
+						: totalByDate.push({
+								Дата: row[dateKey],
+								Артис: row[companyKey] === "Артис" ? 1 : 0,
+								"Гуд Вуд": row[companyKey] === "Гуд Вуд" ? 1 : 0,
+								Эмульком: row[companyKey] === "Эмульком" ? 1 : 0,
+						  });
+					// totalByDate calculation ↑
+
+					if (companies.some((company) => company.name === row[companyKey])) {
 						const c_Company = companies.filter(
-							(company) => company.name === row.__EMPTY_10
+							(company) => company.name === row[companyKey]
 						)[0];
 						c_Company.employees.some(
-							(employee) => employee.name === row.__EMPTY_7.trim()
+							(employee) => employee.name === row[nameKey].trim()
 						)
-							? row.__EMPTY_5
-								? c_Company.employees
-										.filter(
-											(employee) => employee.name === row.__EMPTY_7.trim()
-										)[0]
-										.markList.push(row.__EMPTY_3, row.__EMPTY_5)
-								: c_Company.employees
-										.filter(
-											(employee) => employee.name === row.__EMPTY_7.trim()
-										)[0]
-										.markList.push(row.__EMPTY_3)
-							: row.__EMPTY_5
-							? c_Company.employees.push({
-									name: row.__EMPTY_7.trim(),
-									markList: [row.__EMPTY_3, row.__EMPTY_5],
-							  })
+							? c_Company.employees
+									.filter(
+										(employee) => employee.name === row[nameKey].trim()
+									)[0]
+									.markList.push(row[datetimeKey])
 							: c_Company.employees.push({
-									name: row.__EMPTY_7.trim(),
-									markList: [row.__EMPTY_3],
+									name: row[nameKey].trim(),
+									markList: [row[datetimeKey]],
 							  });
 					} else {
-						if (!freeEaters.includes(row.__EMPTY_7)) {
+						if (!freeEaters.includes(row[nameKey])) {
 							companies.push({
-								name: row.__EMPTY_10,
+								name: row[companyKey],
 								employees: [
 									{
-										name: row.__EMPTY_7,
-										markList: row.__EMPTY_5
-											? [row.__EMPTY_3, row.__EMPTY_5]
-											: [row.__EMPTY_3],
+										name: row[nameKey],
+										markList: [row[datetimeKey]],
 									},
 								],
 							});
@@ -82,6 +109,46 @@ export default {
 					}
 				}
 			});
+			companies.sort((a, b) =>
+				a.name > b.name ? 1 : b.name > a.name ? -1 : 0
+			);
+
+			commit("addTotalByDate", totalByDate);
+
+			totalByDate.forEach((total) => {
+				const sheetName = total["Дата"];
+				let sheetData = [];
+				companies.forEach((c) => {
+					const todayEaters = c.employees
+						.map((e) => {
+							return e.markList.map((m) => ({ name: e.name, mark: m }));
+						})
+						.flat()
+						.filter((m) => m.mark.includes(sheetName))
+						.map((x) => x.name)
+						.sort()
+						.map((x) => ({ [c.name]: x }));
+					sheetData = sheetData.concat(todayEaters);
+				});
+				const sheetHandledData = [];
+				sheetData.forEach((data) => {
+					const companyName = Object.keys(data)[0];
+          const companyNameAndTotal = `${companyName} (${total[companyName]})`
+					const employeeName = Object.values(data)[0];
+					sheetHandledData.some((item) => !item[companyNameAndTotal])
+						? (sheetHandledData.filter((item) => !item[companyNameAndTotal])[0][
+              companyNameAndTotal
+						  ] = employeeName)
+						: sheetHandledData.push({ [companyNameAndTotal]: employeeName });
+				});
+				dateSheets.push({
+					sheetName,
+					sheetHandledData,
+				});
+			});
+
+			commit("addDateSheets", dateSheets);
+
 			const artis = companies.filter((c) => c.name === "Артис")[0];
 			artis.departments = [
 				{ name: "Уволенные и неопределенные", employees: [], total: 0 },
@@ -127,13 +194,18 @@ export default {
 							a.name > b.name ? 1 : b.name > a.name ? -1 : 0
 					  );
 			});
-			console.log(companies);
 			return await commit("addSenesysData", companies);
 		},
 	},
 	getters: {
 		getHandledSenesys: (state) => {
 			return state.senesys;
+		},
+		getTotalByDate: (state) => {
+			return state.totalByDate;
+		},
+		getDateSheets: (state) => {
+			return state.dateSheets;
 		},
 	},
 };

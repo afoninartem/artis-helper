@@ -12,12 +12,16 @@ export default {
 		actualNeeds: null,
 		actualVacancies: null,
 		actualCatalogPersonal: null,
-    actualCandidates: null,
-    actualCatalogDrivers: null,
-    actualCatalogCars: null,
-    actualMarkers: [],
+		actualCandidates: null,
+		actualCatalogDrivers: null,
+		// actualDriversPositionsExceptions: null,
+		actualCatalogCars: null,
+		actualMarkers: [],
 	},
 	mutations: {
+		// setActutalDriversPositionsExceptions(state, payload) {
+		// 	state.actualDriversPositionsExceptions = payload;
+		// },
 		setActualCatalogDrivers(state, payload) {
 			state.actualCatalogDrivers = payload;
 		},
@@ -60,18 +64,18 @@ export default {
 		setActualCandidates(state, payload) {
 			state.actualCandidates = payload;
 		},
-    setActualMarkers(state, payload) {
-      state.actualMarkers = payload
-    }
+		setActualMarkers(state, payload) {
+			state.actualMarkers = payload;
+		},
 	},
 	actions: {
-		//set uptade date:
-    async updateMarkersDate() {
+		//set update date:
+		async updateMarkersDate() {
 			await db
 				.collection("dbUpdates")
 				.doc("markers")
 				.update({ lastUpdate: Date.now() });
-    },
+		},
 		async updateCandidatesDate() {
 			await db
 				.collection("dbUpdates")
@@ -156,8 +160,54 @@ export default {
 				.doc("catalog_personal")
 				.update({ lastUpdate: Date.now() });
 		},
+		async updateActutalDriversExceptions() {
+			await db
+				.collection("dbUpdates")
+				.doc("drivers_exceptions")
+				.update({ lastUpdate: Date.now() });
+		},
 		//set actual data in state
-    async setActualMarkers(context) {
+    // async setActutalDriversPositionsExceptions(context) {
+    //   let markers = [];
+		// 	let catalogMarkersLastUpdateDB;
+		// 	await db
+		// 		.collection("dbUpdates")
+		// 		.doc("markers")
+		// 		.get()
+		// 		.then((querySnapshot) => {
+		// 			catalogMarkersLastUpdateDB = querySnapshot.data().lastUpdate;
+		// 		});
+
+		// 	const catalogMarkersLastUpdateLS = localStorage.getItem(
+		// 		"catalogMarkersLastUpdateLS"
+		// 	)
+		// 		? JSON.parse(localStorage.getItem("catalogMarkersLastUpdateLS"))
+		// 		: 0;
+		// 	if (catalogMarkersLastUpdateDB > catalogMarkersLastUpdateLS) {
+		// 		localStorage.setItem(
+		// 			"catalogMarkersLastUpdateLS",
+		// 			JSON.stringify(catalogMarkersLastUpdateDB)
+		// 		);
+
+		// 		await db
+		// 			.collection("warehouse/shipment/markers")
+		// 			.get()
+		// 			.then((querySnapshot) => {
+		// 				querySnapshot.forEach((doc) => {
+		// 					markers.push(doc.data());
+		// 				});
+		// 			});
+		// 		localStorage.setItem("actualMarkers", JSON.stringify(markers));
+		// 		console.log("СПИСОК МАРКИРОВОК ВЗЯТ ИЗ БД И ЗАПИСАН В ХРАНИЛИЩЕ");
+		// 	} else {
+		// 		markers = localStorage.getItem("actualMarkers")
+		// 			? JSON.parse(localStorage.getItem("actualMarkers"))
+		// 			: [];
+		// 		console.log("СПИСОК МАРКИРОВОК ВЗЯТ ИЗ ХРАНИЛИЩА");
+		// 	}
+		// 	return await context.commit("setActualMarkers", markers);
+    // },
+		async setActualMarkers(context) {
 			let markers = [];
 			let catalogMarkersLastUpdateDB;
 			await db
@@ -197,7 +247,7 @@ export default {
 			}
 			return await context.commit("setActualMarkers", markers);
 		},
-    async setActualCatalogCars(context) {
+		async setActualCatalogCars(context) {
 			let cars = [];
 			let catalogCarsLastUpdateDB;
 			await db
@@ -267,7 +317,7 @@ export default {
 							drivers.push(doc.data());
 						});
 					});
-          // console.log(drivers)
+				// console.log(drivers)
 				localStorage.setItem("actualCatalogDrivers", JSON.stringify(drivers));
 				console.log("КАТАЛОГ ВОДИТЕЛЕЙ ВЗЯТ ИЗ БД И ЗАПИСАН В ХРАНИЛИЩЕ");
 			} else {
@@ -352,8 +402,13 @@ export default {
 						});
 					});
 
-				localStorage.setItem("actualCatalogPersonal", JSON.stringify(catalogPersonal));
-				console.log("КАТАЛОГ ОТДЕЛА ПЕРСОНАЛА ВЗЯТ ИЗ БД И ЗАПИСАН В ХРАНИЛИЩЕ");
+				localStorage.setItem(
+					"actualCatalogPersonal",
+					JSON.stringify(catalogPersonal)
+				);
+				console.log(
+					"КАТАЛОГ ОТДЕЛА ПЕРСОНАЛА ВЗЯТ ИЗ БД И ЗАПИСАН В ХРАНИЛИЩЕ"
+				);
 			} else {
 				catalogPersonal = localStorage.getItem("actualCatalogPersonal")
 					? JSON.parse(localStorage.getItem("actualCatalogPersonal"))
@@ -786,7 +841,7 @@ export default {
 	getters: {
 		getActualStates: (state) => {
 			return {
-        markers: state.actualMarkers,
+				markers: state.actualMarkers,
 				shops: state.actualShops,
 				colors: state.actualColors,
 				packages: state.actualPackages,
@@ -797,17 +852,21 @@ export default {
 				dinners: state.actualDinners,
 				needs: state.actualNeeds,
 				vacancies: state.actualVacancies,
-        catalogPersonal: state.actualCatalogPersonal,
-        candidates: state.actualCandidates,
-        catalogDrivers: state.actualCatalogDrivers ? state.actualCatalogDrivers.map(driver => JSON.parse(driver.json)).map(driver => {
-					driver.carslist.map(cl => {
-						cl.extras = driver.extras;
-						cl.name = driver.name;
-						return cl
-					})
-					return driver
-				}) : null,
-        catalogCars: state.actualCatalogCars,
+				catalogPersonal: state.actualCatalogPersonal,
+				candidates: state.actualCandidates,
+				catalogDrivers: state.actualCatalogDrivers
+					? state.actualCatalogDrivers
+							.map((driver) => JSON.parse(driver.json))
+							.map((driver) => {
+								driver.carslist.map((cl) => {
+									cl.extras = driver.extras;
+									cl.name = driver.name;
+									return cl;
+								});
+								return driver;
+							})
+					: null,
+				catalogCars: state.actualCatalogCars,
 			};
 		},
 	},
