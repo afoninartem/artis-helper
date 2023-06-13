@@ -173,14 +173,6 @@ export default {
     dateSheetsData() {
       return this.$store.getters.getDateSheets;
     }
-    // totalByDates() {
-    //   return {
-    //     sheets: {
-    //       name: "По датам",
-    //       data: this.byDates
-    //     }
-    //   }
-    // }
   },
   methods: {
     getCompanyData(company) {
@@ -188,7 +180,7 @@ export default {
     },
     addSheets() {
       this.dateSheets.push({
-        name: `${this.byDates[0]["Дата"]} - ${this.byDates[this.byDates.length - 1]["Дата"]}`,
+        name: `${this.byDates[0]["Дата"]} - ${this.byDates[this.byDates.length - 2]["Дата"]}`,
         data: this.byDates,
       });
       this.dateSheetsData.forEach(d => {

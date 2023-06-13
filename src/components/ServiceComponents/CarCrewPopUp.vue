@@ -521,7 +521,7 @@ export default {
       this.showNewEmp = false;
       this.showChoiceButtons = false;
       for (let i = 0; i < this.car.crew.length; i += 1) {
-        if (this.car.crew[i] !== this.crewData[i].driverID) {
+        if (this.crewData.length && this.car.crew[i] !== this.crewData[i].driverID) {
           await this.$store.dispatch("updateCrewOrder", {
             carID: this.car.carID,
             crewNewOrder: this.crewData.map((c) => c.driverID),
@@ -860,7 +860,7 @@ p {
             input::-webkit-outer-spin-button,
             input::-webkit-inner-spin-button {
               -webkit-appearance: none;
-              -moz-appearance: none; // не работает в FF почему-то
+              // -moz-appearance: none; // не работает в FF почему-то
               margin: 0;
             }
           }

@@ -1,5 +1,8 @@
 <template>
-  <div class="popup" v-if="show">
+  <div
+    class="popup"
+    v-if="show"
+  >
     <div class="popup__content">
       <h1>{{ info.driver.name }} - {{ info.driver.car }}</h1>
       <div class="conventions">
@@ -9,7 +12,10 @@
           :key="`conventions-item-${i}`"
           @click.prevent="setExtra(item)"
         >
-          <div class="conventions__sample" :style="{ background: item.color }">
+          <div
+            class="conventions__sample"
+            :style="{ background: item.color }"
+          >
             {{ item.cut }}
           </div>
           <div class="conventions__description">{{ item.description }}</div>
@@ -24,7 +30,12 @@
           <div class="conventions__description">Очистить</div>
         </div>
       </div>
-      <div class="dates" v-if="info" ref="dates" :style="oldExtras">
+      <div
+        class="dates"
+        v-if="info"
+        ref="dates"
+        :style="oldExtras"
+      >
         <div v-if="info.days.length === 1">
           {{ info.days[0].toLocaleDateString() }}
         </div>
@@ -35,8 +46,14 @@
       </div>
 
       <div class="block-btn">
-        <button class="save-btn" @click.prevent="save">Сохранить</button>
-        <button class="close-btn" @click.prevent="close">Закрыть</button>
+        <button
+          class="save-btn"
+          @click.prevent="save"
+        >Сохранить</button>
+        <button
+          class="close-btn"
+          @click.prevent="close"
+        >Закрыть</button>
       </div>
     </div>
   </div>
@@ -72,7 +89,7 @@ export default {
           day: new Date(day).toISOString(),
           cut: item.cut,
           bgColor: item.color,
-          carID: this.info.carID
+          carID: this.info.carID,
         })),
       };
     },

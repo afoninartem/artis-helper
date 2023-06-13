@@ -30,9 +30,15 @@
         </div>
       </div>
       <div class="btn-block">
-        <button @click.prevent="prevMonth">{{ prevMonthTitle }}</button>
-        <button @click.prevent="save">Сохранить</button>
-        <button @click.prevent="nextMonth">{{ nextMonthTitle }}</button>
+        <div class="nav-block">
+          <button @click.prevent="prevMonth">{{ prevMonthTitle }}</button>
+          <button @click.prevent="save">Сохранить</button>
+          <button @click.prevent="nextMonth">{{ nextMonthTitle }}</button>
+        </div>
+        <router-link
+          class="to-filter"
+          to="/personal-drivers-filter"
+        >Фильтр должностей и сотрудников</router-link>
       </div>
     </div>
 
@@ -378,12 +384,12 @@ export default {
   },
   methods: {
     capitalizeName(str) {
-      const cap = require("../../store/stringsHandler").capitalizeName
-      return cap(str)
+      const cap = require("../../store/stringsHandler").capitalizeName;
+      return cap(str);
     },
     cutName(str) {
-      const cut = require("../../store/stringsHandler").nameCutter
-      return cut(str)
+      const cut = require("../../store/stringsHandler").nameCutter;
+      return cut(str);
     },
     prevMonth() {
       this.date.month === 0
@@ -569,7 +575,7 @@ export default {
         if (this.shedule1C8.length) {
           result.rowspan += 1;
           result.shedule1C8 = Array.from(this.shedule1C8).filter((i) => {
-            const shortName = this.cutName(result.name)
+            const shortName = this.cutName(result.name);
             return i.name === shortName;
           })[0];
         }
@@ -737,6 +743,10 @@ tbody:nth-child(2n + 1) > tr > td {
         border: 1px solid black;
       }
     }
+  }
+  .btn-block {
+    display: flex;
+    justify-content: space-evenly;
   }
 }
 .extra-drivers-from-1c {

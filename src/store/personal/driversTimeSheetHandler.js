@@ -180,8 +180,9 @@ export default {
 					try {
 						driverID = drivers.filter(
 							(d) =>
-								d.name.split("  ").join(" ").toLowerCase() ===
-									item.__EMPTY_1.split("  ").join(" ").toLowerCase() &&
+								d.name.trim().split("  ").join(" ").toLowerCase() ===
+									item.__EMPTY_1.trim().split("  ").join(" ").toLowerCase()
+                   &&
 								d.mainPosition.split("  ").join(" ").toLowerCase() ===
 									item["Должность"].split("  ").join(" ").toLowerCase()
 						)[0].driverID;
@@ -254,24 +255,26 @@ export default {
 			});
 			// get drivers shedules
 			const driversShedules = [];
-      console.log(payload.data)
+      // console.log(payload.data)
 			payload.data.forEach((p, i) => {
 				if (Object.values(p).some((s) => s.match(/\d+-\d+/))) {
 					const driverInfo = payload.data.slice(i, i + 4);
           // console.log(driverInfo[0])
+          // const driverPositionNotations = ["(Водитель-экспедитор )", "(Водитель-экспедитор)"]
 					const driver = {
 						name: driverInfo[0].__EMPTY_2.split("\n")[0],
 						position:
-							driverInfo[0].__EMPTY_2.split("\n")[1] ===
-							"(Водитель-экспедитор )"
+            // driverPositionNotations.includes(driverInfo[0].__EMPTY_2.split("\n")[1])
+            driverInfo[0].__EMPTY_2.split("\n")[1].toLowerCase().includes("водитель-")
 								? "водитель"
-								: driverInfo[0].__EMPTY_2.split("\n")[1] ===
-								  "(Менеджер-экспедитор)"
+								: driverInfo[0].__EMPTY_2.split("\n")[1].toLowerCase().includes("-экспедитор")
+								  
 								? "экспедитор"
 								: driverInfo[0].__EMPTY_2.split("\n")[1],
 						personnelNumber: driverInfo[0].__EMPTY_4,
 						shedule: {},
 					};
+          console.log(`${driver.name} - ${driver.position}`)
 					driverInfo.forEach((info, i) => {
 						let day, hours, mark;
 						for (let infoKey in info) {
@@ -302,6 +305,11 @@ export default {
 					}
 				}
 			});
+      ///
+      const log = []
+      driversShedules.forEach(d => log[d.name] = d)
+      console.log(log)
+      ///
 			payload.company === "A21"
 				? (context.commit("add1C8Shedule_A21", driversShedules),
 				  context.dispatch("compareDriversIn1CAndOsDB", {

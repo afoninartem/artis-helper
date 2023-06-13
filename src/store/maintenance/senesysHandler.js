@@ -76,6 +76,7 @@ export default {
 								"Гуд Вуд": row[companyKey] === "Гуд Вуд" ? 1 : 0,
 								Эмульком: row[companyKey] === "Эмульком" ? 1 : 0,
 						  });
+
 					// totalByDate calculation ↑
 
 					if (companies.some((company) => company.name === row[companyKey])) {
@@ -112,7 +113,17 @@ export default {
 			companies.sort((a, b) =>
 				a.name > b.name ? 1 : b.name > a.name ? -1 : 0
 			);
-
+      const periodTotalByCompany = { Дата: "Итого:" };
+      totalByDate.forEach((date) => {
+        for (let key in date) {
+          if (key != "Дата") {
+            periodTotalByCompany[key]
+              ? (periodTotalByCompany[key] += date[key])
+              : (periodTotalByCompany[key] = date[key]);
+          }
+        }
+      });
+      totalByDate.push(periodTotalByCompany)
 			commit("addTotalByDate", totalByDate);
 
 			totalByDate.forEach((total) => {
@@ -133,13 +144,16 @@ export default {
 				const sheetHandledData = [];
 				sheetData.forEach((data) => {
 					const companyName = Object.keys(data)[0];
-          const companyNameAndTotal = `${companyName} (${total[companyName]})`
+					const companyNameAndTotal = `${companyName} (${total[companyName]})`;
 					const employeeName = Object.values(data)[0];
 					sheetHandledData.some((item) => !item[companyNameAndTotal])
 						? (sheetHandledData.filter((item) => !item[companyNameAndTotal])[0][
-              companyNameAndTotal
+								companyNameAndTotal
 						  ] = employeeName)
-						: sheetHandledData.push({ [companyNameAndTotal]: employeeName });
+						: sheetHandledData.push({
+								[`Список отметившихся за обед ${sheetName}`]: "",
+								[companyNameAndTotal]: employeeName,
+						  });
 				});
 				dateSheets.push({
 					sheetName,

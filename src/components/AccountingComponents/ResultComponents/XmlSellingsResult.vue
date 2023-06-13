@@ -88,7 +88,7 @@ export default {
           Сумма: t["Сумма"],
         })),
         firms: this.sellingXMLResult.sellsListFromXML.filter(
-          (x) => x.clientInn && x.clientInn.length
+          (x) => (x.clientInn && x.clientInn.length) || (x.clientOrganisation == "Да")
         ),
       };
     },

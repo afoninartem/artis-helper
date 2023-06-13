@@ -1,6 +1,6 @@
 
 export default function (date, extras = [], currCarID) {
-	//styles will be store in other place
+	//styles will be stored in other place
 
 	const weekendStyle = "background: rgba(225, 100, 100, 0.3)";
 	const todayStyle = "border: 2px solid blue";

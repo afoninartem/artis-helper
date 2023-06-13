@@ -10,15 +10,16 @@ export default {
 				.set(payload);
 		},
 		async updatePackage(context, payload) {
+      console.log(payload)
 			return await db
 				.collection("warehouse/shipment/packages")
-				.doc(payload.name)
+				.doc(payload.id.toString())
 				.update({ quan: payload.quan });
 		},
 		async deletePackage(context, payload) {
 			return await db
 				.collection("warehouse/shipment/packages")
-				.doc(payload.toString())
+				.doc(payload.id.toString())
 				.delete();
 		},
 	},

@@ -167,8 +167,8 @@ export default {
 				.update({ lastUpdate: Date.now() });
 		},
 		//set actual data in state
-    // async setActutalDriversPositionsExceptions(context) {
-    //   let markers = [];
+		// async setActutalDriversPositionsExceptions(context) {
+		//   let markers = [];
 		// 	let catalogMarkersLastUpdateDB;
 		// 	await db
 		// 		.collection("dbUpdates")
@@ -206,7 +206,7 @@ export default {
 		// 		console.log("СПИСОК МАРКИРОВОК ВЗЯТ ИЗ ХРАНИЛИЩА");
 		// 	}
 		// 	return await context.commit("setActualMarkers", markers);
-    // },
+		// },
 		async setActualMarkers(context) {
 			let markers = [];
 			let catalogMarkersLastUpdateDB;
@@ -317,7 +317,7 @@ export default {
 							drivers.push(doc.data());
 						});
 					});
-				// console.log(drivers)
+				console.log(drivers);
 				localStorage.setItem("actualCatalogDrivers", JSON.stringify(drivers));
 				console.log("КАТАЛОГ ВОДИТЕЛЕЙ ВЗЯТ ИЗ БД И ЗАПИСАН В ХРАНИЛИЩЕ");
 			} else {
@@ -856,14 +856,17 @@ export default {
 				candidates: state.actualCandidates,
 				catalogDrivers: state.actualCatalogDrivers
 					? state.actualCatalogDrivers
-							.map((driver) => JSON.parse(driver.json))
+							.map((driver) => driver.json ? JSON.parse(driver.json) : driver)
 							.map((driver) => {
-								driver.carslist.map((cl) => {
-									cl.extras = driver.extras;
-									cl.name = driver.name;
-									return cl;
-								});
-								return driver;
+								if (driver.carslist) {
+									driver.carslist.map((cl) => {
+										cl.extras = driver.extras;
+										cl.name = driver.name;
+										return cl;
+									});
+									
+								}
+                return driver;
 							})
 					: null,
 				catalogCars: state.actualCatalogCars,

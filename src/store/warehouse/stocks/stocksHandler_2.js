@@ -8,6 +8,10 @@ export default {
 		setShipment(state, payload) {
 			state.shipment = payload;
 		},
+    setErrorShopsDB(state, payload) {
+      state.error.shopsDB.state = payload.state
+      state.error.shopsDB.text = payload.text
+    }
 	},
 	actions: {
 		async setShipment({ commit, getters }, payload) {
@@ -15,6 +19,7 @@ export default {
 			const shopsDB = getters.getActualStates.shops;
 			// const extra = getters.getExtraAdded;
 			// console.log(extra)
+      // console.log(shopsDB.map(s => s.name))
 			Array.from(payload).forEach((report) => {
 				if (
 					shopsDB.some(
@@ -56,7 +61,7 @@ export default {
 
 					report.shipment.cup =
 						report.status === "top"
-							? report.f_Cup
+							? report.f_Cup || 0
 							: report.f_Cup - report.c_Cup < 0
 							? report.f_Cup
 							: report.l_Cup - report.f_Cup < 20
@@ -65,7 +70,7 @@ export default {
 
 					report.shipment.cupPack =
 						report.status === "top"
-							? report.f_CupPack
+							? report.f_CupPack || 0
 							: report.f_CupPack - report.c_CupPack < 0
 							? report.f_CupPack
 							: report.l_CupPack - report.f_CupPack < 20
@@ -85,14 +90,14 @@ export default {
 
 					report.shipment.chocoSet =
 						report.status === "top"
-							? report.f_ChocoSet
+							? report.f_ChocoSet || 0
 							: report.f_ChocoSet > report.c_ChocoSet
 							? report.c_ChocoSet
 							: report.f_ChocoSet || 0;
 
 					report.shipment.chest =
 						report.status === "top"
-							? report.f_Chest
+							? report.f_Chest || 0
 							: report.f_Chest > 30
 							? 30
 							: report.f_Chest || 0;
@@ -121,7 +126,7 @@ export default {
 
 					report.shipment.greenBaloon =
 						report.status === "top"
-							? report.f_GreenBaloon
+							? report.f_GreenBaloon || 10
 							// : report.l_GreenBaloon < 40 && report.f_GreenBaloon < 40
 							// ? report.f_GreenBaloon || 0
 							// : 20;
@@ -131,7 +136,7 @@ export default {
 
 					report.shipment.grayBaloon =
 						report.status === "top"
-							? report.f_GrayBaloon
+							? report.f_GrayBaloon || 10
 							// : report.l_GrayBaloon < 40 && report.f_GrayBaloon < 40
 							// ? report.f_GrayBaloon || 0
 							// : 20;
@@ -141,7 +146,7 @@ export default {
 
 					report.shipment.stick =
 						report.status === "top"
-							? report.f_Stick
+							? report.f_Stick || 20
 							: report.l_Stick > 80
 							? 0
 							: report.f_Stick < 80
@@ -153,7 +158,7 @@ export default {
 
 					report.shipment.clamp =
 						report.status === "top"
-            ? report.f_Clamp
+            ? report.f_Clamp || 20
             : report.l_Clamp > 80
             ? 0
             : report.f_Clamp < 80
@@ -164,6 +169,7 @@ export default {
 						? shipment[report.region].push(report)
 						: (shipment[report.region] = [report]);
 				} else {
+          console.log(`Салона ${report.shop} нет в БД`)
 					return commit("setErrorShopsDB", {
 						state: true,
 						text: `Салона ${report.shop} нет в БД`,

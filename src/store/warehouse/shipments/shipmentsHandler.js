@@ -135,6 +135,8 @@ export default {
 			const shopsDB = shopsAndColors.shops;
 			const colorsDB = shopsAndColors.colors;
 			const packages = shopsAndColors.packages;
+      const roomMaterials = shopsAndColors.storage.map((mat) =>
+      mat.name.split("  ").join(" "))
 			// const limits = shopsAndColors.limits;
 			const stoplist = [];
 			const carslist = [];
@@ -306,12 +308,14 @@ export default {
 							shop.samples
 								? shop.samples.push({ name, quan })
 								: (shop.samples = [{ name, quan }]);
-						} else if (name.includes(`56 полос`)) {
-							shop.thickCatalog = quan;
+						} 
+            // else if (name.includes(`56 полос`)) {
+						// 	shop.thickCatalog = quan;
 							// name.includes(`(48 часов)`)
 							// 	? (shop.thickCatalog = { quan, region: "МСК" })
 							// 	: (shop.thickCatalog = { quan, region: "РЕГ" });
-						} else if (name.includes(`20 полос`)) {
+						// } 
+            else if (name.includes(`20 полос`)) {
 							name.includes(`(48 часов)`)
 								? (shop.thinCatalog = { quan, region: "МСК" })
 								: (shop.thinCatalog = { quan, region: "РЕГ" });
@@ -363,6 +367,7 @@ export default {
 							//should cut long names here ↑
 						}
 					});
+          shop.otherMats?.sort((a) => roomMaterials.includes(a.name) ? -1 : 1)
 				});
 			});
 			carslist.sort((a, b) => b.shopslist.length - a.shopslist.length);

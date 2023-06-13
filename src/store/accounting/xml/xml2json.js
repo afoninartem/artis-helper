@@ -35,7 +35,6 @@ export default {
       }
     },
     async setPaymentXMLData(context, payload) {
-      // console.log(payload)
       const convert = require("xml-js");
       const json = convert.xml2json(payload, { compact: true, spaces: 2 });
       const object = JSON.parse(json);

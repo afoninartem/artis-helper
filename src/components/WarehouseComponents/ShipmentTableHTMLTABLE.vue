@@ -31,13 +31,13 @@
         <td :style="{ fontWeight: 'bold', background: shop.shopBG }">
           {{ shop.name }}
         </td>
-        <td :style="{
+        <!-- <td :style="{
             background: shop.name.includes('РЕКЛАМАЦИИ') ? shop.shopBG : '#fff',
           }">
           <span class="yellow tablepart">
             {{ shop.thickCatalog ? shop.thickCatalog : null }}
           </span>
-        </td>
+        </td> -->
         <td :style="{
             background: shop.name.includes('РЕКЛАМАЦИИ') ? shop.shopBG : '#fff',
           }">
@@ -303,6 +303,7 @@ export default {
   }
   * {
     color-adjust: exact;
+    print-color-adjust: exact;
     -webkit-print-color-adjust: exact;
     -moz-color-adjust: exact;
   }

@@ -9,11 +9,13 @@ export default {
 	},
 	actions: {
 		setSellingData(context, payload) {
+      console.log("sellingXmlHandler was used")
 			const xml = payload.children[0].children[0].children;
 			const data = Array.from(xml).map((x) => ({
 				docNum: x.children[0].innerHTML,
 				clientName: x.children[2].children[3].innerHTML,
 				clientCode: x.children[2].children[0].innerHTML,
+        clientOrganisation: x.children[2].children[2].innerHTML,
         clientInn: x.children[2].children[5].innerHTML === "                    " ? "" : x.children[2].children[5].innerHTML,
 				date: x.children[1].innerHTML,
 				summ: Array.from(x.children[3].children)

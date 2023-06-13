@@ -1,5 +1,8 @@
 <template>
-  <div class="catalog" v-if="cars">
+  <div
+    class="catalog"
+    v-if="cars"
+  >
     <div class="catalog__cars">
       <h1>Справочник машин</h1>
       <div class="menu">
@@ -17,32 +20,41 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(car, c) in cars" :key="c">
-            <td class="car-info" @click.prevent="openChangeCarPopup(car)">
+          <tr
+            v-for="(car, c) in cars"
+            :key="c"
+          >
+            <td
+              class="car-info"
+              @click.prevent="openChangeCarPopup(car)"
+            >
               {{ car.mark.toUpperCase() }}
             </td>
-            <td class="car-info" @click.prevent="openChangeCarPopup(car)">
+            <td
+              class="car-info"
+              @click.prevent="openChangeCarPopup(car)"
+            >
               {{ car.number }}
             </td>
-            <td @click.prevent="openCarCrewPopup(car.carID)" class="crew">
+            <td
+              @click.prevent="openCarCrewPopup(car.carID)"
+              class="crew"
+            >
               <div v-if="car.crew.length">
-                <p v-for="(member, m) in car.crew" :key="m">
-                  <span
-                    v-if="drivers.filter((d) => d.driverID === member).length"
-                    >{{
+                <p
+                  v-for="(member, m) in car.crew"
+                  :key="m"
+                >
+                  <span v-if="drivers.filter((d) => d.driverID === member).length">{{
                       drivers.filter((d) => d.driverID === member)[0].name
-                    }}</span
-                  >
+                    }}</span>
                   -
-                  <span
-                    v-if="drivers.filter((d) => d.driverID === member).length"
-                    >{{
+                  <span v-if="drivers.filter((d) => d.driverID === member).length">{{
                       drivers
                         .filter((d) => d.driverID === member)[0]
                         .carslist.filter((cl) => cl.carID === car.carID)[0]
                         .position
-                    }}</span
-                  >
+                    }}</span>
                 </p>
               </div>
               <div v-if="!car.crew.length">
@@ -53,7 +65,10 @@
         </tbody>
       </table>
     </div>
-    <div class="catalog__drivers" v-if="drivers">
+    <div
+      class="catalog__drivers"
+      v-if="drivers"
+    >
       <h1>Справочник сотрудников доставки</h1>
       <!-- <AddDriversCatalog /> -->
       <table>
@@ -67,13 +82,16 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(driver, d) in drivers" :key="d">
+          <tr
+            v-for="(driver, d) in drivers"
+            :key="d"
+          >
             <td>{{ d + 1 }}</td>
             <td>{{ driver.name }}</td>
             <td>{{ driver.position }}</td>
             <td>
               <p
-                v-for="(car, c) in driver.carslist"
+                v-for="(car, c) in driver.carslist.filter(car => car.carID)"
                 :key="c"
                 class="car"
                 @click.prevent="openCarCrewPopup(car.carID)"
@@ -85,12 +103,14 @@
               @click.prevent="openShedulePopup(driver.driverID)"
               class="shedule"
             >
-              <p v-for="(shedule, s) in driver.carslist" :key="s">
+              <p
+                v-for="(shedule, s) in driver.carslist"
+                :key="s"
+              >
                 <span>{{ shedule.car }}</span> -
                 <span>{{ shedule.sheduleType || `не указан` }}</span>
                 <span v-if="shedule.sheduleType === `2/2/3`">
-                  смена {{ shedule.sheduleShift }}</span
-                >
+                  смена {{ shedule.sheduleShift }}</span>
               </p>
             </td>
           </tr>
@@ -106,7 +126,7 @@
 </template>
 
 <script>
-// import { db } from "../../main.js";
+import { db } from "../../main.js";
 import AddCarPopUp from "@/components/ServiceComponents/AddCarPopUp";
 import CarCrewPopUp from "@/components/ServiceComponents/CarCrewPopUp";
 import ShedulePopUp from "@/components/ServiceComponents/ShedulePopUp";
@@ -174,13 +194,67 @@ export default {
             // })
             .sort((a, b) =>
               a.number > b.number ? 1 : b.number > a.number ? -1 : 0
-            )
+            ).filter(car => car.number.length && car.crew.length)
         : null;
     },
   },
   mounted: async function () {
     await this.$store.dispatch("setActualCatalogDrivers");
     await this.$store.dispatch("setActualCatalogCars");
+
+    const catalogCarsLastUpdateLS = localStorage.getItem(
+      "catalogCarsLastUpdateLS"
+    );
+    const catalogDriversLastUpdateLS = localStorage.getItem(
+      "catalogDriversLastUpdateLS"
+    );
+    console.log(catalogCarsLastUpdateLS >= catalogDriversLastUpdateLS);
+    console.log(
+      `catalogCarsLastUpdateLS: ${catalogCarsLastUpdateLS}; catalogDriversLastUpdateLS: ${catalogDriversLastUpdateLS}`
+    );
+
+    const cars = this.cars.filter(
+      (car) => car.number.length && car.crew.length
+    );
+    const carsIdList = cars.map((c) => c.carID);
+
+    this.drivers.forEach(async (driver) => {
+      const currCarslistLength = driver.carslist.length;
+      let currCarslistCarNumber, newCarslistCarNumber;
+      const filteredCarslist = driver.carslist.filter((cl) =>
+        carsIdList.includes(cl.carID)
+      );
+      const updatedCarslist = filteredCarslist.map((f) => {
+        const currCar = cars.filter((car) => car.carID === f.carID)[0];
+        currCarslistCarNumber, (newCarslistCarNumber = f.car), currCar.number;
+        f.car = currCar.number;
+        console.log(f);
+        return f;
+      });
+      driver.carslist = updatedCarslist;
+      // console.log(
+      //   filteredCarslist.length != currCarslistLength ||
+      //     currCarslistCarNumber != newCarslistCarNumber
+      // );
+      // console.log(currCarslistCarNumber, newCarslistCarNumber);
+      if (
+        filteredCarslist.length != currCarslistLength ||
+        currCarslistCarNumber != newCarslistCarNumber
+      ) {
+        await db
+          .collection("service/catalog/drivers_JSON")
+          .doc(driver.driverID)
+          .update({ json: JSON.stringify(driver) });
+      }
+    });
+    // console.log(cars, drivers);
+    // localStorage.setItem(
+    //   "catalogDriversLastUpdateLS",
+    //   JSON.stringify(Date.now())
+    // );
+    // localStorage.setItem("actualCatalogDrivers", JSON.stringify(drivers));
+    await this.$store.dispatch("updateCatalogDriversDate");
+    await this.$store.dispatch("setActualCatalogDrivers");
   },
 };
 </script>

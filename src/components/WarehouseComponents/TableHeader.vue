@@ -4,7 +4,7 @@
       <th class="table__header-item">№</th>
       <th class="table__header-item">Машина</th>
       <th class="table__header-item">Салон</th>
-      <th class="table__header-item">Кат. 56</th>
+      <!-- <th class="table__header-item">Кат. 56</th> -->
       <th class="table__header-item">Кат. 20</th>
       <th class="table__header-item">Блок.</th>
       <th class="table__header-item">Кружки</th>

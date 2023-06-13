@@ -66,9 +66,9 @@ export default {
       tableData: null,
       url: {
         sheet:
-          "https://docs.google.com/spreadsheets/d/1g7KnCSLXkzBJbAwDC9bs9Ea5IsfoYL5nBV2OC-lWLtQ/edit#gid=0",
+          "https://docs.google.com/spreadsheets/d/1mlhF-V5Pf_bJJmuSU6zVDE-fgi8W7qhGUGjHnem5sU8/edit#gid=1307522120", //new relevant shhet
         macros:
-          "https://script.google.com/macros/s/AKfycbxaExGPg3oWpQm49Y08nzWNxU8Qp0-jgQkCbtZ6ckuUMl4d39BNhWg5j6iOrFAjV11SUQ/exec",
+          "https://script.google.com/macros/s/AKfycbxaExGPg3oWpQm49Y08nzWNxU8Qp0-jgQkCbtZ6ckuUMl4d39BNhWg5j6iOrFAjV11SUQ/exec", //old unrelevant macros
       },
     };
   },

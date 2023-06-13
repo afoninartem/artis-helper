@@ -10,8 +10,8 @@ const switchCases = (num, word) => {
       // case 2:
       // case 3:
       // case 4:
-      //   result = "файла";
-      //   break;
+      // result = "файла";
+      // break;
       default:
         result = "файла";
     }
