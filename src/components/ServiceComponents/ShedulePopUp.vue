@@ -1,8 +1,30 @@
 <template>
-  <div class="shedule-popup" v-if="show.show">
+  <div
+    class="shedule-popup"
+    v-if="show.show"
+  >
     <div class="shedule-popup__background">
       <div class="shedule-popup__content">
         <h1>{{ driver.name }}</h1>
+        <div class="tin">
+          <h3 class="tin__title">{{`ИНН: ${driver.tin || "не заполнен"}`}}</h3>
+          <button
+            class="tin__edit"
+            v-if="(userGroup == 'admin' || userGroup == 'personal') && !showTinInput"
+            @click.prevent="openTinInput"
+          ></button>
+          <form
+            class="tin__input"
+            action=""
+            v-if="showTinInput"
+          ><input
+              type="text"
+              v-model="tin"
+            >
+            <button @click.prevent="editTin">Подтвердить</button>
+            <button @click.prevent="showTinInput = false">Закрыть</button>
+          </form>
+        </div>
         <table>
           <thead>
             <tr>
@@ -32,7 +54,10 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(item, i) in table" :key="i">
+            <tr
+              v-for="(item, i) in table"
+              :key="i"
+            >
               <td>{{ item.position }}</td>
               <td>{{ item.car }}</td>
               <td
@@ -76,11 +101,18 @@
             </option>
           </select>
           <label for="shedule">Установить график</label>
-          <select name="shedule" id="shedule" v-model="sheduleType">
+          <select
+            name="shedule"
+            id="shedule"
+            v-model="sheduleType"
+          >
             <option>3/3</option>
             <option>2/2/3</option>
           </select>
-          <label for="start" v-if="this.sheduleType === `3/3`">Начиная с</label>
+          <label
+            for="start"
+            v-if="this.sheduleType === `3/3`"
+          >Начиная с</label>
           <input
             type="date"
             name="start"
@@ -88,9 +120,10 @@
             v-model="startDate"
             v-if="sheduleType === `3/3`"
           />
-          <label for="sheduleShift" v-if="this.sheduleType === `2/2/3`"
-            >Выбрать смену</label
-          >
+          <label
+            for="sheduleShift"
+            v-if="this.sheduleType === `2/2/3`"
+          >Выбрать смену</label>
           <select
             name="sheduleShift"
             id="sheduleShift"
@@ -102,7 +135,10 @@
           </select>
         </form>
         <div class="btn-block">
-          <button type="submit" @click.prevent="setShedule">
+          <button
+            type="submit"
+            @click.prevent="setShedule"
+          >
             Установить график
           </button>
           <button @click.prevent="close">Закрыть</button>
@@ -116,6 +152,9 @@
 export default {
   data() {
     return {
+      tin: "",
+      showTinInput: false,
+      userGroup: "",
       startDate: "",
       conditionalStartDate: "2022-04-01T00:00",
       sheduleShift: null,
@@ -128,6 +167,30 @@ export default {
     };
   },
   methods: {
+    openTinInput() {
+      this.tin = this.driver.tin || ""
+      this.showTinInput = true
+    },
+    async editTin() {
+      if (this.tin.trim().length != 12) {
+        alert(`ИНН должен содержать 12 цифр`);
+        return;
+      }
+      if (
+        this.tin.trim().match(/[\D]+/) &&
+        this.tin.trim().match(/[\D]+/).length
+      ) {
+        alert(`ИНН должен содержать только цифры`);
+        return;
+      }
+      await this.$store.dispatch("editDriverTin", {
+        tin: this.tin.trim(),
+        driverID: this.driver.driverID,
+      });
+      this.showTinInput = false;
+      await this.$store.dispatch("updateCatalogDriversDate");
+      await this.$store.dispatch("setActualCatalogDrivers");
+    },
     dayStyles(extras, date, currCarID) {
       const styles = require("../../store/service/sheduleDayStyles");
       return styles.default(extras, date, currCarID);
@@ -225,7 +288,14 @@ export default {
     this.date.month = new Date().getMonth();
     await this.$store.dispatch("setActualCatalogDrivers");
     await this.$store.dispatch("setActualCatalogCars");
+
+    const user = JSON.parse(localStorage.getItem("RT"));
+    const userGroup = user ? user.group : null;
+    this.userGroup = userGroup;
   },
+  beforeDestroy: async function () {
+    this.tin = ""
+  }
 };
 </script>
 
@@ -246,6 +316,26 @@ export default {
       // transform: scale(1.2);
       display: grid;
       place-items: center;
+      .tin {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        &__edit {
+          height: 18px;
+          width: 18px;
+          background: no-repeat center center url("../../assets/edit.svg");
+          border-style: none;
+          cursor: pointer;
+        }
+        &__input {
+          display: flex;
+          gap: 5px;
+          button {
+            width: 120px;
+            height: 40px;
+          }
+        }
+      }
       form {
         display: grid;
         padding: 20px;
@@ -275,7 +365,7 @@ export default {
         input::-webkit-outer-spin-button,
         input::-webkit-inner-spin-button {
           -webkit-appearance: none;
-          -moz-appearance: none; // не работает в FF почему-то
+          // -moz-appearance: none; // не работает в FF почему-то
           margin: 0;
         }
       }
@@ -301,6 +391,8 @@ export default {
       .buttons {
         display: flex;
         justify-content: center;
+        width: 120px;
+        height: 40px;
         // grid-column: 1/3;
         button {
           padding: 5px;

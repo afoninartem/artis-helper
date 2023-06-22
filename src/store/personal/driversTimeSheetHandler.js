@@ -1,6 +1,8 @@
 import { db } from "../../main";
 export default {
 	state: {
+		positionsDiffs: null,
+		//
 		info1C7: null,
 		info1C8_A21: null,
 		info1C8_AP: null,
@@ -17,6 +19,10 @@ export default {
 		},
 	},
 	mutations: {
+		addPositionsDiffs(state, payload) {
+			state.positionsDiffs = payload;
+		},
+		//
 		add1C8Shedule_A21(state, payload) {
 			state.shedule1C8_A21 = payload;
 		},
@@ -76,12 +82,35 @@ export default {
 					json: JSON.stringify({
 						driverID: initID,
 						name: payload.name,
+						tin: payload.tin,
 						mainPosition: payload.position.toLowerCase(),
 						carslist: [],
 					}),
 				});
 		},
-
+		async editDriverTin(context, payload) {
+			// console.log(payload);
+			let driver;
+			await db
+				.collection("service/catalog/drivers_JSON")
+				.doc(payload.driverID)
+				.get()
+				.then((doc) => (driver = JSON.parse(doc.data().json)))
+				.catch((error) => {
+					console.log("Error getting cached document:", error);
+				});
+			// console.log(driver);
+			driver.tin = payload.tin;
+			console.log(driver);
+			await db
+				.collection("service/catalog/drivers_JSON")
+				.doc(driver.driverID)
+				.set({
+					json: JSON.stringify({
+						...driver,
+					}),
+				});
+		},
 		async addDriversCatalog({ getters }, payload) {
 			let initID = Date.now();
 			const positions = getters.getDriversPositions;
@@ -166,52 +195,34 @@ export default {
 			}
 		},
 
-		async add1C7info({ getters, commit, dispatch }, payload) {
-			const drivers = getters.getActualStates.catalogDrivers;
-			const positions = getters.getDriversPositions.map((p) =>
-				p.split("  ").join(" ").toLowerCase()
+		async add1C7info({ commit }, payload) {
+			const info1C7 = payload.filter(
+				(p) => p["Официальная должность"] == p["Должность"]
 			);
-			const info1C7 = payload
-				.filter((f) =>
-					positions.includes(f["Должность"].split("  ").join(" ").toLowerCase())
-				)
-				.map((item) => {
-					let driverID;
-					try {
-						driverID = drivers.filter(
-							(d) =>
-								d.name.trim().split("  ").join(" ").toLowerCase() ===
-									item.__EMPTY_1.trim().split("  ").join(" ").toLowerCase()
-                   &&
-								d.mainPosition.split("  ").join(" ").toLowerCase() ===
-									item["Должность"].split("  ").join(" ").toLowerCase()
-						)[0].driverID;
-					} catch (error) {
-						console.log(
-							"no driverID: ",
-							item.__EMPTY_1,
-							" - ",
-							item["Должность"]
-						);
-						console.log(item);
-					}
-					const workDays = Object.keys(item)
-						.filter((i) => i !== "Должность" && !i.includes("__EMPTY"))
-						.filter((i) => item[i].trim());
-					return {
-						name: item.__EMPTY_1,
-						position: item["Должность"],
-						workDays: workDays,
-						driverID: driverID,
-					};
-				});
-			// console.log(info1C7)
-			dispatch("compareDriversIn1CAndOsDB", {
-				// osDrivers: drivers,
-				excelDrivers: info1C7,
-				dataSource: "1C7",
+			// console.log(info1C7);
+
+			const finalInfo1C7 = info1C7.map((info) => {
+				const finalInfo = {};
+				const dates = [];
+				for (let i in info) {
+					if (i.length === 8 && i.includes(".")) {
+           info[i].trim()
+            ? dates.push(i)
+            : null
+					} else {
+            finalInfo[i] = info[i]
+          }
+				}
+				return { "Фактические выходы": dates, ...finalInfo };
 			});
-			return await commit("add1C7info", info1C7);
+
+			// dispatch("compareDriversIn1CAndOsDB", {
+			// 	// osDrivers: drivers,
+			// 	excelDrivers: info1C7,
+			// 	dataSource: "1C7",
+			// });
+			console.log(finalInfo1C7);
+			return await commit("add1C7info", finalInfo1C7);
 		},
 		async add1C8info_A21({ dispatch, commit }, payload) {
 			dispatch("compareDriversIn1CAndOsDB", {
@@ -226,6 +237,7 @@ export default {
 		},
 		async add1C8Shedule(context, payload) {
 			// get object with dates
+			// console.log(payload);
 			const dateCell = payload.data.filter((p) =>
 				Object.values(p).includes("ТАБЕЛЬ  ")
 			)[0];
@@ -255,26 +267,29 @@ export default {
 			});
 			// get drivers shedules
 			const driversShedules = [];
-      // console.log(payload.data)
+			// console.log(payload.data)
 			payload.data.forEach((p, i) => {
 				if (Object.values(p).some((s) => s.match(/\d+-\d+/))) {
 					const driverInfo = payload.data.slice(i, i + 4);
-          // console.log(driverInfo[0])
-          // const driverPositionNotations = ["(Водитель-экспедитор )", "(Водитель-экспедитор)"]
 					const driver = {
 						name: driverInfo[0].__EMPTY_2.split("\n")[0],
 						position:
-            // driverPositionNotations.includes(driverInfo[0].__EMPTY_2.split("\n")[1])
-            driverInfo[0].__EMPTY_2.split("\n")[1].toLowerCase().includes("водитель-")
+							// driverPositionNotations.includes(driverInfo[0].__EMPTY_2.split("\n")[1])
+							driverInfo[0].__EMPTY_2
+								.split("\n")[1]
+								.toLowerCase()
+								.includes("водитель-")
 								? "водитель"
-								: driverInfo[0].__EMPTY_2.split("\n")[1].toLowerCase().includes("-экспедитор")
-								  
+								: driverInfo[0].__EMPTY_2
+										.split("\n")[1]
+										.toLowerCase()
+										.includes("-экспедитор")
 								? "экспедитор"
 								: driverInfo[0].__EMPTY_2.split("\n")[1],
 						personnelNumber: driverInfo[0].__EMPTY_4,
 						shedule: {},
 					};
-          console.log(`${driver.name} - ${driver.position}`)
+					// console.log(`${driver.name} - ${driver.position}`)
 					driverInfo.forEach((info, i) => {
 						let day, hours, mark;
 						for (let infoKey in info) {
@@ -305,11 +320,11 @@ export default {
 					}
 				}
 			});
-      ///
-      const log = []
-      driversShedules.forEach(d => log[d.name] = d)
-      console.log(log)
-      ///
+			///
+			// const log = [];
+			// driversShedules.forEach((d) => (log[d.name] = d));
+			// console.log(log);
+			///
 			payload.company === "A21"
 				? (context.commit("add1C8Shedule_A21", driversShedules),
 				  context.dispatch("compareDriversIn1CAndOsDB", {
@@ -380,5 +395,8 @@ export default {
 		// getAddDriverPopupVisibility: (state) => {
 		// 	return state.addDriverPopupVisibility;
 		// },
+		getPositionsDiffs: (state) => {
+			return state.positionsDiffs;
+		},
 	},
 };

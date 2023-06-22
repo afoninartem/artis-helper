@@ -1,4 +1,4 @@
-<template>
+// <template>
   <v-container>
     <v-row class="text-center">
       <v-col cols="12">
@@ -91,7 +91,7 @@
   </v-container>
 </template>
 
-<script>
+// <script>
   export default {
     name: 'HelloWorld',
 

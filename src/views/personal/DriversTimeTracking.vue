@@ -43,6 +43,32 @@
     </div>
 
     <div
+      class="positions-diffs"
+      v-if="positionsDiffs"
+    >
+
+      <table>
+        <thead>
+          <tr>
+            <th>ФИО</th>
+            <th>Должности в 1С7</th>
+            <th>Должности в справочнике ОС</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="diff, i in positionsDiffs"
+            :key="i"
+          >
+            <td>{{diff.name}}</td>
+            <td>{{diff.position1C7}}</td>
+            <td>{{diff.positionOS}}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div
       class="extra-drivers-from-1c"
       v-if="extras != null && extras != `allgood`"
     >
@@ -131,8 +157,7 @@
             >
               {{
                 new Date(date.year, date.month)
-                  .toLocaleString("default", {
-                    month: "long",
+                  .toLocaleString("default", { month: "long",
                   })
                   .toUpperCase()
               }}
@@ -468,14 +493,14 @@ export default {
 
       //green BG
       const vacationWork = (service || !service) && info1C7 && info1C8 === "ОТ";
-
+      // console.log(driver.name, date)
       // console.log("noData: ", noData, "allGood: ", allGood, "vacation: ", vacation, "illness: ", illness, "absence: ", absence)
       // console.log("factButNoShedule: ", factButNoShedule, "sheduleButNoFact: ", sheduleButNoFact, "vacationWork: ", vacationWork)
       this.showConventions = true;
       if (vacationWork) return greenBG;
       // console.log((noData || allGood || vacation || illness || absence) && vacationWork)
-      if ((noData || allGood || vacation || illness || absence) && vacationWork)
-        console.log(driver.name, day);
+      // if ((noData || allGood || vacation || illness || absence) && vacationWork)
+      // console.log(driver.name, day);
       // if (vacationWork && noData) console.log(driver.name, day)
       if (noData || allGood || vacation || illness || absence) return;
       return factButNoShedule
@@ -556,21 +581,21 @@ export default {
             : null;
         }
         // old 1C8 data
-        if (this.info1C8.length) {
-          result.rowspan += 1;
-          result.info1C8 = Array.from(this.info1C8)
-            .filter(
-              (i) =>
-                Object.entries(i)[1][1].split("  ").join(" ") === result.name
-            )
-            .flat()
-            .map((o) => Object.entries(o))
-            .flat()
-            .filter((k) => k[1][0] !== "В");
-          // .filter((k) => parseInt(k[0]))
-          // .filter((k) => k[1].length > 1);
-          // console.log(result.info1C8)
-        }
+        // if (this.info1C8.length) {
+        //   result.rowspan += 1;
+        //   result.info1C8 = Array.from(this.info1C8)
+        //     .filter(
+        //       (i) =>
+        //         Object.entries(i)[1][1].split("  ").join(" ") === result.name
+        //     )
+        //     .flat()
+        //     .map((o) => Object.entries(o))
+        //     .flat()
+        //     .filter((k) => k[1][0] !== "В");
+        //   // .filter((k) => parseInt(k[0]))
+        //   // .filter((k) => k[1].length > 1);
+        //   // console.log(result.info1C8)
+        // }
         //new 1C8 data from shedule
         if (this.shedule1C8.length) {
           result.rowspan += 1;
@@ -585,6 +610,10 @@ export default {
     },
   },
   computed: {
+    positionsDiffs() {
+      return this.$store.getters.getPositionsDiffs;
+    },
+    //
     extras() {
       if (
         !this.extraDriversFrom1C.from1C7 &&

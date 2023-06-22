@@ -8,7 +8,7 @@
       <div class="menu">
         <button @click.prevent="addCar">Добавить машину</button>
         <button @click.prevent="addDriver">Добавить сотрудника</button>
-        <!-- <button @click.prevent="fixExtras">Fix сотрудника</button> -->
+        <!-- <button @click.prevent="buggedDriver">Fix сотрудника</button> -->
       </div>
       <!-- <PrintShedule /> -->
       <table>
@@ -87,8 +87,12 @@
             :key="d"
           >
             <td>{{ d + 1 }}</td>
-            <td>{{ driver.name }}</td>
-            <td>{{ driver.position }}</td>
+            <td
+              @click.prevent="openShedulePopup(driver.driverID)"
+              class="driver"
+              :class="[driver.tin ? null : 'no-tin']"
+            >{{ driver.name }}</td>
+            <td>{{ driver.mainPosition }}</td>
             <td>
               <p
                 v-for="(car, c) in driver.carslist.filter(car => car.carID)"
@@ -175,7 +179,23 @@ export default {
     //   });
     //   localStorage.removeItem("catalogDriversLastUpdateLS");
     // },
+    // async buggedDriver() {
+    //   const driver = this.$store.getters.getActualStates.catalogDrivers
+    //     ? Array.from(this.$store.getters.getActualStates.catalogDrivers).filter(
+    //         (d) => d.driver
+    //       )[0].driver
+    //     : null;
+    //   await db
+    //     .collection("service/catalog/drivers_JSON")
+    //     .doc(driver.driverID)
+    //     .set({
+    //       json: JSON.stringify({
+    //         ...driver,
+    //       }),
+    //     });
+    // },
   },
+
   computed: {
     drivers() {
       return this.$store.getters.getActualStates.catalogDrivers
@@ -194,7 +214,8 @@ export default {
             // })
             .sort((a, b) =>
               a.number > b.number ? 1 : b.number > a.number ? -1 : 0
-            ).filter(car => car.number.length && car.crew.length)
+            )
+            .filter((car) => car.number.length && car.crew.length)
         : null;
     },
   },
@@ -202,16 +223,16 @@ export default {
     await this.$store.dispatch("setActualCatalogDrivers");
     await this.$store.dispatch("setActualCatalogCars");
 
-    const catalogCarsLastUpdateLS = localStorage.getItem(
-      "catalogCarsLastUpdateLS"
-    );
-    const catalogDriversLastUpdateLS = localStorage.getItem(
-      "catalogDriversLastUpdateLS"
-    );
-    console.log(catalogCarsLastUpdateLS >= catalogDriversLastUpdateLS);
-    console.log(
-      `catalogCarsLastUpdateLS: ${catalogCarsLastUpdateLS}; catalogDriversLastUpdateLS: ${catalogDriversLastUpdateLS}`
-    );
+    // const catalogCarsLastUpdateLS = localStorage.getItem(
+    //   "catalogCarsLastUpdateLS"
+    // );
+    // const catalogDriversLastUpdateLS = localStorage.getItem(
+    //   "catalogDriversLastUpdateLS"
+    // );
+    // console.log(catalogCarsLastUpdateLS >= catalogDriversLastUpdateLS);
+    // console.log(
+    //   `catalogCarsLastUpdateLS: ${catalogCarsLastUpdateLS}; catalogDriversLastUpdateLS: ${catalogDriversLastUpdateLS}`
+    // );
 
     const cars = this.cars.filter(
       (car) => car.number.length && car.crew.length
@@ -228,7 +249,7 @@ export default {
         const currCar = cars.filter((car) => car.carID === f.carID)[0];
         currCarslistCarNumber, (newCarslistCarNumber = f.car), currCar.number;
         f.car = currCar.number;
-        console.log(f);
+        // console.log(f);
         return f;
       });
       driver.carslist = updatedCarslist;
@@ -263,6 +284,7 @@ export default {
 @import "@/scss/personalTable.scss";
 @include personal-table;
 .crew,
+.driver,
 .shedule,
 .car-info,
 .car {
@@ -271,5 +293,17 @@ export default {
     background: rgba(133, 177, 133, 0.534);
     font-weight: bold;
   }
+}
+.no-tin::after {
+  content: "не заполнен ИНН";
+  position: relative;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background: rgba(204, 204, 204, .4);
+  color: red;
+  padding: 4px;
+  right: -5px;
+  font-weight: bold;
+
 }
 </style>

@@ -1,13 +1,42 @@
 <template>
-  <div class="add-driver-popup" v-if="show">
-    <div class="add-driver-popup__background">
+  <div
+    class="add-driver-popup"
+    v-if="show"
+  >
+    <div class="add-driver-popup__background" v-if="userGroup == 'personal' || userGroup == 'admin'">
       <div class="add-driver-popup__content">
         <h1>Добавить нового сотрудника</h1>
         <p>Желательно скопировать ФИО из 1С, чтобы избежать ошибок.</p>
-        <form action="" class="add-driver-popup__form">
-          <input type="text" name="name" id="name" v-model="newDriver.name" />
-          <select name="position" id="position" v-model="newDriver.position">
-            <option v-for="(position, p) in positionsList" :key="p">
+        <form
+          action=""
+          class="add-driver-popup__form"
+        >
+          <input
+            type="text"
+            name="name"
+            id="name"
+            v-model="newDriver.name"
+            placeholder="ФИО"
+            required
+          />
+          <input
+            type="text"
+            name="tin"
+            id="tin"
+            v-model="newDriver.tin"
+            placeholder="ИНН"
+            required
+          />
+          <select
+            name="position"
+            id="position"
+            v-model="newDriver.position"
+            required
+          >
+            <option
+              v-for="(position, p) in positionsList"
+              :key="p"
+            >
               {{ position.toLowerCase() }}
             </option>
           </select>
@@ -18,6 +47,14 @@
         </form>
       </div>
     </div>
+    <div v-if="userGroup == 'service'">
+      <div class="add-driver-popup__background">
+        <div class="add-driver-popup__content">
+          <h1>Для внесения в справочник нового сотрудника обратитесь в отдел кадров</h1>
+          <button @click.prevent="close" class="close-btn">Закрыть</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -25,23 +62,44 @@
 export default {
   data() {
     return {
+      userGroup: "",
       newDriver: {
         name: "",
+        tin: "",
         position: "",
       },
     };
   },
   methods: {
     async add() {
-      if (!this.newDriver.name.trim() || !this.newDriver.position.trim())
+      if (
+        !this.newDriver.name.trim() ||
+        !this.newDriver.position.trim() ||
+        !this.newDriver.tin.trim()
+      )
         return;
-      if (Array.from(this.drivers).includes(this.newDriver.name.trim()))
+      if (Array.from(this.drivers).includes(this.newDriver.name.trim())) {
         alert(`Сотрудник с таким ФИО уже есть в справочнике.`);
+      }
+      if (Array.from(this.tins).includes(this.newDriver.tin.trim())) {
+        alert(`Сотрудник с таким ИНН уже есть в справочнике.`);
+        return;
+      }
+      if (this.newDriver.tin.trim().length != 12) {
+        alert(`ИНН должен содержать 12 цифр`);
+        return;
+      }
+      if (this.newDriver.tin.trim().match(/[\D]+/) && this.newDriver.tin.trim().match(/[\D]+/).length) {
+        alert(`ИНН должен содержать только цифры`);
+        return;
+      }
       await this.$store.dispatch("addDriverToCatalog", {
-        name: this.newDriver.name,
-        position: this.newDriver.position,
+        name: this.newDriver.name.trim(),
+        position: this.newDriver.position.trim(),
+        tin: this.newDriver.tin.trim(),
       });
       this.newDriver.name = "";
+      this.newDriver.tin = "";
       this.newDriver.position = "";
       await this.$store.dispatch("updateCatalogDriversDate");
       await this.$store.dispatch("setActualCatalogDrivers");
@@ -67,6 +125,20 @@ export default {
           )
         : null;
     },
+    tins() {
+      return this.$store.getters.getActualStates.catalogDrivers
+        ? new Set(
+            this.$store.getters.getActualStates.catalogDrivers.map(
+              (driver) => driver.inn || ""
+            )
+          )
+        : null;
+    },
+  },
+    mounted: async function () {
+    const user = JSON.parse(localStorage.getItem("RT"))
+    const userGroup = user ? user.group : null
+    this.userGroup = userGroup
   },
 };
 </script>
@@ -103,6 +175,11 @@ export default {
         }
       }
     }
+  }
+  .close-btn {
+    width: 120px;
+    height: 40px;
+    justify-self: center;
   }
 }
 </style>

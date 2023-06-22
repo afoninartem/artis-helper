@@ -68,7 +68,7 @@
                   v-if="
                     showNewEmp &&
                     newEmp.position &&
-                    newEmp.name.split(` `).length > 1 &&
+                    newEmp.name.split(` `).length >= 1 &&
                     !showChoiceButtons
                   "
                   @click.prevent="addToCrew(true)"
@@ -79,7 +79,7 @@
                   v-if="
                     showNewEmp &&
                     newEmp.position &&
-                    newEmp.name.split(` `).length > 1 &&
+                    newEmp.name.split(` `).length >= 1 &&
                     !showChoiceButtons
                   "
                   @click.prevent="addToCrew(false)"
@@ -587,7 +587,6 @@ export default {
       }
     },
     async removeExtraFromCar(payload) {
-      console.log(payload);
       await this.$store.dispatch("removeExtraFromCar", payload);
       await this.$store.dispatch("updateCatalogCarsDate");
       await this.$store.dispatch("updateCatalogDriversDate");
@@ -596,7 +595,6 @@ export default {
     },
 
     async removeDriverFromCar(payload) {
-      console.log(payload);
       await this.$store.dispatch("removeDriverFromCar", payload);
       await this.$store.dispatch("updateCatalogCarsDate");
       await this.$store.dispatch("updateCatalogDriversDate");
