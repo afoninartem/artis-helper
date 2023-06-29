@@ -317,7 +317,7 @@ export default {
 							drivers.push(doc.data());
 						});
 					});
-				console.log(drivers);
+				// console.log(drivers);
 				localStorage.setItem("actualCatalogDrivers", JSON.stringify(drivers));
 				console.log("КАТАЛОГ ВОДИТЕЛЕЙ ВЗЯТ ИЗ БД И ЗАПИСАН В ХРАНИЛИЩЕ");
 			} else {

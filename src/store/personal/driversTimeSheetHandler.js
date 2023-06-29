@@ -129,7 +129,10 @@ export default {
 		},
 
 		compareDriversIn1CAndOsDB({ getters, commit }, payload) {
-			// console.log(payload);
+			console.log(payload);
+      if (payload.dataSource == "1C7") {
+        payload.excelDrivers = payload.excelDrivers.map(d => d.name = d["Фамилия Имя Отчество"])
+      }
 			const dataSource = payload.dataSource;
 			const osDrivers = getters.getActualStates.catalogDrivers.map((os) =>
 				os.name.split("  ").join(" ").toLowerCase()
@@ -140,6 +143,9 @@ export default {
 						if (ex.name) {
 							return ex.name.split("  ").join(" ").toLowerCase();
 						}
+            if (payload.dataSource == "1C7") {
+              return ex
+            }
 						return ex["Сотрудник"]
 							.split("  ")
 							.join(" ")
@@ -150,7 +156,7 @@ export default {
 					})
 				)
 			);
-			// console.log(excelDrivers);
+			console.log(excelDrivers);
 			const extraFrom1C = [];
 			const extraFromOS = [];
 			const cutName = require("../stringsHandler").nameCutter;
@@ -195,11 +201,10 @@ export default {
 			}
 		},
 
-		async add1C7info({ commit }, payload) {
+		async add1C7info({ commit, dispatch }, payload) {
 			const info1C7 = payload.filter(
 				(p) => p["Официальная должность"] == p["Должность"]
 			);
-			// console.log(info1C7);
 
 			const finalInfo1C7 = info1C7.map((info) => {
 				const finalInfo = {};
@@ -210,18 +215,20 @@ export default {
             ? dates.push(i)
             : null
 					} else {
-            finalInfo[i] = info[i]
+            finalInfo.name = info["Фамилия Имя Отчество"]
+            finalInfo.mainPosition = info["Официальная должность"]
+            finalInfo.position = info["Должность"]
+            finalInfo.tin = info["ИНН"]
           }
 				}
-				return { "Фактические выходы": dates, ...finalInfo };
+				return { workDays: dates, ...finalInfo };
 			});
 
-			// dispatch("compareDriversIn1CAndOsDB", {
-			// 	// osDrivers: drivers,
-			// 	excelDrivers: info1C7,
-			// 	dataSource: "1C7",
-			// });
-			console.log(finalInfo1C7);
+			dispatch("compareDriversIn1CAndOsDB", {
+				// osDrivers: drivers,
+				excelDrivers: finalInfo1C7,
+				dataSource: "1C7",
+			});
 			return await commit("add1C7info", finalInfo1C7);
 		},
 		async add1C8info_A21({ dispatch, commit }, payload) {

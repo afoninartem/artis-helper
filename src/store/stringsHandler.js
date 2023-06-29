@@ -1,6 +1,6 @@
 const nameCutter = (fullName) => {
 	const nameArr = fullName.split(" ");
-	const surname = nameArr[0];
+	const surname = nameArr[0][0].toUpperCase() + nameArr[0].slice(1);
 	const firstLetter = nameArr[1][0].toUpperCase() + ".";
 	const secondLetter = nameArr[2][0].toUpperCase() + ".";
 	return [surname, firstLetter, secondLetter].join(" ");

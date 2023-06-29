@@ -213,7 +213,7 @@ export default {
             // return car.crew.map(cm => this.drivers.filter(d => d.driverID === cm)[0])
             // })
             .sort((a, b) =>
-              a.number > b.number ? 1 : b.number > a.number ? -1 : 0
+              +a.number > +b.number ? 1 : +b.number > +a.number ? -1 : 0
             )
             .filter((car) => car.number.length && car.crew.length)
         : null;

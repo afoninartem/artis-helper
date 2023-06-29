@@ -488,13 +488,11 @@ export default {
         const result = driver.carslist
           .filter((cl) => cl.carID === car.carID)
           .map((cl) => {
-            // console.log(cl)
-            // cl.name = driver.name;
+            cl.name = driver.name;
             cl.tin = driver.tin;
-            // cl.position = driver.position;
-            // cl.driverID = driver.driverID;
-            // cl.extras = driver.extras || [];
-            // console.log(cl)
+            cl.position = driver.position;
+            cl.driverID = driver.driverID;
+            cl.extras = driver.extras || [];
             return cl;
           })[0];
         result.rowspan = 1;
