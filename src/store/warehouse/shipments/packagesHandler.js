@@ -19,7 +19,7 @@ export default {
 		async deletePackage(context, payload) {
 			return await db
 				.collection("warehouse/shipment/packages")
-				.doc(payload.id.toString())
+				.doc(payload.toString())
 				.delete();
 		},
 	},
