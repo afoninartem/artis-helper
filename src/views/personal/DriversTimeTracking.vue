@@ -3,9 +3,9 @@
     <h1>Водители</h1>
     <div class="add-block">
       <AddDriversTimeSheet1C7 v-if="!info1C7" />
-      <AddDriversShedule1C8A21 v-if="!shedule1C8_A21" />
-      <AddDriversShedule1C8AP v-if="!shedule1C8_AP" />
-      <AddDriversShedule1C8DP v-if="!shedule1C8_DP" />
+      <AddDriversShedule1C8A21 v-if="info1C7 && !shedule1C8_A21" />
+      <!-- <AddDriversShedule1C8AP v-if="info1C7 && !shedule1C8_AP" /> -->
+      <AddDriversShedule1C8DP v-if="info1C7 && !shedule1C8_DP" />
     </div>
 
     <div class="menu">
@@ -25,16 +25,19 @@
           <p>{{ item.description }}</p>
         </div>
       </div>
-      <div class="btn-block">
+      <div
+        class="btn-block"
+        v-if="date.month && date.year"
+      >
         <div class="nav-block">
           <button @click.prevent="prevMonth">{{ prevMonthTitle }}</button>
-          <button @click.prevent="save">Сохранить</button>
+          <!-- <button @click.prevent="save">Сохранить</button> -->
           <button @click.prevent="nextMonth">{{ nextMonthTitle }}</button>
         </div>
-        <router-link
+        <!-- <router-link
           class="to-filter"
           to="/personal-drivers-filter"
-        >Фильтр должностей и сотрудников</router-link>
+        >Фильтр должностей и сотрудников</router-link> -->
       </div>
     </div>
 
@@ -79,7 +82,7 @@
             <li
               v-for="driver, d in extras.from1C7"
               :key="`d1c7-${d}`"
-            >{{capitalizeName(driver)}}</li>
+            >{{capitalizeName(driver.name)}}</li>
           </ol>
         </div>
         <div
@@ -91,7 +94,7 @@
             <li
               v-for="driver, d in extras.from1C8_A21"
               :key="`d1c8-a21-${d}`"
-            >{{capitalizeName(driver)}}</li>
+            >{{capitalizeName(driver.name)}}</li>
           </ol>
         </div>
         <div
@@ -103,7 +106,7 @@
             <li
               v-for="driver, d in extras.from1C8_AP"
               :key="`d1c8-ap-${d}`"
-            >{{capitalizeName(driver)}}</li>
+            >{{capitalizeName(driver.name)}}</li>
           </ol>
         </div>
         <div
@@ -115,7 +118,7 @@
             <li
               v-for="driver, d in extras.from1C8_DP"
               :key="`d1c8-dp-${d}`"
-            >{{capitalizeName(driver)}}</li>
+            >{{capitalizeName(driver.name)}}</li>
           </ol>
         </div>
       </div>
@@ -192,17 +195,14 @@
             <td
               :rowspan="driver.rowspan"
               ref="name"
+              :style="driver.backGround"
             >{{ driver.name }}</td>
             <td>Отдел сервиса</td>
             <td
               v-for="(day, d) in daySpec(date.month, date.year)"
               :key="`curr-date-${d}`"
               :style="
-                driver.extras.filter(
-                  (e) =>
-                    e.day ==
-                    new Date(date.year, date.month, day.dayOfMonth).toISOString()
-                ).length
+                driver.extras.filter((e) => e.day == new Date(date.year, date.month, day.dayOfMonth).toISOString()).length
                   ? driver.extras.filter(
                       (e) =>
                         e.day ==
@@ -215,12 +215,12 @@
                     ? `background: ${
                         driver.extras.filter(
                           (e) =>
-                            e.day ==
+                            (e.day ==
                             new Date(
                               date.year,
                               date.month,
                               day.dayOfMonth
-                            ).toISOString()
+                            ).toISOString())
                         )[0].bgColor
                       }`
                     : setStyle(
@@ -278,10 +278,8 @@
             >
               {{
               Object.keys(driver.shedule1C8.shedule).includes(new Date(date.year, date.month, day.dayOfMonth).toLocaleDateString("ru-Ru")) 
-                ? driver.shedule1C8.shedule[new Date(date.year, date.month, day.dayOfMonth).toLocaleDateString("ru-Ru")].mark === "Я" 
-                ? "X"
+                ? driver.shedule1C8.shedule[new Date(date.year, date.month, day.dayOfMonth).toLocaleDateString("ru-Ru")].mark
                 : null
-             : null
             }}
             </td>
           </tr>
@@ -319,13 +317,13 @@
 import AddDriversTimeSheet1C7 from "@/components/PersonalComponents/AddDriversTimeSheet1C7";
 
 import AddDriversShedule1C8A21 from "@/components/PersonalComponents/AddDriversShedule1C8_A21";
-import AddDriversShedule1C8AP from "@/components/PersonalComponents/AddDriversShedule1C8_AP";
+// import AddDriversShedule1C8AP from "@/components/PersonalComponents/AddDriversShedule1C8_AP";
 import AddDriversShedule1C8DP from "@/components/PersonalComponents/AddDriversShedule1C8_DP";
 export default {
   components: {
     AddDriversTimeSheet1C7,
     AddDriversShedule1C8A21,
-    AddDriversShedule1C8AP,
+    // AddDriversShedule1C8AP,
     AddDriversShedule1C8DP,
   },
   data() {
@@ -377,67 +375,143 @@ export default {
         : (this.date.month += 1);
     },
     save() {
-      alert("Дописать функционал сохранения"); // какого сохранения... в xls? 
+      alert("Дописать функционал сохранения"); // какого сохранения... в xls?
     },
-    setStyle(date, driver, day) {
-      // console.log(date, driver)
+    setStyle(date, driver) {
       if (!driver.info1C7 || !driver.shedule1C8) return;
-      const redBGredColor =
-        "background: rgba(225, 50, 50, 0.9); color: red; font-weight: bold";
+
+      const redBgBlackColor =
+        "background: rgba(225, 50, 50, 0.9); color: black; font-weight: bold";
       const greenBG = "background: rgb(0, 128, 0)";
       const orangeBG = "background: rgba(251, 255, 0, 0.452)";
       const undefinedDataCombination = "background: rgba(153, 0, 255, 0.288)";
-      const service = this.count(
-        driver.sheduleStart,
-        driver.sheduleType,
-        driver.sheduleShift,
-        date
+
+      const service = Boolean(
+        this.count(
+          driver.sheduleStart,
+          driver.sheduleType,
+          driver.sheduleShift,
+          date
+        )
       );
+
+      const extra = this.getDateExtra(driver.extras, date);
+
       const info1C7 = driver.info1C7
         ? this.compareDates(driver.info1C7, date)
         : null;
+
       const info1C8 =
         driver.shedule1C8 &&
         Object.keys(driver.shedule1C8.shedule).includes(
-          new Date(date.year, date.month, day.dayOfMonth).toLocaleDateString(
-            "ru-Ru"
-          )
+          date.toLocaleDateString("ru-RU")
         )
-          ? driver.shedule1C8.shedule[
-              new Date(
-                date.year,
-                date.month,
-                day.dayOfMonth
-              ).toLocaleDateString("ru-Ru")
-            ].mark
-          : null;
+          ? driver.shedule1C8.shedule[date.toLocaleDateString("ru-Ru")].mark
+          : false;
 
-      //white BG
-      const noData = !service && !info1C7 && !info1C8;
-      const allGood = service && info1C7 && info1C8 === "Я";
-      const vacation = !info1C7 && (info1C8 === "ОТ" || info1C8 === "ДО");
-      const illness = !info1C7 && info1C8 === "Б";
-      const absence = !info1C7 && info1C8 === "НН" && !service;
+      const stateStore = {};
+      stateStore.date = date.toLocaleDateString();
+      stateStore.name = driver.name;
+
+      stateStore.noData = !service && !info1C7 && !info1C8 && !extra;
+
+      stateStore.dayOff = !service && !extra && !info1C7 && info1C8 === "В";
+
+      stateStore.workingGood = extra
+        ? extra.cut === "Р" && info1C7 && info1C8 === "Я"
+        : service && info1C7 && info1C8 === "Я";
+
+      stateStore.vacation = extra
+        ? !info1C7 &&
+          (info1C8 === "ОТ" || info1C8 === "ДО") &&
+          extra.cut === "О"
+        : !info1C7 && (info1C8 === "ОТ" || info1C8 === "ДО");
+
+      stateStore.illness = extra
+        ? !info1C7 && info1C8 === "Б" && extra.cut === "Б"
+        : !info1C7 && info1C8 === "Б";
+
+      stateStore.absence = extra
+        ? extra.cut === "Н" && !info1C7 && info1C8 === "НН"
+        // : !info1C7 && info1C8 === "НН" && service;
+        : false;
 
       //red BG and red Text
-      const factButNoShedule = !service && info1C7 && !info1C8;
+      stateStore.workInDayOff = extra
+        ? extra.cut != "Р" && info1C7 && info1C8 === "В"
+        : !service && info1C7 && info1C8 === "В";
 
       //orange BG
-      const sheduleButNoFact = service && info1C8 === "Я" && !info1C7;
+      stateStore.sheduleButNoFact = service && info1C8 === "Я" && !info1C7;
       // const mistake1C8 = service && info1C7 && info1C8 !== "Я";
 
       //green BG
-      const vacationWork = (service || !service) && info1C7 && info1C8 === "ОТ";
+      stateStore.vacationWork =
+        (service || !service) && info1C7 && info1C8 === "ОТ";
       this.showConventions = true;
-      if (vacationWork) return greenBG;
-      if (noData || allGood || vacation || illness || absence) return;
-      return factButNoShedule
-        ? redBGredColor
-        : sheduleButNoFact
-        ? orangeBG
-        : vacationWork
-        ? greenBG
-        : undefinedDataCombination;
+
+      //violet BG
+      stateStore.missMatchVacation = extra
+        ? extra.cut === "О" && info1C8 != "ОТ" && info1C8 != "ДО"
+        : service && (info1C8 === "ОТ" || info1C8 === "ДО");
+
+      const checkForUniqueTruth = Object.entries(stateStore).filter(
+        (a) => Boolean(a[1]) == true
+      );
+      // if (checkForUniqueTruth.length > 3) {
+      //   console.table(stateStore)
+      // }
+      const status =
+        checkForUniqueTruth.length > 2 ? checkForUniqueTruth[2][0] : null;
+
+
+      // if (
+      //   date.toLocaleDateString() === "04.06.2023" &&
+      //   driver.name === "Артемов Андрей Владимирович"
+      // ) {
+      //   console.table(driver);
+      // }
+
+      if (driver.mark === "наем") {
+         const sheduleWorkDays = Object.entries(driver.shedule1C8.shedule).filter(s => s[1].mark == "Я").length;
+           driver.info1C7.length < sheduleWorkDays
+          ? driver.backGround =  "background: rgba(225, 50, 50, 0.9); color: black; font-weight: bold" : null
+        return;
+      }
+
+      switch (status) {
+        case "noData":
+        case "workingGood":
+        case "dayOff":
+        case "vacation":
+        case "illness":
+        case "absence":
+          return;
+        case "workInDayOff":
+          return redBgBlackColor;
+        case "sheduleButNoFact":
+          return orangeBG;
+        case "vacationWork":
+          return greenBG;
+        case "missMatchVacation":
+          return undefinedDataCombination;
+        default:
+          return undefinedDataCombination;
+      }
+      //
+      // return factButNoShedule
+      //   ? redBgBlackColor
+      //   : sheduleButNoFact
+      //   ? orangeBG
+      //   : vacationWork
+      //   ? greenBG
+      //   : undefinedDataCombination;
+    },
+    getDateExtra(extras, date) {
+      const isosDate = date.toISOString();
+      return extras.filter((e) => e.day === isosDate).length
+        ? extras.filter((e) => e.day === isosDate)[0]
+        : null;
     },
     daySpec(month, year) {
       const lastDay = this.numberOfDays(month, year);
@@ -488,36 +562,35 @@ export default {
         const result = driver.carslist
           .filter((cl) => cl.carID === car.carID)
           .map((cl) => {
-            // console.log(cl)
-            // cl.name = driver.name;
+            cl.extras = cl.extras.filter((e) => e.cut != "ХР");
             cl.tin = driver.tin;
-            // cl.position = driver.position;
-            // cl.driverID = driver.driverID;
-            // cl.extras = driver.extras || [];
-            // console.log(cl)
+            cl.mark = car.mark
             return cl;
           })[0];
         result.rowspan = 1;
+        //get data from 1C7
         if (this.info1C7) {
           result.rowspan += 1;
           result.info1C7 = Array.from(this.info1C7).filter(
-            (i) => i.driverID === id
+            (i) => i.tin === result.tin
           ).length
             ? Array.from(this.info1C7)
-                .filter((i) => i.driverID === id)[0]
-                .workDays.map((date) => {
+                .filter((i) => i.tin === result.tin)[0]
+                .dates.map((date) => {
                   const d = date.split(".");
-                  return new Date(`${d[1]}.${d[0]}.${d[2]}`);
+                  return new Date(Date.parse(`20${d[2]}-${d[1]}-${d[0]}`));
                 })
             : null;
         }
-        //new 1C8 data from shedule
-        if (this.shedule1C8.length) {
+        //get data from 1C8
+        if (this.shedule1C8 && this.shedule1C8.length) {
           result.rowspan += 1;
-          result.shedule1C8 = Array.from(this.shedule1C8).filter((i) => {
-            const shortName = this.cutName(result.name);
-            return i.name === shortName;
-          })[0];
+          result.shedule1C8 = Array.from(this.shedule1C8).filter(
+            (i) => i.tin === result.tin
+          ).length
+            ? Array.from(this.shedule1C8).filter((i) => i.tin === result.tin)[0]
+            : null;
+          // console.log(result.name, result.shedule1C8)
         }
         crew.push(result);
       });
@@ -627,6 +700,9 @@ export default {
     },
     shedule1C8_DP() {
       return this.$store.getters.getShedule1C8_DP;
+    },
+    pickedMonth() {
+      return this.$store.getters.getPickedMonth;
     },
   },
   mounted: async function () {

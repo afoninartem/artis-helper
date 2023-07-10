@@ -1,7 +1,8 @@
 import { db } from "../../main";
 export default {
 	state: {
-		positionsDiffs: null,
+		// positionsDiffs: null,
+		pickedMonth: null,
 		//
 		info1C7: null,
 		info1C8_A21: null,
@@ -63,6 +64,9 @@ export default {
 			// console.log(payload);
 			state.extras.from1C8_DP = payload.from1C;
 			// state.extras.fromOS = state.extras.fromOS.concat(payload.fromOS);
+		},
+		setPickedMonth(state, payload) {
+			state.pickedMonth = payload;
 		},
 	},
 	actions: {
@@ -128,52 +132,50 @@ export default {
 			});
 		},
 
-		compareDriversIn1CAndOsDB({ getters, commit }, payload) {
-			console.log(payload);
-      if (payload.dataSource == "1C7") {
-        payload.excelDrivers = payload.excelDrivers.map(d => d.name = d["Фамилия Имя Отчество"])
-      }
+		compareDriversIn1CAndOsDB({ commit, getters }, payload) {
+			// console.log(payload);
 			const dataSource = payload.dataSource;
-			const osDrivers = getters.getActualStates.catalogDrivers.map((os) =>
-				os.name.split("  ").join(" ").toLowerCase()
-			);
-			const excelDrivers = Array.from(
-				new Set(
-					payload.excelDrivers.map((ex) => {
-						if (ex.name) {
-							return ex.name.split("  ").join(" ").toLowerCase();
-						}
-            if (payload.dataSource == "1C7") {
-              return ex
-            }
-						return ex["Сотрудник"]
-							.split("  ")
-							.join(" ")
-							.toLowerCase()
-							.split(" ")
-							.slice(0, 3)
-							.join(" ");
-					})
-				)
-			);
-			console.log(excelDrivers);
+			console.log(dataSource);
+			const osDriversCatalog = getters.getActualStates.catalogDrivers;
+			const osDrivers = Array.from(osDriversCatalog)
+				.filter((d) => d.carslist && d.carslist.length)
+				.map((d) => ({ name: d.name, tin: d.tin }));
+			const excelDrivers = Array.from(payload.excelDrivers).map((d) => ({
+				name: d.name,
+				tin: d.tin,
+			}));
+			const osTins = Array.from(osDriversCatalog)
+				.filter((d) => d.carslist && d.carslist.length)
+				.map((d) => d.tin);
+			const excelTins = Array.from(payload.excelDrivers).map((d) => d.tin);
+			// console.log(osTins)
+			// console.log(excelTins)
+
 			const extraFrom1C = [];
 			const extraFromOS = [];
-			const cutName = require("../stringsHandler").nameCutter;
-			// check os
-			osDrivers.forEach((os) => {
-				if (!excelDrivers.filter((x) => cutName(x) === cutName(os)).length)
-					extraFromOS.push(os);
-			});
-			// check excel
-			excelDrivers.forEach((ex) => {
-				if (!osDrivers.filter((x) => cutName(x) === cutName(ex)).length)
-					extraFrom1C.push(ex);
-			});
+			if (dataSource === "1C7") {
+				osTins.forEach((osTin) =>
+					!excelTins.includes(osTin)
+						? extraFromOS.push(osDrivers.filter((d) => d.tin === osTin)[0])
+						: null
+				);
+			}
 
-			extraFromOS.sort();
-			extraFrom1C.sort();
+			excelTins.forEach((exTin) =>
+				!osTins.includes(exTin)
+					? extraFrom1C.push(excelDrivers.filter((d) => d.tin === exTin)[0])
+					: null
+			);
+			// console.log(extraFromOS);
 			// console.log(extraFrom1C);
+
+			extraFromOS.sort((a, b) =>
+				a.name > b.name ? 1 : b.name > a.name ? -1 : 0
+			);
+			extraFrom1C.sort((a, b) =>
+				a.name > b.name ? 1 : b.name > a.name ? -1 : 0
+			);
+			// // console.log(extraFrom1C);
 			switch (dataSource) {
 				case "1C7":
 					commit("setExtras1C7", {
@@ -203,27 +205,25 @@ export default {
 
 		async add1C7info({ commit, dispatch }, payload) {
 			const info1C7 = payload.filter(
-				(p) => p["Официальная должность"] == p["Должность"]
+				(p) =>
+					p["Официальная должность"] == p["Должность"] &&
+					(p["Должность"] === "Водитель" ||
+						p["Должность"] === "Экспедитор" ||
+						p["Должность"] === "Водитель на своем  авто")
 			);
-
-			const finalInfo1C7 = info1C7.map((info) => {
-				const finalInfo = {};
-				const dates = [];
-				for (let i in info) {
-					if (i.length === 8 && i.includes(".")) {
-           info[i].trim()
-            ? dates.push(i)
-            : null
-					} else {
-            finalInfo.name = info["Фамилия Имя Отчество"]
-            finalInfo.mainPosition = info["Официальная должность"]
-            finalInfo.position = info["Должность"]
-            finalInfo.tin = info["ИНН"]
-          }
-				}
-				return { workDays: dates, ...finalInfo };
+			const finalInfo1C7 = [];
+			info1C7.forEach((info) => {
+				const dates = Object.keys(info).filter(
+					(k) => k.length === 8 && k.includes(".") && info[k].trim()
+				);
+				const name = info["Фамилия Имя Отчество"];
+				const position = info["Должность"];
+				const tin = info["ИНН"];
+				const finalInfo = { name, tin, position, dates };
+				finalInfo1C7.push(finalInfo);
 			});
-
+			const pickedDate = finalInfo1C7[0].dates[0];
+			dispatch("setPickedMonth", pickedDate);
 			dispatch("compareDriversIn1CAndOsDB", {
 				// osDrivers: drivers,
 				excelDrivers: finalInfo1C7,
@@ -231,6 +231,14 @@ export default {
 			});
 			return await commit("add1C7info", finalInfo1C7);
 		},
+
+		setPickedMonth({ commit }, payload) {
+			// console.log(`recieved payload is ${payload}`)
+			const date = payload.split(".");
+			const result = `20${date[2]}-${date[1]}-`;
+			commit("setPickedMonth", result);
+		},
+
 		async add1C8info_A21({ dispatch, commit }, payload) {
 			dispatch("compareDriversIn1CAndOsDB", {
 				// osDrivers: drivers,
@@ -242,110 +250,70 @@ export default {
 				payload.filter((o) => Object.keys(o).length !== 3)
 			);
 		},
-		async add1C8Shedule(context, payload) {
+
+		async add1C8Shedule({ commit, dispatch, getters }, payload) {
 			// get object with dates
-			// console.log(payload);
-			const dateCell = payload.data.filter((p) =>
-				Object.values(p).includes("ТАБЕЛЬ  ")
-			)[0];
-			const ruDate = dateCell.__EMPTY_50.split(".");
-			const month = new Date(
-				`${ruDate[1]}.${ruDate[0]}.${ruDate[2]}`
-			).getMonth();
-			const year = new Date(
-				`${ruDate[1]}.${ruDate[0]}.${ruDate[2]}`
-			).getFullYear();
-			const dateKeysTemp = payload.data
-				.filter(
-					(x) =>
-						Object.values(x).includes("половину\nмесяца\n(I, II)") ||
-						Object.values(x).includes("дни")
-				)
-				.slice(0, 2);
-			const dateKeys = {};
-			dateKeysTemp.forEach((dk, index) => {
-				for (let key in dk) {
-					if (dk[key] === "X" || !Number.isNaN(+dk[key])) {
-						dateKeys[key]
-							? (dateKeys[key][index] = dk[key])
-							: (dateKeys[key] = { [index]: dk[key] });
-					}
-				}
-			});
-			// get drivers shedules
+			console.log(payload);
+			const pickedDate = getters.getPickedMonth;
 			const driversShedules = [];
-			// console.log(payload.data)
-			payload.data.forEach((p, i) => {
-				if (Object.values(p).some((s) => s.match(/\d+-\d+/))) {
-					const driverInfo = payload.data.slice(i, i + 4);
-					const driver = {
-						name: driverInfo[0].__EMPTY_2.split("\n")[0],
-						position:
-							// driverPositionNotations.includes(driverInfo[0].__EMPTY_2.split("\n")[1])
-							driverInfo[0].__EMPTY_2
-								.split("\n")[1]
-								.toLowerCase()
-								.includes("водитель-")
-								? "водитель"
-								: driverInfo[0].__EMPTY_2
-										.split("\n")[1]
-										.toLowerCase()
-										.includes("-экспедитор")
-								? "экспедитор"
-								: driverInfo[0].__EMPTY_2.split("\n")[1],
-						personnelNumber: driverInfo[0].__EMPTY_4,
-						shedule: {},
-					};
-					// console.log(`${driver.name} - ${driver.position}`)
-					driverInfo.forEach((info, i) => {
-						let day, hours, mark;
-						for (let infoKey in info) {
-							if (Object.keys(dateKeys).includes(infoKey)) {
-								if (i === 0 || i === 2) {
-									day = i === 0 ? dateKeys[infoKey][0] : dateKeys[infoKey][1];
-									mark = info[infoKey];
-									hours = driverInfo[i + 1][infoKey]
-										? driverInfo[i + 1][infoKey]
-										: "0";
-								}
-								const date =
-									day != "X" && day != undefined
-										? new Date(year, month, day).toLocaleDateString("ru-Ru")
-										: null;
-								const daysLimit = new Date(year, month + 1, 0).getDate();
-								date && day <= daysLimit
-									? (driver.shedule[date] = { hours, mark })
-									: null;
-							}
-						}
+			payload.data
+				.filter((driver) => driver["Должность"].includes("-экспедитор"))
+				.forEach((driver) => {
+					const name = driver["Сотрудник"].trim();
+					const tin = driver["ИНН"].trim();
+					const [position, carNumber] = driver["Должность"]
+						.split("/")
+						.map((x) => x.trim());
+					// console.log(name, tin, position, carNumber, driversShedules)
+					// const dates = Object.keys(driver)
+					// 	.filter((d) => d.split(" ").length == 2)
+					// 	.map((dated) => {
+					// 		const day = dated.split(" ")[0];
+					// 		const date = new Date(pickedDate + day);
+					// 		const [mark, val] =
+					// 			driver[dated].split(" ").length == 2
+					// 				? driver[dated].split(" ")
+					// 				: [driver[dated].trim(), null];
+					// 		return { date, mark, val };
+					// 	});
+					const shedule = {};
+					Object.keys(driver)
+						.filter((d) => d.split(" ").length == 2)
+						.forEach((dated) => {
+							const day = dated.split(" ")[0];
+							const date = new Date(pickedDate + day).toLocaleDateString("ru-RU");
+							const [mark, val] =
+								driver[dated].split(" ").length == 2
+									? driver[dated].split(" ")
+									: [driver[dated].trim(), null];
+
+							shedule[date] = { mark, val };
+						});
+					driversShedules.push({
+						name,
+						tin,
+						position,
+						carNumber,
+						// dates,
+            shedule
 					});
-					if (
-						driver.position === "водитель" ||
-						driver.position === "экспедитор"
-					) {
-						driversShedules.push(driver);
-					}
-				}
-			});
-			///
-			// const log = [];
-			// driversShedules.forEach((d) => (log[d.name] = d));
-			// console.log(log);
+				});
+			console.log(driversShedules);
 			///
 			payload.company === "A21"
-				? (context.commit("add1C8Shedule_A21", driversShedules),
-				  context.dispatch("compareDriversIn1CAndOsDB", {
+				? (commit("add1C8Shedule_A21", driversShedules),
+				  dispatch("compareDriversIn1CAndOsDB", {
 						excelDrivers: driversShedules,
 						dataSource: "1C8_A21",
 				  }))
 				: payload.company === "AP"
-				? (context.commit("add1C8Shedule_AP", driversShedules),
-				  context.dispatch("compareDriversIn1CAndOsDB", {
+				? (commit("add1C8Shedule_AP", driversShedules),
+				  dispatch("compareDriversIn1CAndOsDB", {
 						excelDrivers: driversShedules,
 						dataSource: "1C8_AP",
 				  }))
-				: (context.commit("add1C8Shedule_DP", driversShedules),
-				  context.dispatch("compareDriversIn1CAndOsDB", {
+				: (commit("add1C8Shedule_DP", driversShedules),
+				  dispatch("compareDriversIn1CAndOsDB", {
 						excelDrivers: driversShedules,
 						dataSource: "1C8_DP",
 				  }));
@@ -398,12 +366,15 @@ export default {
 		getShedule1C8_DP: (state) => {
 			return state.shedule1C8_DP;
 		},
+		getPickedMonth: (state) => {
+			return state.pickedMonth;
+		},
 
 		// getAddDriverPopupVisibility: (state) => {
 		// 	return state.addDriverPopupVisibility;
 		// },
-		getPositionsDiffs: (state) => {
-			return state.positionsDiffs;
-		},
+		// getPositionsDiffs: (state) => {
+		// 	return state.positionsDiffs;
+		// },
 	},
 };

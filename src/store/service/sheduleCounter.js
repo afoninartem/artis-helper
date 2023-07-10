@@ -49,5 +49,6 @@ export default function workDayOrNot(
 				? "X"
 				: null;
 		}
-	}
+	} 
+  return null
 }
