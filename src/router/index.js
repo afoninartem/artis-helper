@@ -411,6 +411,16 @@ const routes = [
     },
     component: () => import("../views/accounting/TaxcomCheck.vue"),
   },
+  {
+    path: "/materials-consumption",
+    name: "MaterialsConsumption",
+    meta: {
+      layout: "MainLayout",
+      auth: true,
+      permissions: ["admin", "accounting"],
+    },
+    component: () => import("../views/accounting/MaterialsConsumption.vue"),
+  },
   // {
   //   path: "/client-payments-xml",
   //   name: "ClientPaymentsXML",

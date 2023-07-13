@@ -41,6 +41,7 @@ import onlineShopHandler from "./accounting/onlineShopHandler";
 import payLinksHandler from "./accounting/payLinksHandler";
 import xml2json from "./accounting/xml/xml2json";
 import sellingXmlHandler from "./accounting/xml/sellingXmlHandler";
+import matearialConsumptionHandler from "./accounting/materialConsumptionHandler";
 import needsHandler from "./marketing/warehouse-needs/needsHandler";
 import vacanciesHandler from "./personal/vacanciesHandler";
 import catalogPersonalHandler from "./personal/catalogPersonalHandler";
@@ -118,6 +119,12 @@ export default new Vuex.Store({
             name: "taxcom",
             link: "/taxcom-check",
             title: "Taxcom",
+            permissions: ["accounting"],
+          },
+          {
+            name: "materials-consumption",
+            link: "/materials-consumption",
+            title: "Расход материалов",
             permissions: ["accounting"],
           },
           // {
@@ -539,6 +546,7 @@ export default new Vuex.Store({
     shedulePopupHandler,
     xml2json,
     markerHandler,
-    sellingXmlHandler
+    sellingXmlHandler,
+    matearialConsumptionHandler
   },
 });
