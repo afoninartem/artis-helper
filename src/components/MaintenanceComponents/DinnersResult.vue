@@ -146,9 +146,9 @@ export default {
         this.currentCompanyDinners.departments.forEach((d) => {
           d.employees.forEach((e) => {
             handledResult.push({
-              department: d.name,
-              employee: e.name,
-              total: e.markList.length,
+              Подразделение: d.name,
+              Сотрудник: e.name,
+              "Количество обедов": e.markList.length,
             });
           });
         });
