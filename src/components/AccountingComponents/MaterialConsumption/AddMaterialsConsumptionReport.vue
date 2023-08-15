@@ -29,6 +29,7 @@ export default {
   methods: {
     onChangeMaterialConsumptionReport(event) {
       this.file = event.target.files ? event.target.files[0] : null;
+      this.$store.commit("setOriginalFileName", this.file.name)
     },
     setMaterialConsumptionData(data) {
       if (data) {

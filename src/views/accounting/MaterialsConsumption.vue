@@ -1,11 +1,12 @@
 <template>
   <div class="material-consumption">
     <h1>Расход материалов</h1>
-    <!-- file input -->
     <AddMaterialsConsumptionReport v-if="!original" />
-    <div class="material-consumption__form" v-if="original">
-      <p>Количество итераций: {{counter}}</p>
-      <!-- coefficient input -->
+    <div
+      class="material-consumption__form"
+      v-if="original"
+    >
+      <!-- <p>Количество итераций: {{counter}}</p> -->
       <label for="coefficient">Коэффициент: </label>
       <input
         type="number"
@@ -22,7 +23,7 @@
           :key="sheet.name"
           :sheet-name="sheet.name"
         />
-        <xlsx-download filename="Расход материалов c коэффициентом.xls">
+        <xlsx-download :filename="`${this.finalFileName}.xls`">
           <button @click.prevent="addSheets">Пересчитать</button>
         </xlsx-download>
       </xlsx-workbook>
@@ -47,16 +48,16 @@ export default {
   data() {
     return {
       matcomp: null,
-      coefficient: 1,
+      coefficient: 0.8,
       sheets: [],
     };
   },
   methods: {
     addSheets() {
       this.recaclulate();
-      
+
       this.sheets.push({
-        name: `№${this.counter} коэф ${this.coefficient}`,
+        name: `коэф ${this.coefficient}`,
         data: this.matcomp,
       });
     },
@@ -92,6 +93,12 @@ export default {
     original() {
       return this.$store.getters.getOriginalData;
     },
+    originalFileName() {
+      return this.$store.getters.getOriginalFileName;
+    },
+    finalFileName() {
+      return `${this.originalFileName} коэф ${this.coefficient}`
+    }
   },
 };
 </script>

@@ -2,6 +2,7 @@ export default {
 	state: {
 		originalData: null,
 		loadCounter: 0,
+		name: null,
 	},
 	mutations: {
 		setOriginalData(state, payload) {
@@ -9,6 +10,9 @@ export default {
 		},
 		incrementCounter(state) {
 			state.loadCounter++;
+		},
+		setOriginalFileName(state, payload) {
+			state.name = payload.replace(".xls", "");
 		},
 	},
 	actions: {
@@ -22,6 +26,9 @@ export default {
 		},
 		getOriginalData: (state) => {
 			return state.originalData;
+		},
+		getOriginalFileName: (state) => {
+			return state.name;
 		},
 	},
 };
