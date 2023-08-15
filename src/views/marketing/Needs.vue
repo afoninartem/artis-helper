@@ -239,6 +239,7 @@ export default {
   }
   input::-webkit-outer-spin-button,
   input::-webkit-inner-spin-button {
+    appearance: none;
     -webkit-appearance: none;
     -moz-appearance: none; // не работает в FF почему-то
     margin: 0;
@@ -291,13 +292,13 @@ export default {
               cursor: pointer;
               &:first-child {
                 &:hover {
-                  width: 175%;
+                  width: 125%;
                   background: rgba(133, 175, 139, 0.5);
                 }
               }
               &:last-child {
                 &:hover {
-                  width: 175%;
+                  width: 125%;
                   background: rgba(165, 72, 77, 0.5);
                 }
               }
