@@ -9,7 +9,7 @@ export default {
 		async giftsHandler_2(context, payload) {
 			const extra = {};
 			Array.from(payload)
-				.filter((el) => el["ТЦ"]).filter(el => el["ТЦ"] !== " ")
+				.filter((el) => el["ТЦ"]).filter(el => el["ТЦ"] !== " " && !el["Подразделение"].includes("уволен"))
 				.forEach((employee) => {
           if (extra[employee["ТЦ"]]) {
             const currentShop = extra[employee["ТЦ"]];

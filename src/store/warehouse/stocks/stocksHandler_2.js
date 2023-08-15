@@ -40,7 +40,7 @@ export default {
 					//calculate shipment for each shop
 					report.shipment = {};
 					report.shipment.poster = report.f_Poster;
-
+          
 					report.shipment.vip =
 						report.status === "top"
 							? report.l_Vip < 40
@@ -164,6 +164,7 @@ export default {
             : report.f_Clamp < 80
             ? report.f_Clamp || 0
             : 40;
+
 
 					shipment[report.region]
 						? shipment[report.region].push(report)
