@@ -108,7 +108,7 @@ export default {
       if (this.xlsx.xml.length) {
         this.sheets.push({
           name: "Есть в XML, нет в Taxcom",
-          data: this.xlsx.xml.filter((x) => x.clientInn === ""),
+          data: this.xlsx.xml.filter((x) => x["ИНН/КПП"] === ""),
         });
       }
       if (this.sellingXMLResult.sellsListFromXML) {
