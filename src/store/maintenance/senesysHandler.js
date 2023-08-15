@@ -165,7 +165,7 @@ export default {
 
 			const artis = companies.filter((c) => c.name === "Артис")[0];
 			artis.departments = [
-				{ name: "Уволенные и неопределенные", employees: [], total: 0 },
+				{ name: "Неопределенные", employees: [], total: 0 },
 			];
 			artis.employees.forEach((a) => {
 				if (artisEmployeesNames.includes(a.name)) {
@@ -187,10 +187,10 @@ export default {
 					}
 				} else {
 					artis.departments
-						.filter((d) => d.name === "Уволенные и неопределенные")[0]
+						.filter((d) => d.name === "Неопределенные")[0]
 						.employees.push(a);
 					artis.departments.filter(
-						(d) => d.name === "Уволенные и неопределенные"
+						(d) => d.name === "Неопределенные"
 					)[0].total += a.markList.length;
 				}
 			});
