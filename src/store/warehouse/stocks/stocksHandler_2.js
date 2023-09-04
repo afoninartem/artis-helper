@@ -8,10 +8,10 @@ export default {
 		setShipment(state, payload) {
 			state.shipment = payload;
 		},
-    setErrorShopsDB(state, payload) {
-      state.error.shopsDB.state = payload.state
-      state.error.shopsDB.text = payload.text
-    }
+		setErrorShopsDB(state, payload) {
+			state.error.shopsDB.state = payload.state;
+			state.error.shopsDB.text = payload.text;
+		},
 	},
 	actions: {
 		async setShipment({ commit, getters }, payload) {
@@ -19,7 +19,7 @@ export default {
 			const shopsDB = getters.getActualStates.shops;
 			// const extra = getters.getExtraAdded;
 			// console.log(extra)
-      // console.log(shopsDB.map(s => s.name))
+			// console.log(shopsDB.map(s => s.name))
 			Array.from(payload).forEach((report) => {
 				if (
 					shopsDB.some(
@@ -40,7 +40,7 @@ export default {
 					//calculate shipment for each shop
 					report.shipment = {};
 					report.shipment.poster = report.f_Poster;
-          
+
 					report.shipment.vip =
 						report.status === "top"
 							? report.l_Vip < 40
@@ -88,12 +88,12 @@ export default {
 								: Math.ceil(report.f_Vine / 6) * 6 || 0
 							: Math.floor(report.f_Vine / 6) * 6 || 0;
 
-					report.shipment.chocoSet =
-						report.status === "top"
-							? report.f_ChocoSet || 0
-							: report.f_ChocoSet > report.c_ChocoSet
-							? report.c_ChocoSet
-							: report.f_ChocoSet || 0;
+					report.shipment.chocoSet = report.f_ChocoSet || 0;
+					// report.status === "top"
+					// 	? report.f_ChocoSet || 0
+					// 	: report.f_ChocoSet > report.c_ChocoSet
+					// 	? report.c_ChocoSet
+					// 	: report.f_ChocoSet || 0;
 
 					report.shipment.chest =
 						report.status === "top"
@@ -127,22 +127,16 @@ export default {
 					report.shipment.greenBaloon =
 						report.status === "top"
 							? report.f_GreenBaloon || 10
-							// : report.l_GreenBaloon < 40 && report.f_GreenBaloon < 40
-							// ? report.f_GreenBaloon || 0
-							// : 20;
-              : report.l_GreenBaloon > 80
-                ? 0
-                : report.f_GreenBaloon || 0
+							: report.l_GreenBaloon > 80
+							? 0
+							: report.f_GreenBaloon || 0;
 
 					report.shipment.grayBaloon =
 						report.status === "top"
 							? report.f_GrayBaloon || 10
-							// : report.l_GrayBaloon < 40 && report.f_GrayBaloon < 40
-							// ? report.f_GrayBaloon || 0
-							// : 20;
-              : report.l_GreenBaloon > 80
-                ? 0
-                : report.f_GrayBaloon || 0
+							: report.l_GrayBaloon > 80
+							? 0
+							: report.f_GrayBaloon || 0;
 
 					report.shipment.stick =
 						report.status === "top"
@@ -152,25 +146,21 @@ export default {
 							: report.f_Stick < 80
 							? report.f_Stick || 0
 							: 40;
-					// : report.l_Stick < 80 && report.f_Stick < 80
-					// ? report.f_Stick || 0
-					// : 40;
 
 					report.shipment.clamp =
 						report.status === "top"
-            ? report.f_Clamp || 20
-            : report.l_Clamp > 80
-            ? 0
-            : report.f_Clamp < 80
-            ? report.f_Clamp || 0
-            : 40;
-
+							? report.f_Clamp || 20
+							: report.l_Clamp > 80
+							? 0
+							: report.f_Clamp < 80
+							? report.f_Clamp || 0
+							: 40;
 
 					shipment[report.region]
 						? shipment[report.region].push(report)
 						: (shipment[report.region] = [report]);
 				} else {
-          console.log(`Салона ${report.shop} нет в БД`)
+					console.log(`Салона ${report.shop} нет в БД`);
 					return commit("setErrorShopsDB", {
 						state: true,
 						text: `Салона ${report.shop} нет в БД`,
