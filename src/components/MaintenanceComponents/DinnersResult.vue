@@ -146,6 +146,7 @@ export default {
         this.currentCompanyDinners.departments.forEach((d) => {
           d.employees.forEach((e) => {
             handledResult.push({
+              "Код сотрудника": e.code,
               Подразделение: d.name,
               Сотрудник: e.name,
               "Количество обедов": e.markList.length,

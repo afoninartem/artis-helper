@@ -23,6 +23,10 @@ export default {
 							.split("  ")
 							.join(" ")
 							.trim(),
+            code: row["Код сотрудника"]
+            .split("  ")
+            .join(" ")
+            .trim(),
 					});
 				}
 			});

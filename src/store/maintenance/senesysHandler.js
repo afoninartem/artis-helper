@@ -172,6 +172,7 @@ export default {
 					const department = employeesDetails.filter(
 						(e) => e.name === a.name
 					)[0].department;
+          a.code = employeesDetails.filter(e => e.name == a.name)[0].code
 					if (artis.departments.some((d) => d.name === department)) {
 						artis.departments
 							.filter((d) => d.name === department)[0]
