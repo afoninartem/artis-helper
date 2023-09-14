@@ -163,6 +163,10 @@ export default {
           await this.$store.dispatch("createNewRequest", req);
           await this.$store.dispatch("updateNeedsDate");
           await this.$store.dispatch("setActualNeeds");
+          for (let i in this.newRequest) {
+            console.log(i, typeof i)
+            this.newRequest[i] = i == "urgent" || i == "inProgress" ? false : null
+          }
         } else {
           alert(
             `Количество должно быть числом, а Вы указали - ${this.newRequest.quantity}`
