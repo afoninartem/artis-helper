@@ -215,7 +215,7 @@ export default {
             .sort((a, b) =>
               +a.number > +b.number ? 1 : +b.number > +a.number ? -1 : 0
             )
-            .filter((car) => car.number.length && car.crew.length)
+            .filter((car) => car.number.length)
         : null;
     },
   },
