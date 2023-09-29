@@ -16,7 +16,8 @@ export default {
 				clientName: x.children[2].children[3].innerHTML,
 				clientCode: x.children[2].children[0].innerHTML,
         clientOrganisation: x.children[2].children[2].innerHTML,
-        clientInn: x.children[2].children[5].innerHTML === "                    " ? "" : x.children[2].children[5].innerHTML,
+        // clientInn: x.children[2].children[5].innerHTML === "                    " ? "" : x.children[2].children[5].innerHTML,
+        clientInn: x.children[2].children[6].innerHTML.trim(),
 				date: x.children[1].innerHTML,
 				summ: Array.from(x.children[3].children)
 					.map((el) => el.attributes.amount.value)
