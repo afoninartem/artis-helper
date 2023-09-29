@@ -409,6 +409,7 @@ export default {
       const driver = this.drivers.filter(
         (d) => d.driverID === this.newEmp.driverID
       )[0];
+      console.log(driver)
       if (
         this.newEmp.position === "водитель" &&
         driver.carslist.map((d) => d.position).includes("водитель")
@@ -633,13 +634,16 @@ export default {
       if (!this.car || !this.drivers) return;
 
       const crew = this.car.crew.map((id) => {
+        console.log(id)
         const driver = this.drivers.filter((d) => d.driverID === id)[0];
+        console.log(driver)
         return driver.carslist
           .filter((car) => car.carID === this.car.carID)
           .map((cl) => {
             return cl;
           });
       });
+      console.log(crew)
       this.setCrewData(crew.flat());
 
       const extraCrew = this.car.extraCrew

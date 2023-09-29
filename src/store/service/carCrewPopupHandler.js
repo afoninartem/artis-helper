@@ -54,6 +54,7 @@ export default {
 				? null
 				: newCrew.push(payload.driver.driverID);
 			const carslist = payload.driver.carslist;
+      console.log(carslist)
 			carslist.push({
 				car: payload.car.number,
 				carID: payload.car.carID,
@@ -64,6 +65,7 @@ export default {
 				sheduleType: null,
 				sheduleShift: null,
 			});
+      console.log(carslist)
 			await db
 				.collection("service/catalog/cars")
 				.doc(payload.car.carID)
